@@ -25,7 +25,7 @@ public:
 			//		void AddTrace(const char *name, int height, int mode, int bitCount, int bitOffsetData, int cfgAddr, int cfgBitOffset, int valAddr, int valBitOffset)
 			pScope->AddTrace("RxDataL",			128,		TRACE_MODE_ANALOG,	20,	0,		0x1070+offset, 0,	0x1090+offset, 0);
 			pScope->AddTrace("RxDataH",			128,		TRACE_MODE_ANALOG,	20,	32,	0x1070+offset, 0,	0x1090+offset, 0);
-			pScope->AddTrace("RxDataL",			4*32+8,	TRACE_MODE_DIGITAL,	32,	0,		0x1080+offset, 0,	0x10A0+offset, 0);
+			pScope->AddTrace("RxDataL",			4*32+8,	TRACE_MODE_DIGITAL,	32,	0,		0x10B0+offset, 0,	0x10D0+offset, 0);
 			pScope->AddTrace("RxDataH",			4*32+8,	TRACE_MODE_DIGITAL,	32,	32,	0x10B0+offset, 0,	0x10D0+offset, 0);
 			pScope->AddTrace("RxDataRdyN",		27,		TRACE_MODE_DIGITAL,	1,		64,	0x10B4+offset, 0,	0x10D4+offset, 0);
 			pScope->AddTrace("RxFrameIndex",		4*2+8,	TRACE_MODE_DIGITAL,	2,		65,	0x10B4+offset, 1,	0x10D4+offset, 1);
@@ -47,5 +47,4 @@ public:
 };
 
 #endif
-
 
