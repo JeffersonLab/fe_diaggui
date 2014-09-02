@@ -1,0 +1,15 @@
+###########################################################
+# Trigger System Configuration Setup for 12GeV Test Stand #
+###########################################################
+
+HOSTNAME halldgtp2
+	MODULE MOD_TYPE_GTP	0x00000000
+ENDHOST
+
+HOSTNAME roctrig2
+   MODULE MOD_TYPE_SSP  0x00400000
+ENDHOST
+
+###########################################################
+#                End of configuration file                #
+###########################################################
