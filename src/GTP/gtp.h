@@ -15,20 +15,20 @@ typedef struct
 	unsigned int BusyCycles;
 	unsigned int FCalEnergy[32];
 	unsigned int BCalEnergy[32];
-	unsigned int BCalHitModules[32];
+	unsigned int BCalCosmic[16];
 	unsigned int TOF[32];
 	unsigned int TagM[32];
 	unsigned int TagH[32];
 	unsigned int PS[32];
 	unsigned int ST[32];
-	unsigned int Trig_BCal[32];
-	unsigned int Trig_BFCal[32];
-	unsigned int Trig_TAGM[32];
-	unsigned int Trig_TAGH[32];
-	unsigned int Trig_PS[32];
-	unsigned int Trig_ST[32];
-	unsigned int Trig_TOF[32];
-	unsigned int Trig[32];
+	unsigned int Trig_BCalCosmic[16];
+	unsigned int Trig_BFCal[16];
+	unsigned int Trig_TAGM[16];
+	unsigned int Trig_TAGH[16];
+	unsigned int Trig_PS[16];
+	unsigned int Trig_ST[16];
+	unsigned int Trig_TOF[16];
+	unsigned int Trig[16];
 } GtpScalers;
 
 #define GTP_ADDR		0xF8010000

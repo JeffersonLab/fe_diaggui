@@ -174,7 +174,7 @@ public:
 		// BCAL Energy
 		pPad = pCanvasTrigRates->GetCanvas()->cd(1);
 		pH_Rate->Reset();
-		pH_Rate->Fill("BCALHITS", pGtpScalers->Trig_BCal[TrigoutNum]);
+		pH_Rate->Fill("BCALCOSMIC", pGtpScalers->Trig_BCalCosmic[TrigoutNum]);
 		pH_Rate->Fill("BFCAL", pGtpScalers->Trig_BFCal[TrigoutNum]);
 		pH_Rate->Fill("TAGM", pGtpScalers->Trig_TAGM[TrigoutNum]);
 		pH_Rate->Fill("TAGH", pGtpScalers->Trig_TAGH[TrigoutNum]);

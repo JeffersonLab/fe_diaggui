@@ -16,18 +16,6 @@ public:
 		pRegs = (Gtp_regs *)pM->BaseAddr;
 		
 		TGCompositeFrame *pF1, *pF2;
-		AddFrame(pF1 = new TGGroupFrame(this, "BCAL Config", kVerticalFrame), new TGLayoutHints(kLHintsExpandX | kLHintsTop));
-			pF1->AddFrame(pF2 = new TGHorizontalFrame(pF1), new TGLayoutHints(kLHintsExpandX));
-				pF2->AddFrame(new TGLabel(pF2, new TGString("Delay(ticks): ")), new TGLayoutHints(kLHintsLeft));
-				pF2->AddFrame(pNumberDelay = new TGNumberEntry(pF2, 0, 4, NUM_DELAY, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0.0, 255.0));
-					pNumberDelay->Associate(this);
-				pF2->AddFrame(pLabelDelay = new TGLabel(pF2, new TGString(" Actual Delay = 9999ns")), new TGLayoutHints(kLHintsLeft));
-			pF1->AddFrame(pF2 = new TGHorizontalFrame(pF1), new TGLayoutHints(kLHintsExpandX));
-				pF2->AddFrame(new TGLabel(pF2, new TGString("Integration Width(ticks): ")), new TGLayoutHints(kLHintsLeft));
-				pF2->AddFrame(pNumberWidth = new TGNumberEntry(pF2, 0, 4, NUM_WIDTH, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0.0, 255.0));
-					pNumberWidth->Associate(this);
-				pF2->AddFrame(pLabelWidth = new TGLabel(pF2, new TGString(" Actual Integration Width = 9999ns")), new TGLayoutHints(kLHintsLeft));
-				
 		AddFrame(pF1 = new TGGroupFrame(this, "BCAL Energy Scalers", kVerticalFrame), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			pF1->AddFrame(pF2 = new TGHorizontalFrame(pF1), new TGLayoutHints(kLHintsExpandX));
 				pF2->AddFrame(pButtonUpdateScalers = new TGTextButton(pF2, new TGHotString("Update Scalers"), BTN_UPDATE_SCALERS));
@@ -74,7 +62,7 @@ public:
 				pCanvasHits->GetCanvas()->Divide(2,1);
 
 				pPad = pCanvasHits->GetCanvas()->cd(1);
-					pH_ModuleRate = new TH1D("bcalmodulehitrate", ";Module Hits;Rate(Hz)", 32, 0.0, 32.0);
+					pH_ModuleRate = new TH1D("bcalmodulehitrate", ";Module Hits;Rate(Hz)", 16, 0.0, 16.0);
 					pH_ModuleRate->SetFillColor(49);
 					pH_ModuleRate->SetStats(0);
 					pH_ModuleRate->GetXaxis()->SetNdivisions(16, kFALSE);
@@ -84,7 +72,7 @@ public:
 					pPad->SetLogy(1);
 
 				pPad = pCanvasHits->GetCanvas()->cd(2);
-					pH_ModuleHits = new TH1D("bcalmodulehits", ";Module Hits;Hits", 32, 0.0, 32.0);
+					pH_ModuleHits = new TH1D("bcalmodulehits", ";Module Hits;Hits", 16, 0.0, 16.0);
 					pH_ModuleHits->SetFillColor(50);
 					pH_ModuleHits->SetStats(0);
 					pH_ModuleHits->GetXaxis()->SetNdivisions(16, kFALSE);
@@ -102,11 +90,17 @@ public:
 		unsigned int *pScalers;
 		int len, i;
 		double bin;
+		double norm_factor;
 
 		if(!pM->pCrateMsgClient->ReadScalers(&pScalers, &len))
 			return;
 
 		GtpScalers *pGtpScalers = (GtpScalers *)pScalers;
+		
+		if(pGtpScalers->SysClk50 > 0)
+			norm_factor = 50.0E6 / (double)pGtpScalers->SysClk50;
+		else
+			norm_factor = 1;
 
 		// BCAL Energy
 		pPad = pCanvasEnergy->GetCanvas()->cd(1);
@@ -114,7 +108,7 @@ public:
 		bin = 1.0;
 		for(i = 0; i < 32; i++)
 		{
-			pH_Rate->Fill(bin, pGtpScalers->BCalEnergy[i]);	// need to normalize to Hz
+			pH_Rate->Fill(bin, norm_factor*pGtpScalers->BCalEnergy[i]);
 			bin = bin * 2.0;
 		}
 		pPad->Modified();
@@ -131,18 +125,18 @@ public:
 		pPad->Modified();
 		pPad->Update();
 
-		// BCAL Module Hits
+		// BCAL Hit Modules
 		pPad = pCanvasHits->GetCanvas()->cd(1);
 		pH_ModuleRate->Reset();
-		for(i = 0; i < 32; i++)
-			pH_ModuleRate->Fill(i, pGtpScalers->BCalHitModules[i]);	// need to normalize to Hz
+		for(i = 0; i < 16; i++)
+			pH_ModuleRate->Fill(i, norm_factor*pGtpScalers->BCalCosmic[i]);
 		pPad->Modified();
 		pPad->Update();
 
 		pPad = pCanvasHits->GetCanvas()->cd(2);
 		pH_ModuleHits->Reset();
-		for(i = 0; i < 32; i++)
-			pH_ModuleHits->Fill(i, pGtpScalers->BCalHitModules[i]);
+		for(i = 0; i < 16; i++)
+			pH_ModuleHits->Fill(i, pGtpScalers->BCalCosmic[i]);
 		pPad->Modified();
 		pPad->Update();
 
@@ -157,22 +151,6 @@ public:
 		{
 			switch(parm1)
 			{
-				case NUM_DELAY:
-				{
-					pM->WriteReg32(&pRegs->BCal.Delay, pNumberDelay->GetIntNumber());
-					v = pM->ReadReg32(&pRegs->BCal.Delay);
-					pNumberDelay->SetIntNumber(v);
-					pLabelDelay->SetText(Form("Actual Delay = %dns", v*4));
-					break;
-				}
-				case NUM_WIDTH:
-				{
-					pM->WriteReg32(&pRegs->BCal.Width, pNumberWidth->GetIntNumber());
-					v = pM->ReadReg32(&pRegs->BCal.Width);
-					pNumberWidth->SetIntNumber(v);
-					pLabelWidth->SetText(Form("Actual Delay = %dns", v*4));
-					break;
-				}
 				default:
 					printf("textentry id %d selected\n", (int)parm1);
 					break;
@@ -205,20 +183,12 @@ public:
 private:
 	enum
 	{
-		NUM_DELAY,
-		NUM_WIDTH,
 		BTN_UPDATE_SCALERS
 	};
 
 	ModuleFrame				*pM;
 	Gtp_regs					*pRegs;
 	
-	TGNumberEntry			*pNumberDelay;
-	TGNumberEntry			*pNumberWidth;
-
-	TGLabel					*pLabelDelay;
-	TGLabel					*pLabelWidth;
-
 	TRootEmbeddedCanvas	*pCanvasHits;
 	TRootEmbeddedCanvas	*pCanvasEnergy;
 	
