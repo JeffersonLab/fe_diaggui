@@ -21,7 +21,7 @@ public:
 		pScope->Init(512, 0x1024+offset, 0, 0x1020+offset, 0, 0x1030+offset, 2);
 
 		// void AddTrace(const char *name, int height, int mode, int bitCount, int bitOffsetData, int cfgAddr, int cfgBitOffset, int valAddr, int valBitOffset)
-		pScope->AddTrace("RxData",			128,		TRACE_MODE_ANALOG,	32,	0,	0x1050+offset, 0,	0x1070+offset, 0);
+		pScope->AddTrace("RxData",			128,		TRACE_MODE_ANALOG,	16,	0,	0x1050+offset, 0,	0x1070+offset, 0);
 		pScope->AddTrace("RxData",			4*32+8,	TRACE_MODE_DIGITAL,	32,	0,	0x1090+offset, 0,	0x10B0+offset, 0);
 		pScope->AddTrace("RxDataRdyN",	27,		TRACE_MODE_DIGITAL,	1,	32,	0x1094+offset, 0,	0x10B4+offset, 0);
 		pScope->AddTrace("RxDataErr",		27,		TRACE_MODE_DIGITAL,	1,	33,	0x1094+offset, 1,	0x10B4+offset, 1);
