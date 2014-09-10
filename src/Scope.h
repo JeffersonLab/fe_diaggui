@@ -621,9 +621,25 @@ public:
 	void ScopeTriggerReadout()
 	{
 		int i, j;
-		int **pBuf = new int *[ScopeConfig.dataRegs.num];
+		int **pBuf = new (nothrow) int *[ScopeConfig.dataRegs.num];
+		if(!pBuf)
+		{
+			printf("Error: ScopeTriggerReadout() memory failed to allocate\n");
+			return;
+		}
+		
 		for(i = 0; i < ScopeConfig.dataRegs.num; i++)
-			pBuf[i] = new int [ScopeConfig.sampleLen];
+		{
+			pBuf[i] = new (nothrow) int [ScopeConfig.sampleLen];
+			if(!pBuf[i])
+			{
+				printf("Error: ScopeTriggerReadout() memory failed to allocate\n");
+				for(int j = 0; j < i; j++)
+					delete[] pBuf[j];
+				delete[] pBuf;
+				return;
+			}
+		}
 
 		pM->RMWReg32((volatile unsigned int *)ScopeConfig.enControlReg.addr, 0, 1<<ScopeConfig.enControlReg.bitNum);
 
@@ -670,8 +686,8 @@ public:
 		}
 
 		for(i = 0; i < ScopeConfig.dataRegs.num; i++)
-			delete pBuf[i];
-		delete pBuf;
+			delete[] pBuf[i];
+		delete[] pBuf;
 	}
 
 	void ScopeTriggerLoad()
