@@ -4,10 +4,8 @@
 #include <stdlib.h>
 #include "ModuleFrame.h"
 #include "RootHeader.h"
-#include "ssp.h"
 
 #define UDPATETIME_MAX			60
-//#define FADC250_CH_BINS_PER_SEC	32*1024*1024
 
 class SSP_HPS_TrgHist	: public TGCompositeFrame
 {
@@ -19,7 +17,6 @@ public:
 		SetLayoutManager(new TGVerticalLayout(this));
 
 		pM = pModule;
-		pRegs = (SSP_regs *)pM->BaseAddr;
 
 		TGCompositeFrame *pTF1;
 
@@ -134,6 +131,17 @@ public:
 
 		pTimerUpdate = new TTimer(this, 1000*pSliderUpdateTime->GetPosition(), kTRUE);
 
+		HpsClusterTop_HistCtrl		= (volatile unsigned int *)pM->BaseAddr + 0x0500;
+		HpsClusterTop_HistLatency	= (volatile unsigned int *)pM->BaseAddr + 0x0510;
+		HpsClusterTop_HistPosition	= (volatile unsigned int *)pM->BaseAddr + 0x0514;
+		HpsClusterTop_HistEnergy	= (volatile unsigned int *)pM->BaseAddr + 0x0518;
+		HpsClusterTop_HistNHits		= (volatile unsigned int *)pM->BaseAddr + 0x051C;
+		HpsClusterBot_HistCtrl		= (volatile unsigned int *)pM->BaseAddr + 0x0600;
+		HpsClusterBot_HistLatency	= (volatile unsigned int *)pM->BaseAddr + 0x0610;
+		HpsClusterBot_HistPosition	= (volatile unsigned int *)pM->BaseAddr + 0x0614;
+		HpsClusterBot_HistEnergy	= (volatile unsigned int *)pM->BaseAddr + 0x0618;
+		HpsClusterBot_HistNHits		= (volatile unsigned int *)pM->BaseAddr + 0x061C;
+		
 		inst++;
 	}
 	
@@ -204,7 +212,7 @@ public:
 
 		pCanvas->GetCanvas()->cd(1);
 
-		pM->BlkReadReg32(&pRegs->HpsClusterTop.HistLatency, buf, 1024, CRATE_MSG_FLAGS_NOADRINC);
+		pM->BlkReadReg32(HpsClusterTop_HistLatency, buf, 1024, CRATE_MSG_FLAGS_NOADRINC);
 		for(int i = 0; i < 1024; i++)
 		{
 			if(buf[i] > 0x80000000)
@@ -213,7 +221,7 @@ public:
 				pHistLatency[0]->SetBinContent(i, buf[i]);
 		}
 
-		pM->BlkReadReg32(&pRegs->HpsClusterBot.HistLatency, buf, 1024, CRATE_MSG_FLAGS_NOADRINC);
+		pM->BlkReadReg32(HpsClusterBot_HistLatency, buf, 1024, CRATE_MSG_FLAGS_NOADRINC);
 		for(int i = 0; i < 1024; i++)
 		{
 			if(buf[i] > 0x80000000)
@@ -241,8 +249,8 @@ public:
 
 		pCanvas->GetCanvas()->cd(3);
 
-		pM->BlkReadReg32(&pRegs->HpsClusterTop.HistPosition, &buf[0], 512, CRATE_MSG_FLAGS_NOADRINC);
-		pM->BlkReadReg32(&pRegs->HpsClusterBot.HistPosition, &buf[512], 512, CRATE_MSG_FLAGS_NOADRINC);
+		pM->BlkReadReg32(HpsClusterTop_HistPosition, &buf[0], 512, CRATE_MSG_FLAGS_NOADRINC);
+		pM->BlkReadReg32(HpsClusterBot_HistPosition, &buf[512], 512, CRATE_MSG_FLAGS_NOADRINC);
 
 		pHistPosition->Reset();
 
@@ -271,7 +279,7 @@ public:
 
 		pCanvas->GetCanvas()->cd(3);
 
-		pM->BlkReadReg32(&pRegs->HpsClusterTop.HistEnergy, buf, 1024, CRATE_MSG_FLAGS_NOADRINC);
+		pM->BlkReadReg32(HpsClusterTop_HistEnergy, buf, 1024, CRATE_MSG_FLAGS_NOADRINC);
 		for(int i = 0; i < 1024; i++)
 		{
 			if(buf[i] > 0x80000000)
@@ -280,7 +288,7 @@ public:
 				pHistEnergy[0]->SetBinContent(i, buf[i]);
 		}
 
-		pM->BlkReadReg32(&pRegs->HpsClusterBot.HistEnergy, buf, 1024, CRATE_MSG_FLAGS_NOADRINC);
+		pM->BlkReadReg32(HpsClusterBot_HistEnergy, buf, 1024, CRATE_MSG_FLAGS_NOADRINC);
 		for(int i = 0; i < 1024; i++)
 		{
 			if(buf[i] > 0x80000000)
@@ -308,7 +316,7 @@ public:
 
 		pCanvas->GetCanvas()->cd(4);
 
-		pM->BlkReadReg32(&pRegs->HpsClusterTop.HistNHits, buf, 16, CRATE_MSG_FLAGS_NOADRINC);
+		pM->BlkReadReg32(HpsClusterTop_HistNHits, buf, 16, CRATE_MSG_FLAGS_NOADRINC);
 		for(int i = 0; i < 16; i++)
 		{
 			if(buf[i] > 0x80000000)
@@ -317,7 +325,7 @@ public:
 				pHistNHits[0]->SetBinContent(i, buf[i]);
 		}
 
-		pM->BlkReadReg32(&pRegs->HpsClusterBot.HistNHits, buf, 16, CRATE_MSG_FLAGS_NOADRINC);
+		pM->BlkReadReg32(HpsClusterBot_HistNHits, buf, 16, CRATE_MSG_FLAGS_NOADRINC);
 		for(int i = 0; i < 16; i++)
 		{
 			if(buf[i] > 0x80000000)
@@ -341,77 +349,16 @@ public:
 
 	void UpdateHistogram(Bool_t bReadout = kTRUE)
 	{
-		pM->WriteReg32(&pRegs->HpsClusterTop.HistCtrl, 0);	// disable histograms
-		pM->WriteReg32(&pRegs->HpsClusterBot.HistCtrl, 0);	// disable histograms
+		pM->WriteReg32(HpsClusterTop_HistCtrl, 0);	// disable histograms
+		pM->WriteReg32(HpsClusterBot_HistCtrl, 0);	// disable histograms
 
 		UpdateLatencyHistogram();
 		UpdatePositionHistogram();
 		UpdateEnergyHistogram();
 		UpdateNHitsHistogram();
 
-		pM->WriteReg32(&pRegs->HpsClusterTop.HistCtrl, 0xF);	// enable histograms
-		pM->WriteReg32(&pRegs->HpsClusterBot.HistCtrl, 0xF);	// enable histograms
-/*
-		unsigned int buf[1024];
-
-		if(bReadout)
-			pM->WriteReg32(&pRegs->hist_ctrl, 0);	// disable histograms
-
-		for(int i = 0; i < 16; i++)
-		{
-			pHist[i]->ResetStats();
-
-			if(bReadout)
-			{
-				pM->BlkReadReg32(&pRegs->hist_data[i], buf, 1024, CRATE_MSG_FLAGS_NOADRINC);
-				if(pButtonNormalize->IsDown() == kTRUE)
-				{
-					double norm_bin, sum = 0;
-					for(int j = 0; j < 1024; j++)
-						sum += buf[j];
-
-					for(int j = 0; j < 1024; j++)
-					{
-						if(buf[j] == 0xFFFFFFFF)
-						{
-							printf("FADC250_TrgHist: normalization failure - overflowed bins\n");
-							break;
-						}
-						if(sum <= 0.0)
-						{
-							printf("FADC250_TrgHist: normalization failure - no time elapsed\n");
-							break;
-						}
-						norm_bin = (double)buf[j] * FADC250_CH_BINS_PER_SEC / sum;
-						pHist[i]->SetBinContent(j, norm_bin);
-					}
-					pHist[i]->GetYaxis()->SetTitle("Rate(Hz)");
-				}
-				else
-				{
-					for(int j = 0; j < 1024; j++)
-					{
-						if(buf[j] > 0x80000000)
-							pHist[i]->SetBinContent(j, 0x7FFFFFFF);
-						else
-							pHist[i]->SetBinContent(j, buf[j]);
-					}
-					pHist[i]->GetYaxis()->SetTitle("Counts");
-				}
-			}
-			else
-			{
-				for(int j = 0; j < 1024; j++)
-					pHist[i]->SetBinContent(j, 0);
-			}
-			pCanvas->GetCanvas()->cd(i+1);
-			pCanvas->GetCanvas()->Modified();
-			pCanvas->GetCanvas()->Update();
-		}
-
-		if(bReadout)
-			pM->WriteReg32(&pRegs->hist_ctrl, 1);	// enable histograms
-*/
+		pM->WriteReg32(HpsClusterTop_HistCtrl, 0xF);	// enable histograms
+		pM->WriteReg32(HpsClusterBot_HistCtrl, 0xF);	// enable histograms
 	}
 
 private:
@@ -423,8 +370,19 @@ private:
 		SDR_UPDATETIME		= 1100
 	};
 	
+	volatile unsigned int	*HpsClusterTop_HistCtrl;
+	volatile unsigned int	*HpsClusterTop_HistLatency;
+	volatile unsigned int	*HpsClusterTop_HistPosition;
+	volatile unsigned int	*HpsClusterTop_HistEnergy;
+	volatile unsigned int	*HpsClusterTop_HistNHits;
+	volatile unsigned int	*HpsClusterBot_HistCtrl;
+	volatile unsigned int	*HpsClusterBot_HistLatency;
+	volatile unsigned int	*HpsClusterBot_HistPosition;
+	volatile unsigned int	*HpsClusterBot_HistEnergy;
+	volatile unsigned int	*HpsClusterBot_HistNHits;
+
+	
 	ModuleFrame				*pM;
-	SSP_regs					*pRegs;
 
 	TTimer					*pTimerUpdate;
 

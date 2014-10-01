@@ -36,7 +36,7 @@ public:
 		tFrame = pGTPTabs->AddTab("PP14");		tFrame->AddFrame(new GTP_HPS_SerialScope(tFrame, this, 13), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pGTPTabs->AddTab("PP15");		tFrame->AddFrame(new GTP_HPS_SerialScope(tFrame, this, 14), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pGTPTabs->AddTab("PP16");		tFrame->AddFrame(new GTP_HPS_SerialScope(tFrame, this, 15), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-		
+
 		// serializer status page (ch up/down, lane up/down, latency, rxrdy, rxerror, crc status,...?)
 		// delay curve sweeps
 		strSlotIdentifier.Form("SWA");
