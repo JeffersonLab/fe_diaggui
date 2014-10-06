@@ -72,7 +72,7 @@ public:
 		pLegend->Draw();
 
 		pCanvas->GetCanvas()->cd(2);
-		pHistPosition = new TH2I("ClusterPosition", "ClusterPosition;X;Y", 46, -23.0, 23.0, 11, -5.0, 6.0);
+		pHistPosition = new TH2I("ClusterPosition", "ClusterPosition;X;Y", 46, -22.0, 24.0, 11, -5.0, 6.0);
 		pHistPosition->SetStats(0);
 		pHistPosition->GetXaxis()->CenterLabels();
 		pHistPosition->GetXaxis()->SetNdivisions(46, kFALSE);
@@ -131,16 +131,16 @@ public:
 
 		pTimerUpdate = new TTimer(this, 1000*pSliderUpdateTime->GetPosition(), kTRUE);
 
-		HpsClusterTop_HistCtrl		= (volatile unsigned int *)pM->BaseAddr + 0x0500;
-		HpsClusterTop_HistLatency	= (volatile unsigned int *)pM->BaseAddr + 0x0510;
-		HpsClusterTop_HistPosition	= (volatile unsigned int *)pM->BaseAddr + 0x0514;
-		HpsClusterTop_HistEnergy	= (volatile unsigned int *)pM->BaseAddr + 0x0518;
-		HpsClusterTop_HistNHits		= (volatile unsigned int *)pM->BaseAddr + 0x051C;
-		HpsClusterBot_HistCtrl		= (volatile unsigned int *)pM->BaseAddr + 0x0600;
-		HpsClusterBot_HistLatency	= (volatile unsigned int *)pM->BaseAddr + 0x0610;
-		HpsClusterBot_HistPosition	= (volatile unsigned int *)pM->BaseAddr + 0x0614;
-		HpsClusterBot_HistEnergy	= (volatile unsigned int *)pM->BaseAddr + 0x0618;
-		HpsClusterBot_HistNHits		= (volatile unsigned int *)pM->BaseAddr + 0x061C;
+		HpsClusterTop_HistCtrl		= (volatile unsigned int *)((int)pM->BaseAddr + 0x0500);
+		HpsClusterTop_HistLatency	= (volatile unsigned int *)((int)pM->BaseAddr + 0x0510);
+		HpsClusterTop_HistPosition	= (volatile unsigned int *)((int)pM->BaseAddr + 0x0514);
+		HpsClusterTop_HistEnergy	= (volatile unsigned int *)((int)pM->BaseAddr + 0x0518);
+		HpsClusterTop_HistNHits		= (volatile unsigned int *)((int)pM->BaseAddr + 0x051C);
+		HpsClusterBot_HistCtrl		= (volatile unsigned int *)((int)pM->BaseAddr + 0x0600);
+		HpsClusterBot_HistLatency	= (volatile unsigned int *)((int)pM->BaseAddr + 0x0610);
+		HpsClusterBot_HistPosition	= (volatile unsigned int *)((int)pM->BaseAddr + 0x0614);
+		HpsClusterBot_HistEnergy	= (volatile unsigned int *)((int)pM->BaseAddr + 0x0618);
+		HpsClusterBot_HistNHits		= (volatile unsigned int *)((int)pM->BaseAddr + 0x061C);
 		
 		inst++;
 	}
