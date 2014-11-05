@@ -28,6 +28,8 @@ CFLAGS			= -O2 -fno-exceptions -fPIC -I/usr/include\
 			-I./src/TID \
 			-I./src/V1495Pulser \
 			-I./src/VSCM \
+			-I./src/FADCScalers_HPS \
+			-I./src/RICH \
 			-L. -DJLAB \
 			`root-config --cflags`
 LINKLIBS		= -lrt \

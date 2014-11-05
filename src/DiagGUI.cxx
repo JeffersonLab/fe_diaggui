@@ -16,6 +16,8 @@
 #include "GTPModule.h"
 #include "GTP_HPSModule.h"
 #include "V1495PulserModule.h"
+#include "FADCScalers_HPSModule.h"
+#include "RICHModule.h"
 
 #define TIMER_CAPTURE_POLLRATE	100
 
@@ -314,6 +316,8 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, int count)
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new DCRBModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_DCRBSCALERS", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new DCRBScalersModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+			else if(!stricmp("MOD_TYPE_FADCSCALERS_HPS", paramB))
+				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new FADCScalers_HPSModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_DSC2", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new DSC2Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_VSCM", paramB))
@@ -328,6 +332,8 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, int count)
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new GTP_HPSModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_V1495_PULSER", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new V1495PulserModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+			else if(!stricmp("MOD_TYPE_RICH", paramB))
+				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new RICHModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else
 			{
 				printf("Error: Unknown module type: %s\n", paramB);
