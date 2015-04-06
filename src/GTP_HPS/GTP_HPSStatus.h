@@ -98,7 +98,7 @@ public:
 				0,0,15,13,11,9,7,5,3,1,0,0,2,4,6,8,10,12,14,16
 			};
 
-		for(i = 0; i < sizeof(slot_to_payload)/sizeof(slot_to_payload[0]); i++)
+		for(i = 0; i < (int)(sizeof(slot_to_payload)/sizeof(slot_to_payload[0])); i++)
 		{
 			int payload = slot_to_payload[i];
 			if(payload)

@@ -268,7 +268,7 @@ public:
 					if(h & (1<<k))
 					{
 						ch = idx*24+k;
-						int x = 16.0*(i%7)+(ch/6);
+						int x = 16*(i%7)+(ch/6);
 						int y = (ch % 6);
 						
 						if(y < 3)

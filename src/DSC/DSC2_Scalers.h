@@ -10,6 +10,8 @@ class DSC2_Scalers : public TGCompositeFrame
 public:
 	DSC2_Scalers(const TGWindow *p, ModuleFrame *pModule) : TGCompositeFrame(p, 400, 400)
 	{
+		static int inst = 0;
+
 		SetLayoutManager(new TGVerticalLayout(this));
 
 		pM = pModule;
@@ -40,7 +42,7 @@ public:
 
 		char buf[100];
 		
-		sprintf(buf, "TDC VME Gated Scalers: 0x%08X@%s", pM->BaseAddr, pM->GetName());
+		sprintf(buf, "DSC2 TDC VME Gated Scalers (inst%d)", inst);
 		pTDCVMEScalerHist = new TH1I(buf, NULL, 16, 1, 17);
 		pTDCVMEScalerHist->SetStats(kFALSE);
 		pTDCVMEScalerHist->SetNdivisions(16);
@@ -48,7 +50,7 @@ public:
 		pTDCVMEScalerHist->SetBarWidth(0.4);
 		pTDCVMEScalerHist->SetBarOffset(0.05);
 
-		sprintf(buf, "TRG VME Gated Scalers: 0x%08X@%s", pM->BaseAddr, pM->GetName());
+		sprintf(buf, "DSC2 TRG VME Gated Scalers (inst%d)", inst);
 		pTRGVMEScalerHist = new TH1I(buf, NULL, 16, 1, 17);
 		pTRGVMEScalerHist->SetStats(kFALSE);
 		pTRGVMEScalerHist->SetNdivisions(16);
@@ -56,7 +58,7 @@ public:
 		pTRGVMEScalerHist->SetBarWidth(0.4);
 		pTRGVMEScalerHist->SetBarOffset(0.55);
 
-		sprintf(buf, "TDC External Gated Scalers: 0x%08X@%s", pM->BaseAddr, pM->GetName());
+		sprintf(buf, "DSC2 TDC External Gated Scalers (inst%d)", inst);
 		pTDCEXTScalerHist = new TH1I(buf, NULL, 16, 1, 17);
 		pTDCEXTScalerHist->SetStats(kFALSE);
 		pTDCEXTScalerHist->SetNdivisions(16);
@@ -64,7 +66,7 @@ public:
 		pTDCEXTScalerHist->SetBarWidth(0.4);
 		pTDCEXTScalerHist->SetBarOffset(0.05);
 		
-		sprintf(buf, "TRG External Gated Scalers: 0x%08X@%s", pM->BaseAddr, pM->GetName());
+		sprintf(buf, "DSC2 TRG External Gated Scalers (inst%d)", inst);
 		pTRGEXTScalerHist = new TH1I(buf, NULL, 16, 1, 17);
 		pTRGEXTScalerHist->SetStats(kFALSE);
 		pTRGEXTScalerHist->SetNdivisions(16);
@@ -83,6 +85,8 @@ public:
 		UpdateEXTGateHistograms();
 
 		pTimerUpdate = new TTimer(this, pNumEntryScalerInterval->GetIntNumber() * 1000);
+
+		inst++;
 	}
 
 private:

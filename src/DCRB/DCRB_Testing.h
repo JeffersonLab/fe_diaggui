@@ -1,509 +1,1222 @@
 #ifndef DCRB_Testing_H
 #define DCRB_Testing_H
 
-#include <math.h>
+#include <stdlib.h>
 #include "RootHeader.h"
 #include "ModuleFrame.h"
 #include "DCRB.h"
 
-#define DCRB_BASE_ADDR_A32			0x08000000
+#define VMECLK_FREQ							50000000
+#define DCRB_SYSCLK_FREQ					125000000
 
-#define READOUT_BUF_SIZE			2*1024*1024
+#define DCRB_TESTSTATE_MSG					1
 
-class DCRB_Testing : public TGCompositeFrame
+#define BTN_DCRB_TESTING_START			100
+#define BTN_DCRB_TESTING_CONTINUE		101
+#define BTN_DCRB_TESTING_STOP				102
+#define BTN_DCRB_ENTERINPUT				104
+
+// Testing thresholds
+#define DCRB_TEST_BOARDID					0x44438242
+
+#define DCRB_TEST_BOARDPOS					4
+
+#define DCRB_FE_PULSER_COUNT				1000000
+#define DCRB_FE_PULSER_FREQ				1000000
+#define DCRB_FE_PULSER_FREQ_MIN			DCRB_FE_PULSER_COUNT
+#define DCRB_FE_PULSER_FREQ_MAX			DCRB_FE_PULSER_COUNT
+
+#define DCRB_TEST_TRIG2_MIN				(1000*0.9)
+#define DCRB_TEST_TRIG2_MAX				(1000*1.1)
+
+#define DCRB_TEST_LOCALOSC50_MIN			(50000000*0.9)
+#define DCRB_TEST_LOCALOSC50_MAX			(50000000*1.1)
+
+#define DCRB_TEST_LOCAL125OSC_MIN		(125000000*0.9)
+#define DCRB_TEST_LOCAL125OSC_MAX		(125000000*1.1)
+
+#define DCRB_TEST_P0125OSC_MIN			(250000000*0.9)
+#define DCRB_TEST_P0125OSC_MAX			(250000000*1.1)
+
+#define DCRB_TEST_P0SWBTRIG2_MIN			(1000*0.9)
+#define DCRB_TEST_P0SWBTRIG2_MAX			(1000*1.1)
+
+#define DCRB_PULSER_HIGH_MIN				0.5
+#define DCRB_PULSER_HIGH_MAX				0.7
+
+#define DCRB_PULSER_LOW_MIN				0.3
+#define DCRB_PULSER_LOW_MAX				0.5
+
+#define DCRB_TEST_INPUTCURRENT5V_MIN	2.0
+#define DCRB_TEST_INPUTCURRENT5V_MAX	5.0
+
+#define DCRB_TEST_INPUTCURRENT12VN_MIN	0.35
+#define DCRB_TEST_INPUTCURRENT12VN_MAX	0.65
+
+#define DCRB_TEST_INPUTCURRENT12VP_MIN	0.35
+#define DCRB_TEST_INPUTCURRENT12VP_MAX	0.65
+
+// Supported testing states
+enum DCRBTestingStates
+{
+	EDCRBInitialize,
+	EDCRBBoardId,
+	EDCRBBoardPos,
+	EDCRBVmeDataBits,
+	EDCRBCheckSpiFlash,
+	EDCRBClockLocal50,
+	EDCRBClockP0,
+	EDCRBClockLocal125,
+	EDCRBCheckP0SwBTrig2,
+	EDCRBCheckP0SwBSync,
+	EDCRBCheckP0SwBTrig,
+	EDCRBCheckP0SwBToken,
+	EDCRBCheckP0SwAGpio0_SwAGpio1,
+	EDCRBCheckP0SwBGpio0_SwAGpio1,
+	EDCRBCheckSwASerial,
+	EDCRBCheckSram,
+	EDCRBFEPulser_AboveThr,
+	EDCRBDCPulser_AboveThr,
+	EDCRBStoreSerialNumber,
+	EDCRBInputCurrent5V,
+	EDCRBInputCurrent12VN,
+	EDCRBInputCurrent12VP,
+	EDCRBSaveTestResults,
+	EDCRBComplete
+};
+
+// Testing state sequence
+int DCRBTestSequence[] = {
+	EDCRBInitialize,
+	EDCRBCheckSpiFlash,
+	EDCRBBoardId,
+	EDCRBBoardPos,
+	EDCRBVmeDataBits,
+	EDCRBClockLocal50,
+	EDCRBClockLocal125,
+	EDCRBFEPulser_AboveThr,
+	EDCRBDCPulser_AboveThr,
+	EDCRBCheckSram,
+	EDCRBClockP0,
+	EDCRBCheckSwASerial,
+	EDCRBCheckP0SwBTrig2,
+	EDCRBCheckP0SwBSync,
+	EDCRBCheckP0SwBTrig,
+	EDCRBCheckP0SwBToken,
+	EDCRBCheckP0SwAGpio0_SwAGpio1,
+	EDCRBCheckP0SwBGpio0_SwAGpio1,
+	EDCRBInputCurrent5V,
+	EDCRBInputCurrent12VN,
+	EDCRBInputCurrent12VP,
+	EDCRBStoreSerialNumber,
+	EDCRBSaveTestResults,
+	EDCRBComplete
+};
+
+class DCRB_Testing	: public TGCompositeFrame
 {
 public:
 	DCRB_Testing(const TGWindow *p, ModuleFrame *pModule) : TGCompositeFrame(p, 400, 400)
 	{
-		TGCompositeFrame *tF1, *tF2;
-		int i;
-
 		SetLayoutManager(new TGVerticalLayout(this));
+
 		pM = pModule;
 		pRegs = (DCRB_regs *)pM->BaseAddr;
-		
-		AddFrame(tF1 = new TGHorizontalFrame(this), new TGLayoutHints(kLHintsExpandX));
-			tF1->AddFrame(pTextViewTesting = new TGTextView(tF1), new TGLayoutHints(kLHintsExpandX));
-				pTextViewTesting->SetHeight(50);
-			tF1->AddFrame(pButtonStart = new TGTextButton(tF1, "Start", BTN_STARTTEST), new TGLayoutHints(kLHintsNormal));
-				pButtonStart->SetWidth(120);
+
+		TGCompositeFrame *pTF1;
+
+		AddFrame(pTF1 = new TGHorizontalFrame(this), new TGLayoutHints(kLHintsExpandX));
+			pTF1->AddFrame(pButtonStart = new TGTextButton(pTF1, "Start", BTN_DCRB_TESTING_START), new TGLayoutHints(kLHintsCenterX));
+				pButtonStart->SetWidth(200);
 				pButtonStart->Associate(this);
-			tF1->AddFrame(pButtonStop = new TGTextButton(tF1, "Stop", BTN_STOPTEST), new TGLayoutHints(kLHintsNormal));
-				pButtonStop->SetWidth(120);
-				pButtonStop->Associate(this);
-				pButtonStop->SetEnabled(kFALSE);
-			tF1->AddFrame(pButtonContinue = new TGTextButton(tF1, "Continue", BTN_CONTINUETEST), new TGLayoutHints(kLHintsNormal));
-				pButtonContinue->SetWidth(120);
+
+			pTF1->AddFrame(pButtonContinue = new TGTextButton(pTF1, "Continue", BTN_DCRB_TESTING_CONTINUE), new TGLayoutHints(kLHintsCenterX));
 				pButtonContinue->Associate(this);
 				pButtonContinue->SetEnabled(kFALSE);
 
-		AddFrame(tF1 = new TGHorizontalFrame(this), new TGLayoutHints(kLHintsExpandX));
-			tF1->AddFrame(new TGLabel(tF1, "Test Results Filename:"), new TGLayoutHints(kLHintsLeft, 2, 0, 2));
-			tF1->AddFrame(pTextEntryResultsFile = new TGTextEntry(tF1, "STB_TestResult", EDT_RESULTSFILENAME), new TGLayoutHints(kLHintsRight));
-				pTextEntryResultsFile->SetWidth(200);
+			pTF1->AddFrame(pButtonStop = new TGTextButton(pTF1, "Stop", BTN_DCRB_TESTING_STOP), new TGLayoutHints(kLHintsCenterX));
+				pButtonStop->Associate(this);
+				pButtonStop->SetEnabled(kFALSE);
 
-		AddFrame(tF1 = new TGHorizontalFrame(this), new TGLayoutHints(kLHintsExpandX));
-			tF1->AddFrame(new TGLabel(tF1, "Test Pulse Count:"), new TGLayoutHints(kLHintsLeft, 2, 0, 2));
-				tF1->AddFrame(pNumEntryTestPulseCount = new TGNumberEntry(tF1, 1000, 5, -1, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0.0, 99999.0), new TGLayoutHints(kLHintsRight));
-					pNumEntryTestPulseCount->SetWidth(85);
+		AddFrame(pTF1 = new TGHorizontalFrame(this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+			pTF1->AddFrame(pTextViewDebug = new TGTextView(pTF1), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
-		AddFrame(tF1 = new TGHorizontalFrame(this), new TGLayoutHints(kLHintsExpandX));
-			tF1->AddFrame(new TGLabel(tF1, "TDC Checking(trg->pulse timing in ns)):"), new TGLayoutHints(kLHintsLeft, 2, 0, 2));
-			tF1->AddFrame(tF2 = new TGHorizontalFrame(tF1), new TGLayoutHints(kLHintsRight));
-				tF2->AddFrame(new TGLabel(tF2, "Min:"), new TGLayoutHints(kLHintsLeft, 2, 0, 2));
-				tF2->AddFrame(pNumEntryTDCTmin = new TGNumberEntry(tF2, -1000, 4, -1, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, -32000, 0), new TGLayoutHints(kLHintsRight));
-					pNumEntryTDCTmin->SetWidth(85);
-			tF1->AddFrame(tF2 = new TGHorizontalFrame(tF1), new TGLayoutHints(kLHintsRight));
-				tF2->AddFrame(new TGLabel(tF2, "Max:"), new TGLayoutHints(kLHintsLeft, 2, 0, 2));
-				tF2->AddFrame(pNumEntryTDCTmax = new TGNumberEntry(tF2, -1000, 4, -1, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, -32000, 0), new TGLayoutHints(kLHintsRight));
-					pNumEntryTDCTmax->SetWidth(85);
-			tF1->AddFrame(pButtonTDCEnable = new TGTextButton(tF1, "Enable"), new TGLayoutHints(kLHintsRight, 2, 0, 2));
-				pButtonTDCEnable->AllowStayDown(kTRUE);
+		AddFrame(pTF1 = new TGHorizontalFrame(this), new TGLayoutHints(kLHintsExpandX));
+			pTF1->AddFrame(new TGLabel(pTF1, "User Input: "), new TGLayoutHints(kLHintsLeft | kLHintsCenterY));
+			pTF1->AddFrame(pTextEntryDebug = new TGTextEntry(pTF1), new TGLayoutHints(kLHintsExpandX));
+			pTF1->AddFrame(pButtonUserInput = new TGTextButton(pTF1, "Enter Input", BTN_DCRB_ENTERINPUT));
+				pButtonUserInput->Associate(this);
+				pButtonUserInput->SetEnabled(kFALSE);
+	}
 
-		AddFrame(tF1 = new TGHorizontalFrame(this), new TGLayoutHints(kLHintsExpandX));
-			tF1->AddFrame(new TGLabel(tF1, "Scaler Checking(hit counts):"), new TGLayoutHints(kLHintsLeft, 2, 0, 2));
-			tF1->AddFrame(tF2 = new TGHorizontalFrame(tF1), new TGLayoutHints(kLHintsRight));
-				tF2->AddFrame(new TGLabel(tF2, "Min:"), new TGLayoutHints(kLHintsLeft, 2, 0, 2));
-				tF2->AddFrame(pNumEntryScalermin = new TGNumberEntry(tF2, 1000, 5, -1, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0, 99999.0), new TGLayoutHints(kLHintsRight));
-					pNumEntryScalermin->SetWidth(85);
-			tF1->AddFrame(tF2 = new TGHorizontalFrame(tF1), new TGLayoutHints(kLHintsRight));
-				tF2->AddFrame(new TGLabel(tF2, "Max:"), new TGLayoutHints(kLHintsLeft, 2, 0, 2));
-				tF2->AddFrame(pNumEntryScalermax = new TGNumberEntry(tF2, 1000, 5, -1, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0, 99999.0), new TGLayoutHints(kLHintsRight));
-					pNumEntryScalermax->SetWidth(85);
-			tF1->AddFrame(pButtonScalerEnable = new TGTextButton(tF1, "Enable"), new TGLayoutHints(kLHintsRight, 2, 0, 2));
-				pButtonScalerEnable->AllowStayDown(kTRUE);
-				pButtonScalerEnable->SetDown(kTRUE);
+	void SetNextTestingState(int nextState)
+	{
+		nextTestingState = nextState;
+		bPromptInputReady = kFALSE;
+		bPromptContinueReady = kFALSE;
 
-		AddFrame(tF1 = new TGHorizontalFrame(this), new TGLayoutHints(kLHintsExpandX));
-			tF1->AddFrame(new TGLabel(tF1, "Discriminator Threshold(mV):"), new TGLayoutHints(kLHintsLeft, 2, 0, 2));
-				tF1->AddFrame(pNumEntryThreshold = new TGNumberEntry(tF1, 100, 4, -1, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0.0, 175.0), new TGLayoutHints(kLHintsRight));
-					pNumEntryThreshold->SetWidth(85);
+		SendMessage(this, MK_MSG(kC_USER, (EWidgetMessageTypes)DCRB_TESTSTATE_MSG), nextTestingState, 0);
+	}
 
-		AddFrame(tF1 = new TGHorizontalFrame(this), new TGLayoutHints(kLHintsExpandX));
-			tF1->AddFrame(new TGLabel(tF1, "Calibration Pulser:"), new TGLayoutHints(kLHintsLeft, 2, 0, 2));
-			tF1->AddFrame(pButtonCalSequential = new TGTextButton(tF1, "Sequential", BTN_SEQUENTIAL), new TGLayoutHints(kLHintsRight, 2, 0, 2));
-				pButtonCalSequential->AllowStayDown(kTRUE);
-				pButtonCalSequential->SetDown(kFALSE);
-				pButtonCalSequential->Associate(this);
-			tF1->AddFrame(pButtonCalSimultaneous = new TGTextButton(tF1, "Simultaneous", BTN_SIMULTANEOUS), new TGLayoutHints(kLHintsRight, 2, 0, 2));
-				pButtonCalSimultaneous->AllowStayDown(kTRUE);
-				pButtonCalSimultaneous->SetDown(kTRUE);
-				pButtonCalSimultaneous->Associate(this);
+	void TestingPromptContinue(const char *prompt)
+	{
+		AddTextLine(prompt);
+		pButtonContinue->SetEnabled(kTRUE);
+	}
 
-		AddFrame(pCanvasScalers = new TRootEmbeddedCanvas("DCRB Scalers", this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-			pCanvasScalers->GetCanvas()->SetBorderMode(0);
-				pHistScalers = new TH1I("DCRB Scalers", "DCRB Scalers;Channel;Hits", 96, 0, 95);
-				pHistScalers->SetFillColor(4);
-/*
-		AddFrame(pCanvasTDCMin = new TRootEmbeddedCanvas("DCRB TDC Min", this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-			pCanvasTDCMin->GetCanvas()->SetBorderMode(0);
-				pHistTDCMin = new TH1I("DCRB TDC Min", "DCRB TDC Min;Channel;Tmin(ns)", 96, 0, 95);
-				pHistTDCMin->SetFillColor(4);
+	void TestingPromptInput(const char *prompt)
+	{
+		AddTextLine(prompt);
+		pButtonUserInput->SetEnabled(kTRUE);
+	}
 
-		AddFrame(pCanvasTDCMax = new TRootEmbeddedCanvas("DCRB TDC Max", this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-			pCanvasTDCMax->GetCanvas()->SetBorderMode(0);
-				pHistTDCMax = new TH1I("DCRB TDC Max", "DCRB TDC Max;Channel;Tmax(ns)", 96, 0, 95);
-				pHistTDCMax->SetFillColor(4);
+	void Testing_MinMaxRangeInt32(const char *measurement, const char *units, int min, int max, int val, Bool_t bInput)
+	{
+		TString str = strPromptInput;
 
-		AddFrame(pCanvasTDCRMS = new TRootEmbeddedCanvas("DCRB TDC RMS", this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-			pCanvasTDCRMS->GetCanvas()->SetBorderMode(0);
-				pHistTDCRMS = new TH1I("DCRB TDC RMS", "DCRB TDC RMS;Channel;Trms(ns)", 96, 0, 95);
-				pHistTDCRMS->SetFillColor(4);
+		AddTextLine(str.Format("********** %s **********", measurement));
 
-		AddFrame(pCanvasTDCHits = new TRootEmbeddedCanvas("DCRB TDC Hits", this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-			pCanvasTDCHits->GetCanvas()->SetBorderMode(0);
-				pHistTDCHits = new TH1I("DCRB TDC Hits", "DCRB TDC Hits;Channel;Hits", 96, 0, 95);
-				pHistTDCHits->SetFillColor(4);
-*/
-		for(i = 0; i < 96; i++)
+		if(bInput)
 		{
-			pHistScalers->SetBinContent(i, 0);
-/*			pHistTDCMin->SetBinContent(i, 0);
-			pHistTDCMax->SetBinContent(i, 0);
-			pHistTDCRMS->SetBinContent(i, 0);
-			pHistTDCHits->SetBinContent(i, 0);*/
+			if(!bPromptInputReady || !str.IsDec())
+			{
+				TestingPromptInput(str.Format("Enter DCRB %s(in %s): ", measurement, units));
+				return;
+			}
+			val = str.Atoi();
 		}
-		pCanvasScalers->GetCanvas()->cd();
-		pHistScalers->Draw("bar0");
-/*		pCanvasTDCMin->GetCanvas()->cd();
-		pHistTDCMin->Draw("bar0");
-		pCanvasTDCMax->GetCanvas()->cd();
-		pHistTDCMax->Draw("bar0");
-		pCanvasTDCRMS->GetCanvas()->cd();
-		pHistTDCRMS->Draw("bar0");
-		pCanvasTDCHits->GetCanvas()->cd();
-		pHistTDCHits->Draw("bar0");
-*/	}
+
+		///////////////////////////////////
+		// Checking min range
+		///////////////////////////////////
+		str.Form("   min(%d) >= %d...", min, val);
+		if(val >= min)
+		{
+			str += "PASSED";
+			AddTextLine(str);
+		}
+		else
+		{
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+
+		///////////////////////////////////
+		// Checking max range
+		///////////////////////////////////
+		str.Form("   max(%d) <= %d...", max, val);
+		if(val <= max)
+		{
+			str += "PASSED";
+			AddTextLine(str);
+		}
+		else
+		{
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+	}
+
+	double Testing_MinMaxRangeDouble(const char *measurement, const char *units, double min, double max, double val, Bool_t bInput)
+	{
+		TString str = strPromptInput;
+		
+		AddTextLine(str.Format("********** %s **********", measurement));
+
+		if(bInput)
+		{
+			if(!bPromptInputReady || !str.IsFloat())
+			{
+				TestingPromptInput(str.Format("Enter DCRB %s(in %s): ", measurement, units));
+				return 0.0;
+			}
+			val = str.Atof();
+		}
+
+		///////////////////////////////////
+		// Checking min range
+		///////////////////////////////////
+		str.Form("   min(%f) <= %f...", min, val);
+		if(val >= min)
+		{
+			str += "PASSED";
+			AddTextLine(str);
+		}
+		else
+		{
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return 0.0;
+		}
+
+		///////////////////////////////////
+		// Checking max range
+		///////////////////////////////////
+		str.Form("   max(%f) >= %f...", max, val);
+		if(val <= max)
+		{
+			str += "PASSED";
+			AddTextLine(str);
+		}
+		else
+		{
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return 0.0;
+		}
+
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+
+		return val;
+	}
+
+	void Testing_Initialize()
+	{
+		TDatime t;
+		TString str;
+
+		strSerialNumber = "none";
+
+		AddTextLine("DCRB Testing Initialzed...");
+		AddTextLine(str.Format("Test Data/Time: %s", t.AsString()));
+
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+	}
+
+	void Testing_CheckBoardId()
+	{
+		TString str;
+
+		///////////////////////////////////
+		// Checking BoardId
+		///////////////////////////////////
+		AddTextLine("********** CheckBoardId **********");
+		unsigned int BoardId = pM->ReadReg32(&pRegs->Cfg.BoardId);
+		str.Form("   BoardId(0x%08X) == 0x%08X...", DCRB_TEST_BOARDID, BoardId);
+		if(BoardId == DCRB_TEST_BOARDID)
+		{
+			str += "PASSED";
+			AddTextLine(str);
+		}
+		else
+		{
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+
+		str.Form("   Firmware revision = 0x%08X", pM->ReadReg32(&pRegs->Cfg.FirmwareRev) & 0xFFFF);
+		AddTextLine(str);
+
+		pM->WriteReg32(&pRegs->Clk.Ctrl, 0x80000000);
+		pM->WriteReg32(&pRegs->Clk.Ctrl, 0x00000000);
+		pM->Delay(10);
+		pM->WriteReg32(&pRegs->Cfg.Reset, 1);
+		pM->Delay(10);
+		pM->WriteReg32(&pRegs->Cfg.Reset, 0);
+		pM->Delay(10);
+		
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+	}
+
+	void Testing_CheckBoardPos()
+	{
+		TString str;
+
+		///////////////////////////////////
+		// Checking BoardPos
+		///////////////////////////////////
+		AddTextLine("********** CheckBoardPos **********");
+		unsigned int BoardPos = (pM->ReadReg32(&pRegs->Cfg.FirmwareRev)>>24) & 0x1F;
+		str.Form("   BoardPosition(%d) == %d...", DCRB_TEST_BOARDPOS, BoardPos);
+		if(BoardPos == DCRB_TEST_BOARDPOS)
+		{
+			str += "PASSED";
+			AddTextLine(str);
+		}
+		else
+		{
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+	}
+
+	void Testing_CheckVmeDataBits()
+	{
+		TString str;
+
+		///////////////////////////////////
+		// Checking Vme Data Bits
+		///////////////////////////////////
+		AddTextLine("********** CheckVmeDataBits **********");
+
+		unsigned int result;
+		for(int i = 0; i < 32; i++)
+		{
+			pM->WriteReg32(&pRegs->EB.Adr32M, (1<<i));
+			pM->WriteReg32(&pRegs->EB.ReadoutCfg, 0);
+			result = pM->ReadReg32(&pRegs->EB.Adr32M);
+
+			str.Form("   Wrote 0x%08X, Read 0x%08X...", 1<<i, result);
+			if((unsigned int)(1<<i) != result)
+			{
+				str += "FAILED";
+				AddTextLine(str);
+				TestingStop();
+				return;
+			}
+			str += "PASSED";
+			AddTextLine(str);
+		}
+
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+	}
+
+	void Testing_CheckLocal50MHzOsc()
+	{
+		///////////////////////////////////
+		// Checking 50MHz Oscillator
+		///////////////////////////////////
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000000);	// clear & enable
+		gSystem->Sleep(1000);
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		unsigned int ref = pM->ReadReg32(&pRegs->Sd.Scalers[DCRB_SCALER_SYSCLK50]);
+
+		Testing_MinMaxRangeInt32("CheckLocal50MHzOsc", "", (int)DCRB_TEST_LOCALOSC50_MIN, (int)DCRB_TEST_LOCALOSC50_MAX, (int)ref, kFALSE);
+	}
+
+	void Testing_CheckP0SwB125MHzOsc()
+	{
+		///////////////////////////////////
+		// Checking P0 SwB 125 Oscillator
+		///////////////////////////////////
+		AddTextLine("********** CheckP0SwB125MHzOsc **********");
+		pM->WriteReg32(&pRegs->Clk.Ctrl, 0xC0000000);
+		pM->WriteReg32(&pRegs->Clk.Ctrl, 0x40000000);
+
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000000);	// clear & enable
+		gSystem->Sleep(1000);
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		double ref = 0.0;
+		double scale = (double)pM->ReadReg32(&pRegs->Sd.Scalers[DCRB_SCALER_SYSCLK50]) / VMECLK_FREQ;
+		if(scale != 0.0)
+			ref = (double)pM->ReadReg32(&pRegs->Sd.Scalers[DCRB_SCALER_GCLK125]) / scale;
+
+		Testing_MinMaxRangeInt32("CheckP0SwB125MHzOsc", "", (int)DCRB_TEST_LOCAL125OSC_MIN, (int)DCRB_TEST_LOCAL125OSC_MAX, (int)ref, kFALSE);
+	}
+	
+	void Testing_CheckLocal125MHzOsc()
+	{
+		///////////////////////////////////
+		// Checking Local 125 Oscillator
+		///////////////////////////////////
+		AddTextLine("********** CheckLocal125MHzOsc **********");
+		pM->WriteReg32(&pRegs->Clk.Ctrl, 0x80000000);
+		pM->WriteReg32(&pRegs->Clk.Ctrl, 0x00000000);
+
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000000);	// clear & enable
+		gSystem->Sleep(1000);
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		double ref = 0.0;
+		double scale = (double)pM->ReadReg32(&pRegs->Sd.Scalers[DCRB_SCALER_SYSCLK50]) / VMECLK_FREQ;
+		if(scale != 0.0)
+			ref = (double)pM->ReadReg32(&pRegs->Sd.Scalers[DCRB_SCALER_GCLK125]) / scale;
+
+		Testing_MinMaxRangeInt32("CheckLocal125MHzOsc", "", (int)DCRB_TEST_LOCAL125OSC_MIN, (int)DCRB_TEST_LOCAL125OSC_MAX, (int)ref, kFALSE);
+	}
+
+	void Testing_CheckP0SwBTrig2()
+	{
+		///////////////////////////////////
+		// Checking P0 Switch B Trig2
+		///////////////////////////////////
+		AddTextLine("********** CheckP0SwBTrig2 **********");
+		AddTextLine("   Verify: Connect P0 Trig2 1kHz LVDS clock to SWB FP.");
+
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000000);	// clear & enable
+		gSystem->Sleep(1000);
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		double ref = 0.0;
+		double scale = (double)pM->ReadReg32(&pRegs->Sd.Scalers[DCRB_SCALER_SYSCLK50]) / VMECLK_FREQ;
+		if(scale != 0.0)
+			ref = (double)pM->ReadReg32(&pRegs->Sd.Scalers[DCRB_SCALER_TRIG2]) / scale;
+
+		Testing_MinMaxRangeInt32("CheckP0SwBTrig2", "", (int)DCRB_TEST_TRIG2_MIN, (int)DCRB_TEST_TRIG2_MAX, (int)ref, kFALSE);
+	}
+
+	void Testing_CheckP0SwBSdlink_Sync()
+	{
+		unsigned int result;
+		TString str;
+
+		///////////////////////////////////
+		// Checking P0 Switch B Sdlink->Sync Loopback
+		///////////////////////////////////
+		AddTextLine("********** CheckP0SwBSdlink_Sync **********");
+		pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_SDLINK], DCRB_SD_MUX_PULSER);
+		pM->WriteReg32(&pRegs->Sd.PulserPeriod, 10);
+		pM->WriteReg32(&pRegs->Sd.PulserLowCycles, 5);
+		pM->WriteReg32(&pRegs->Sd.PulserNPulses, DCRB_FE_PULSER_COUNT);
+		pM->Delay(1000);	// allow to finish so pulser can be reset
+		
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000000);	// clear & enable
+		pM->WriteReg32(&pRegs->Sd.PulserStart, 0);
+		pM->Delay(1000);
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		
+		int ref = pM->ReadReg32(&pRegs->Sd.Scalers[DCRB_SCALER_SYNC]);
+		
+		Testing_MinMaxRangeInt32("CheckP0SwBSdlink_Sync", "", DCRB_FE_PULSER_COUNT, DCRB_FE_PULSER_COUNT, ref, kFALSE);
+	}
+
+	void Testing_CheckP0SwBTrigOut_Trig1()
+	{
+		unsigned int result;
+		TString str;
+
+		///////////////////////////////////
+		// Checking P0 Switch B TrigOut->Trig1 Loopback
+		///////////////////////////////////
+		AddTextLine("********** CheckP0SwBTrigOut_Trig1 **********");
+
+		pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_TRIGOUT], DCRB_SD_MUX_PULSER);
+		pM->WriteReg32(&pRegs->Sd.PulserPeriod, 10);
+		pM->WriteReg32(&pRegs->Sd.PulserLowCycles, 5);
+		pM->WriteReg32(&pRegs->Sd.PulserNPulses, DCRB_FE_PULSER_COUNT);
+		pM->Delay(1000);	// allow to finish so pulser can be reset
+		
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000000);	// clear & enable
+		pM->WriteReg32(&pRegs->Sd.PulserStart, 0);
+		pM->Delay(1000);
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		
+		int ref = pM->ReadReg32(&pRegs->Sd.Scalers[DCRB_SCALER_TRIG1]);
+
+		Testing_MinMaxRangeInt32("CheckP0SwBTrigOut_Trig1", "", DCRB_FE_PULSER_COUNT, DCRB_FE_PULSER_COUNT, ref, kFALSE);
+	}
+
+	void Testing_CheckP0SwBTokenOut_TokenIn()
+	{
+		unsigned int result;
+		TString str;
+
+		///////////////////////////////////
+		// Checking P0 Switch B TokenOut->TokenIn Loopback
+		///////////////////////////////////
+		AddTextLine("********** CheckP0SwBTokenOut_TokenIn **********");
+
+		pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_TOKENOUT], DCRB_SD_MUX_PULSER);
+		pM->WriteReg32(&pRegs->Sd.PulserPeriod, 10);
+		pM->WriteReg32(&pRegs->Sd.PulserLowCycles, 5);
+		pM->WriteReg32(&pRegs->Sd.PulserNPulses, DCRB_FE_PULSER_COUNT);
+		pM->Delay(1000);	// allow to finish so pulser can be reset
+		
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000000);	// clear & enable
+		pM->WriteReg32(&pRegs->Sd.PulserStart, 0);
+		pM->Delay(1000);
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		
+		int ref = pM->ReadReg32(&pRegs->Sd.Scalers[DCRB_SCALER_TOKENIN]);
+
+		Testing_MinMaxRangeInt32("CheckP0SwBTokenOut_TokenIn", "", DCRB_FE_PULSER_COUNT, DCRB_FE_PULSER_COUNT, ref, kFALSE);
+	}
+	
+	void Testing_CheckP0SwAGpio0_SwAGpio1()
+	{
+		unsigned int result;
+		TString str;
+
+		///////////////////////////////////
+		// Checking P0 Switch A Gpio0->Gpio0
+		///////////////////////////////////
+		AddTextLine("********** CheckP0SwAGpio0_Gpio1 **********");
+
+		pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_SWA_GPIO0], DCRB_SD_MUX_PULSER);
+		pM->WriteReg32(&pRegs->Sd.PulserPeriod, 10);
+		pM->WriteReg32(&pRegs->Sd.PulserLowCycles, 5);
+		pM->WriteReg32(&pRegs->Sd.PulserNPulses, DCRB_FE_PULSER_COUNT);
+		pM->Delay(1000);	// allow to finish so pulser can be reset
+		
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000000);	// clear & enable
+		pM->WriteReg32(&pRegs->Sd.PulserStart, 0);
+		pM->Delay(1000);
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		
+		int ref = pM->ReadReg32(&pRegs->Sd.Scalers[DCRB_SCALER_SWA_GPIO1]);
+
+		Testing_MinMaxRangeInt32("CheckP0SwAGpio0_Gpio1", "", DCRB_FE_PULSER_COUNT, DCRB_FE_PULSER_COUNT, ref, kFALSE);
+	}
+
+	void Testing_CheckP0SwBGpio0_SwAGpio1()
+	{
+		unsigned int result;
+		TString str;
+
+		///////////////////////////////////
+		// Checking P0 Switch B Gpio0->Gpio0
+		///////////////////////////////////
+		AddTextLine("********** CheckP0SwBGpio0_Gpio1 **********");
+
+		pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_SWB_GPIO0], DCRB_SD_MUX_PULSER);
+		pM->WriteReg32(&pRegs->Sd.PulserPeriod, 10);
+		pM->WriteReg32(&pRegs->Sd.PulserLowCycles, 5);
+		pM->WriteReg32(&pRegs->Sd.PulserNPulses, DCRB_FE_PULSER_COUNT);
+		pM->Delay(1000);	// allow to finish so pulser can be reset
+		
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000000);	// clear & enable
+		pM->WriteReg32(&pRegs->Sd.PulserStart, 0);
+		pM->Delay(1000);
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		
+		int ref = pM->ReadReg32(&pRegs->Sd.Scalers[DCRB_SCALER_SWB_GPIO1]);
+
+		Testing_MinMaxRangeInt32("CheckP0SwBGpio0_Gpio1", "", DCRB_FE_PULSER_COUNT, DCRB_FE_PULSER_COUNT, ref, kFALSE);
+	}
+
+	void Testing_CheckSwASerial()
+	{
+		unsigned int status0, status1;
+		TString str;
+
+		///////////////////////////////////
+		// Checking P0 Switch A Serial loopback
+		///////////////////////////////////
+		AddTextLine("********** CheckSwASerial **********");
+
+		pM->WriteReg32(&pRegs->Ser[0].Ctrl, 0x401);
+		pM->WriteReg32(&pRegs->Ser[1].Ctrl, 0x401);
+		pM->WriteReg32(&pRegs->Ser[0].Ctrl, 0x400);
+		pM->WriteReg32(&pRegs->Ser[1].Ctrl, 0x400);
+		pM->Delay(100);
+		pM->WriteReg32(&pRegs->Ser[0].Ctrl, 0x800);
+		pM->WriteReg32(&pRegs->Ser[1].Ctrl, 0x800);
+		pM->Delay(100);
+		
+		status0 = pM->ReadReg32(&pRegs->Ser[0].Status);
+		status1 = pM->ReadReg32(&pRegs->Ser[1].Status);
+		
+		str.Form("   Channel 0 status = 0x%08X...", status0);
+		if((status0 & 0x3033) == 0x3030)
+		{
+			str += "PASSED";
+			AddTextLine(str);
+		}
+		else
+		{
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+
+		str.Form("   Channel 1 status = 0x%08X...", status1);
+		if((status1 & 0x3033) == 0x3030)
+		{
+			str += "PASSED";
+			AddTextLine(str);
+		}
+		else
+		{
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+	}
+
+	void Testing_CheckSram()
+	{
+		int i;
+		Long64_t val, result;
+		TString str;
+
+		///////////////////////////////////
+		// Checking 18Mbit SRAM
+		///////////////////////////////////
+		AddTextLine("********** CheckSram **********");
+		pM->WriteReg32(&pRegs->Clk.Ctrl, 0x80000000);
+		pM->WriteReg32(&pRegs->Clk.Ctrl, 0x00000000);
+		pM->Delay(10);
+		pM->WriteReg32(&pRegs->Cfg.Reset, 1);
+		pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_TRIG], 0);
+		pM->Delay(10);
+		pM->WriteReg32(&pRegs->Cfg.Reset, 0);
+		pM->Delay(10);
+
+		val = 1;
+		for(i = 0; i < 36; i++)
+		{
+			pM->WriteReg32(&pRegs->EB.SramAddr, 0x10);
+			pM->WriteReg32(&pRegs->EB.SramDinL, (int)val);
+			pM->WriteReg32(&pRegs->EB.SramDinH, (int)(val>>32));
+			pM->WriteReg32(&pRegs->EB.SramCtrl, 0x1);	// write
+
+			pM->WriteReg32(&pRegs->EB.SramAddr, 0x20);
+			pM->WriteReg32(&pRegs->EB.SramDinL, 0);
+			pM->WriteReg32(&pRegs->EB.SramDinH, 0);
+			pM->WriteReg32(&pRegs->EB.SramCtrl, 0x1);	// write
+
+			pM->WriteReg32(&pRegs->EB.SramAddr, 0x10);
+			pM->WriteReg32(&pRegs->EB.SramCtrl, 0x2);	// read
+			result = (Long64_t)pM->ReadReg32(&pRegs->EB.SramDoutL);
+			result |= ((Long64_t)pM->ReadReg32(&pRegs->EB.SramDoutH))<<32;
+
+			str.Form("   Wrote 0x%09llX, Read 0x%09llX...", val, result);
+			if(val != result)
+			{
+				str += "FAILED";
+				AddTextLine(str);
+				TestingStop();
+				return;
+			}
+			else
+			{
+				str += "PASSED";
+				AddTextLine(str);
+			}
+			val<<=1;
+		}
+
+		val = 1;
+		for(i = 0; i < 19; i++)
+		{
+			pM->WriteReg32(&pRegs->EB.SramAddr, (int)val);
+			pM->WriteReg32(&pRegs->EB.SramDinL, (int)val);
+			pM->WriteReg32(&pRegs->EB.SramDinH, 0);
+			pM->WriteReg32(&pRegs->EB.SramCtrl, 0x1);	// write
+			val<<=1;
+		}
+
+		val = 1;
+		for(i = 0; i < 19; i++)
+		{
+			pM->WriteReg32(&pRegs->EB.SramAddr, (int)val);
+			pM->WriteReg32(&pRegs->EB.SramCtrl, 0x2);	// read
+			result = (Long64_t)pM->ReadReg32(&pRegs->EB.SramDoutL);
+			result |= ((Long64_t)pM->ReadReg32(&pRegs->EB.SramDoutH))<<32;
+
+			str.Form("   Wrote 0x%09llX, Read 0x%08llX (@adr=0x%09llX)...", val, result, val);
+			if(val != result)
+			{
+				str += "FAILED";
+				AddTextLine(str);
+				TestingStop();
+				return;
+			}
+			else
+			{
+				str += "PASSED";
+				AddTextLine(str);
+			}
+			val<<=1;
+		}
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+	}
+	
+	void StartPulser()
+	{
+		pM->WriteReg32(&pRegs->Sd.PulserStart, 0);
+	}
+
+	void SetupPulser(int grp_mask, double offset_mv, double low_mv, double high_mv, int width, double period, int count)
+	{
+		printf("mask=0x%02X,offset=%d,low=%d,high=%d,width=%d,period=%d\n", grp_mask, (int)offset_mv, (int)low_mv, (int)high_mv, width, (int)period);
+		pM->WriteReg32(&pRegs->Cfg.DacLow, low_mv+2048.0);
+		pM->WriteReg32(&pRegs->Cfg.DacHigh, high_mv+2048.0);
+		pM->WriteReg32(&pRegs->Cfg.DacOffset, offset_mv+2048.0);
+
+		if(count < 0)
+			pM->WriteReg32(&pRegs->Sd.PulserNPulses, 0xFFFFFFFF);
+		else
+		{
+			pM->WriteReg32(&pRegs->Sd.PulserPeriod, 1);
+			pM->WriteReg32(&pRegs->Sd.PulserNPulses, 0);
+			pM->WriteReg32(&pRegs->Sd.PulserNPulses, count);
+		}
+
+		int per = (int)(period*125000000.0);
+		pM->WriteReg32(&pRegs->Sd.PulserPeriod, per);
+		pM->WriteReg32(&pRegs->Sd.PulserLowCycles, per-width);
+
+		if(grp_mask & 0x1)	pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_DCE0], 18);
+		else						pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_DCE0], 0);
+			
+		if(grp_mask & 0x2)	pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_DCE1], 18);
+		else						pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_DCE1], 0);
+
+		if(grp_mask & 0x4)	pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_DCE2], 18);
+		else						pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_DCE2], 0);
+
+		if(grp_mask & 0x8)	pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_FCE0], 18);
+		else						pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_FCE0], 0);
+			
+		if(grp_mask & 0x10)	pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_FCE1], 18);
+		else						pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_FCE1], 0);
+
+		if(grp_mask & 0x20)	pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_FCE2], 18);
+		else						pM->WriteReg32(&pRegs->Sd.SrcSel[DCRB_OUTPUT_FCE2], 0);
+	}
+
+	void SetThreshold(double mv)
+	{
+		int dac;
+		mv = (mv * 8.06) + 2048.0;
+		
+		if(mv < 0.0) dac = 0;
+		else if(mv > 4095.0) dac = 4095;
+		else dac = (int)mv;
+		
+		pM->WriteReg32(&pRegs->Cfg.DacThreshold, dac);
+	}
+
+	void Testing_DCPulser_AboveThr()
+	{
+		unsigned int result, group;
+		TString str;
+
+		///////////////////////////////////
+		// Checking P0 Switch B SDA/SCL Loopback
+		///////////////////////////////////
+		AddTextLine("********** DCPulser_AboveThreshold **********");
+
+		SetThreshold(200);
+
+		SetupPulser(0x07, 2000.0, 1000.0, 1010.0, 2, 1.0/((double)DCRB_FE_PULSER_FREQ), DCRB_FE_PULSER_COUNT);
+		pM->Delay(1000);
+	
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000000);	// clear & enable
+		StartPulser();
+		pM->Delay(2000);
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+	
+		str.Form("   DC pulser counts sent = %u", DCRB_FE_PULSER_COUNT);
+		AddTextLine(str);
+
+		for(int i = 0; i < 96; i++)
+		{
+			unsigned int cnt = pM->ReadReg32(&pRegs->Tdc[i/16].Scalers[i%16]);
+		
+			str.Form("   Channel %d count = count = %u...", i, cnt);
+		
+			if(cnt == DCRB_FE_PULSER_COUNT)
+			{
+				str += "PASSED";
+				AddTextLine(str);
+			}
+			else
+			{
+				SetupPulser(0x07, 2000.0, 1000.0, 1010.0, 2, 1.0/((double)DCRB_FE_PULSER_FREQ), 0xFFFFFFFF);
+				str += "FAILED";
+				AddTextLine(str);
+				TestingStop();
+				return;
+			}
+		}
+
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+	}
+	
+	void Testing_FEPulser_AboveThr()
+	{
+		unsigned int result, group;
+		TString str;
+
+		///////////////////////////////////
+		// Checking P0 Switch B SDA/SCL Loopback
+		///////////////////////////////////
+		AddTextLine("********** FEPulser_AboveThreshold **********");
+
+		SetThreshold(-50);
+
+		SetupPulser(0x38, 2000.0, 1000.0, 1050.0, 2, 1.0/((double)DCRB_FE_PULSER_FREQ), DCRB_FE_PULSER_COUNT);
+		pM->Delay(1000);
+	
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000000);	// clear & enable
+		StartPulser();
+		pM->Delay(2000);
+		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x00000001);	// disable
+	
+		str.Form("   FE pulser counts sent = %u", DCRB_FE_PULSER_COUNT);
+		AddTextLine(str);
+
+		for(int i = 0; i < 96; i++)
+		{
+			unsigned int cnt = pM->ReadReg32(&pRegs->Tdc[i/16].Scalers[i%16]);
+		
+			str.Form("   Channel %d count = count = %u...", i, cnt);
+		
+			if(cnt == DCRB_FE_PULSER_COUNT)
+			{
+				str += "PASSED";
+				AddTextLine(str);
+			}
+			else
+			{
+				SetupPulser(0x38, 2000.0, 1000.0, 1050.0, 2, 1.0/((double)DCRB_FE_PULSER_FREQ), 0xFFFFFFFF);
+				str += "FAILED";
+				AddTextLine(str);
+				TestingStop();
+				return;
+			}
+		}
+
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+	}
+
+	void SpiFlashSelect(int sel)
+	{
+		if(sel)
+			pM->WriteReg32(&pRegs->Cfg.SpiCtrl, 0x200);
+		else
+			pM->WriteReg32(&pRegs->Cfg.SpiCtrl, 0x100);
+	}
+
+	unsigned char SpiFlashTransferByte(unsigned char data)
+	{
+		int i;
+		int rsp = 0;
+		
+		pM->WriteReg32(&pRegs->Cfg.SpiCtrl, data | 0x400);
+		for(i = 0; i < 8; i++)
+		{
+			rsp = pM->ReadReg32(&pRegs->Cfg.SpiStatus);
+			
+			if(rsp & 0x800)
+				break;
+		}
+		return rsp & 0xFF;
+	}
+		
+	void Testing_CheckSpiFlash()
+	{
+		TString str;
+		unsigned int result;
+
+		///////////////////////////////////
+		// Checking Spi Flash Id
+		///////////////////////////////////
+		AddTextLine("********** CheckSpiFlash **********");
+
+		SpiFlashSelect(0);
+		pM->Delay(20);
+		SpiFlashSelect(1);
+		SpiFlashTransferByte(0xFF);
+		SpiFlashTransferByte(0xFF);
+		SpiFlashTransferByte(0xFF);
+		SpiFlashSelect(0);
+
+		SpiFlashSelect(1);
+		SpiFlashTransferByte(0x9F);	// Read ID Cmd
+		result = SpiFlashTransferByte(0xFF);
+		result |= SpiFlashTransferByte(0xFF)<<8;
+		result |= SpiFlashTransferByte(0xFF)<<16;
+		result |= SpiFlashTransferByte(0xFF)<<24;
+		SpiFlashSelect(0);
+
+		str.Form("   Spi Flash Id = 0x%08X...", result);
+		if(result != 0x10172020)
+		{
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+		str += "PASSED";
+		AddTextLine(str);
+
+		//////////////////////////
+		//////////////////////////
+		//////////////////////////
+		//////////////////////////
+		printf("SPI Config Dump:\n");
+		SpiFlashSelect(1);
+		SpiFlashTransferByte(0x03);	// Read Continuous
+		SpiFlashTransferByte(0x7F);
+		SpiFlashTransferByte(0xF0);
+		SpiFlashTransferByte(0x00);
+
+		for(int i = 0; i < 256; i++)
+		{
+			if(!(i % 16))
+				printf("\n0x%04X: ", i);
+
+			unsigned char val = SpiFlashTransferByte(0xFF);
+
+			printf("%02X ", (unsigned int)val);
+		}
+		SpiFlashSelect(0);
+		printf("\n\n");
+		//////////////////////////
+		//////////////////////////
+		//////////////////////////
+		//////////////////////////
+		
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+	}
+
+	void Testing_StoreSerialNumber()
+	{
+		TString str = strPromptInput;
+		int i;
+		unsigned char buf[256];
+
+		///////////////////////////////////
+		// Erase SPI parameter page, Store S/N
+		///////////////////////////////////
+		if(!bPromptInputReady)
+		{
+			AddTextLine("********** StoreSerialNumber **********");
+			TestingPromptInput("   Enter Serial Number(Format: CEM-XXXX) ");
+			return;
+		}
+
+		strSerialNumber = strPromptInput;
+		AddTextLine(str.Format("   Writing serial number: %s to flash", str.Data()));
+
+		SpiFlashSelect(1);
+		SpiFlashTransferByte(0x06);	// Write enable
+		SpiFlashSelect(0);
+		SpiFlashSelect(1);
+		SpiFlashTransferByte(0x20);	// Erase last chip sector
+		SpiFlashTransferByte(0x7F);
+		SpiFlashTransferByte(0xF0);
+		SpiFlashTransferByte(0x00);
+		SpiFlashSelect(0);
+		pM->Delay(500);	// 400ms Max sector erase time
+
+		SpiFlashSelect(1);
+		SpiFlashTransferByte(0x06);	// Write enable
+		SpiFlashSelect(0);
+		SpiFlashSelect(1);
+		SpiFlashTransferByte(0x02);	// Page program
+		SpiFlashTransferByte(0x7F);
+		SpiFlashTransferByte(0xF0);
+		SpiFlashTransferByte(0x00);
+		for(i = 0; i < 256; i++)
+		{
+			if(i < str.Length())
+				buf[i] = str[i];
+			else if(i == str.Length())
+				buf[i] = 0x00;
+			else
+				buf[i] = 0xFF;
+		}
+		for(i = 0; i < 256; i++)
+			SpiFlashTransferByte(buf[i]);
+		SpiFlashSelect(0);
+		pM->Delay(10);	// 3ms Max erase+program time
+
+		str.Form("   Verifying...");
+		SpiFlashSelect(1);
+		SpiFlashTransferByte(0x03);	// Read Continuous
+		SpiFlashTransferByte(0x7F);
+		SpiFlashTransferByte(0xF0);
+		SpiFlashTransferByte(0x00);
+
+		for(i = 0; i < 256; i++)
+		{
+			unsigned char val = SpiFlashTransferByte(0xFF);
+			if(val != buf[i])
+			{
+				SpiFlashSelect(0);
+				AddTextLine(str.Format("Wrote 0x%02X, Read 0x%02X[@offset %d]...FAILED", (unsigned int)buf[i], (unsigned int)val, i));
+				TestingStop();
+				return;
+			}
+		}
+		SpiFlashSelect(0);
+		str += "PASSED";
+		AddTextLine(str);
+		
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+	}
+
+	void Testing_Complete()
+	{
+		AddTextLine("DCRB Testing Complete. Unit PASSED");
+		TestingStop();
+	}
+
+	void ExecNextTestingState(int curState)
+	{
+		if(!pButtonStop->IsEnabled())
+			return;
+
+		switch(DCRBTestSequence[curState])
+		{
+			case EDCRBInitialize:						Testing_Initialize(); break;
+			case EDCRBBoardId:							Testing_CheckBoardId(); break;
+			case EDCRBBoardPos:							Testing_CheckBoardPos(); break;
+			case EDCRBVmeDataBits:						Testing_CheckVmeDataBits(); break;
+			case EDCRBClockLocal50:						Testing_CheckLocal50MHzOsc(); break;
+			case EDCRBClockLocal125:					Testing_CheckLocal125MHzOsc(); break;
+			case EDCRBClockP0:							Testing_CheckP0SwB125MHzOsc(); break;
+			case EDCRBCheckP0SwBTrig2:					Testing_CheckP0SwBTrig2(); break;
+			case EDCRBCheckP0SwBSync:					Testing_CheckP0SwBSdlink_Sync(); break;
+			case EDCRBCheckP0SwBTrig:					Testing_CheckP0SwBTrigOut_Trig1(); break;
+			case EDCRBCheckP0SwBToken:					Testing_CheckP0SwBTokenOut_TokenIn(); break;
+			case EDCRBCheckP0SwAGpio0_SwAGpio1:		Testing_CheckP0SwAGpio0_SwAGpio1(); break;
+			case EDCRBCheckP0SwBGpio0_SwAGpio1:		Testing_CheckP0SwBGpio0_SwAGpio1(); break;
+			case EDCRBCheckSwASerial:					Testing_CheckSwASerial(); break;
+			case EDCRBCheckSram:							Testing_CheckSram(); break;
+			case EDCRBSaveTestResults:					TestingSave(); break;
+			case EDCRBCheckSpiFlash:					Testing_CheckSpiFlash(); break;
+			case EDCRBStoreSerialNumber:				Testing_StoreSerialNumber(); break;
+			case EDCRBInputCurrent5V:					Testing_MinMaxRangeDouble("+5V Input Current", "Amps", DCRB_TEST_INPUTCURRENT5V_MIN, DCRB_TEST_INPUTCURRENT5V_MAX, 0, kTRUE); break;
+			case EDCRBInputCurrent12VN:				Testing_MinMaxRangeDouble("-12V Input Current", "Amps", DCRB_TEST_INPUTCURRENT12VN_MIN, DCRB_TEST_INPUTCURRENT12VN_MAX, 0, kTRUE); break;
+			case EDCRBInputCurrent12VP:				Testing_MinMaxRangeDouble("+12V Input Current", "Amps", DCRB_TEST_INPUTCURRENT12VP_MIN, DCRB_TEST_INPUTCURRENT12VP_MAX, 0, kTRUE); break;
+			case EDCRBFEPulser_AboveThr:				Testing_FEPulser_AboveThr(); break;
+			case EDCRBDCPulser_AboveThr:				Testing_DCPulser_AboveThr(); break;
+			case EDCRBComplete:							Testing_Complete(); break;
+		}
+	}
+
+	void TestingStop()
+	{
+		AddTextLine("Testing quitting...");
+
+		pButtonStart->SetEnabled(kTRUE);
+		pButtonContinue->SetEnabled(kFALSE);
+		pButtonStop->SetEnabled(kFALSE);
+		pButtonUserInput->SetEnabled(kFALSE);
+	}
+
+	void TestingSave()
+	{
+		TString str;
+
+		str.Form("DCRB_TestResult_%s.txt", strSerialNumber.Data());
+		AddTextLine("********** Saving Test Results **********");
+		AddTextLine(str.Format("   Saving to file: %s", str.Data()));
+		pTextViewDebug->GetText()->Save(str.Data());
+
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+	}
+
+	void AddTextLine(const char *pText)
+	{
+		pTextViewDebug->AddLine(pText);
+		pTextViewDebug->ScrollUp(200);//->ScrollDown(50);
+		pTextViewDebug->Update();
+	}
 
 	virtual Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t)
 	{
-		char buf[200];
-
 		switch(GET_MSG(msg))
 		{
+		case kC_USER:
+			switch(GET_SUBMSG(msg))
+			{
+				case DCRB_TESTSTATE_MSG:
+					ExecNextTestingState(parm1);
+					break;
+			}
+			break;
+
 		case kC_COMMAND:
 			switch(GET_SUBMSG(msg))
 			{
 			case kCM_BUTTON:
 				switch(parm1)
 				{
-					case BTN_SEQUENTIAL:
-						pButtonCalSequential->SetDown(kTRUE);
-						pButtonCalSimultaneous->SetDown(kFALSE);
-						break;
-					case BTN_SIMULTANEOUS:
-						pButtonCalSequential->SetDown(kFALSE);
-						pButtonCalSimultaneous->SetDown(kTRUE);
-						break;
-					case BTN_STARTTEST:
+					case BTN_DCRB_TESTING_START:
 						pButtonStart->SetEnabled(kFALSE);
+						pButtonContinue->SetEnabled(kFALSE);
 						pButtonStop->SetEnabled(kTRUE);
-//						pButtonCalSequential->SetEnabled(kFALSE);
-//						pButtonCalSimultaneous->SetEnabled(kFALSE);
-						pNumEntryThreshold->SetEditable(kFALSE);
-						pTextEntryResultsFile->SetEnabled(kFALSE);
-						pNumEntryTestPulseCount->SetEditable(kFALSE);
-						pNumEntryTDCTmax->SetEditable(kFALSE);
-						pNumEntryTDCTmin->SetEditable(kFALSE);
-						pNumEntryScalermax->SetEditable(kFALSE);
-						pNumEntryScalermin->SetEditable(kFALSE);
-//						pButtonTDCEnable->SetEnabled(kFALSE);
-//						pButtonScalerEnable->SetEnabled(kFALSE);
+						pTextViewDebug->Clear();
+						SetNextTestingState(0);
+						break;
 
-						gbStopHit = kFALSE;
-						RunTest();
+					case BTN_DCRB_TESTING_CONTINUE:
+						pButtonContinue->SetEnabled(kFALSE);
+						bPromptContinueReady = kTRUE;
+						ExecNextTestingState(nextTestingState);
+						break;
 
-						pButtonStart->SetEnabled(kTRUE);
-						pButtonStop->SetEnabled(kFALSE);
-//						pButtonCalSequential->SetEnabled(kTRUE);
-//						pButtonCalSimultaneous->SetEnabled(kTRUE);
-						pNumEntryThreshold->SetEditable(kTRUE);
-						pTextEntryResultsFile->SetEnabled(kTRUE);
-						pNumEntryTestPulseCount->SetEditable(kTRUE);
-						pNumEntryTDCTmax->SetEditable(kTRUE);
-						pNumEntryTDCTmin->SetEditable(kTRUE);
-						pNumEntryScalermax->SetEditable(kTRUE);
-						pNumEntryScalermin->SetEditable(kTRUE);
-//						pButtonTDCEnable->SetEnabled(kTRUE);
-//						pButtonScalerEnable->SetEnabled(kTRUE);
+					case BTN_DCRB_TESTING_STOP:
+						TestingStop();
 						break;
-					case BTN_STOPTEST:
-						sprintf(buf, "*** STOP PRESSED - QUITTING TEST ***");
-						pTextViewTesting->AddLine(buf);
-						pTextViewTesting->ScrollUp(50);
-						gbStopHit = kTRUE;
+
+					case BTN_DCRB_ENTERINPUT:
+						pButtonUserInput->SetEnabled(kFALSE);
+						strPromptInput = pTextEntryDebug->GetText();
+						pTextEntryDebug->Clear();
+						//AddTextLine(strPromptInput);
+						bPromptInputReady = kTRUE;
+						ExecNextTestingState(nextTestingState);
 						break;
-					case BTN_CONTINUETEST:
-						gbContinueHit = kTRUE;
-						break;
+
 					default:
 						printf("button id %d pressed\n", (int)parm1);
 						break;
 				}
-				break;
 			}
 			break;
 		}
 		return kTRUE;
 	}
-
-	void RunTest()
-	{
-		unsigned int val;
-		char buf[200];
-
-		pTextViewTesting->AddLine("Setup pulser: desired pulse shape/height");
-		pTextViewTesting->AddLine("Setup pulser: Manual burst mode, 10us period");
-		pTextViewTesting->AddLine("Setup pulser: ChA 1us delay LVDS into DCRB trigger input");
-		pTextViewTesting->AddLine("Setup pulser: ChB 0us delay LVDS into DCRB calibration input");
-		pTextViewTesting->ScrollUp(100);
-
-		sprintf(buf, "Opening results file: %s", pTextEntryResultsFile->GetText());
-		pTextViewTesting->AddLine(buf);
-		pTextViewTesting->ScrollUp(100);
-
-		for(int i = 0; i < 96; i++)
-		{
-			pHistScalers->SetBinContent(i, 0);
-/*			pHistTDCMin->SetBinContent(i, 0);
-			pHistTDCMax->SetBinContent(i, 0);
-			pHistTDCRMS->SetBinContent(i, 0);
-			pHistTDCHits->SetBinContent(i, 0);*/
-		}
-/*		pCanvasTDCMin->GetCanvas()->Modified();
-		pCanvasTDCMax->GetCanvas()->Modified();
-		pCanvasTDCRMS->GetCanvas()->Modified();
-		pCanvasTDCHits->GetCanvas()->Modified();*/
-		pCanvasScalers->GetCanvas()->Modified();
-/*		pCanvasTDCMin->GetCanvas()->Update();
-		pCanvasTDCMax->GetCanvas()->Update();
-		pCanvasTDCRMS->GetCanvas()->Update();
-		pCanvasTDCHits->GetCanvas()->Update();*/
-		pCanvasScalers->GetCanvas()->Update();
-
-		FILE *f = fopen(pTextEntryResultsFile->GetText(), "a+t");
-		if(!f)
-		{
-			sprintf(buf, "Failed to open.");
-			pTextViewTesting->AddLine(buf);
-			pTextViewTesting->ScrollUp(100);
-			return;
-		}
-
-		TDatime t;
-		fprintf(f, "// File: %s\n", pTextEntryResultsFile->GetText());
-		fprintf(f, "// Tested: %s\n", t.AsString());
-		fprintf(f, "// Pulse Count: %ld\n", pNumEntryTestPulseCount->GetIntNumber());
-		fprintf(f, "// TDC Checks: %s Max: %ld Min %ld\n", pButtonTDCEnable->IsDown() ? "Enabled" : "Disabled", pNumEntryTDCTmax->GetIntNumber(), pNumEntryTDCTmin->GetIntNumber());
-		fprintf(f, "// Scaler Checks: %s Max: %ld Min %ld\n", pButtonScalerEnable->IsDown() ? "Enabled" : "Disabled", pNumEntryScalermax->GetIntNumber(), pNumEntryScalermin->GetIntNumber());
-		fprintf(f, "// Discriminator Threshold: %ldmV\n", pNumEntryThreshold->GetIntNumber());
-		fprintf(f, "// Calibration Pulser Mode: %s\n", pButtonCalSequential->IsDown() ? "Sequential" : "Simultaneous");
-
-		pM->WriteReg32(&pRegs->DACConfig, ((unsigned int)pNumEntryThreshold->GetIntNumber() * 24489360)>>18);
-		pM->WriteReg32(&pRegs->ADR32, ((DCRB_BASE_ADDR_A32>>16) & 0xFF80) | 0x0001);
-		pM->WriteReg32(&pRegs->LookBack, 2000);
-		pM->WriteReg32(&pRegs->WindowWidth, 2000);
-		pM->WriteReg32(&pRegs->BlockConfig, 1);
-		pM->WriteReg32(&pRegs->TDCConfig, 32);
-		pM->WriteReg32(&pRegs->ClockConfig, 0);
-		pM->WriteReg32(&pRegs->ReadoutConfig, 0x00000001);
-		pM->WriteReg32(&pRegs->ChDisable[0], 0);
-		pM->WriteReg32(&pRegs->ChDisable[1], 0);
-		pM->WriteReg32(&pRegs->ChDisable[2], 0);
-		pM->WriteReg32(&pRegs->TriggerSource, 0x11);
-		
-		for(int i = 0; i < 6; i++)
-		{
-			if(pButtonCalSequential->IsDown())
-				pM->WriteReg32(&pRegs->TestPulseConfig, 1<<(i+6));
-			else
-				pM->WriteReg32(&pRegs->TestPulseConfig, 0x3F<<6);
-
-			if(pButtonTDCEnable->IsDown())
-			{
-				pM->WriteReg32(&pRegs->Reset, 1);
-				val = pM->ReadReg32(&pRegs->TriggerSource);
-				pM->WriteReg32(&pRegs->TriggerSource, val | 0x800);
-			}
-
-			if(pButtonScalerEnable->IsDown())
-				pM->WriteReg32(&pRegs->ScalerLatch, 0);
-
-			sprintf(buf, "Send manual burst of %ld pulses", pNumEntryTestPulseCount->GetIntNumber());
-			pTextViewTesting->AddLine(buf);
-			pTextViewTesting->ScrollUp(100);
-
-			gbContinueHit = kFALSE;
-			pButtonContinue->SetEnabled(kTRUE);
-			while(!gbContinueHit)
-			{
-				gSystem->ProcessEvents();
-				if(gbStopHit)
-				{
-					pButtonContinue->SetEnabled(kFALSE);
-					fclose(f);
-					return;
-				}
-			}
-			pButtonContinue->SetEnabled(kFALSE);
-
-			if(pButtonScalerEnable->IsDown())
-			{
-				pM->WriteReg32(&pRegs->ScalerLatch, 0);
-				if(pButtonCalSequential->IsDown())
-				{
-					for(int j = 0; j < 16; j++)
-						pHistScalers->SetBinContent(i*16+j, pM->ReadReg32(&pRegs->Scalers[i*16+j]));
-				}
-				else
-				{
-					for(int j = 0; j < 96; j++)
-						pHistScalers->SetBinContent(j, pM->ReadReg32(&pRegs->Scalers[j]));
-				}
-				pCanvasScalers->GetCanvas()->Modified();
-				pCanvasScalers->GetCanvas()->Update();
-			}
-
-			if(pButtonTDCEnable->IsDown())
-			{
-				val = pM->ReadReg32(&pRegs->FifoEventCnt);
-				if(val != pNumEntryTestPulseCount->GetIntNumber())
-				{
-					sprintf(buf, "Error: received %d events, but expected %ld", val, pNumEntryTestPulseCount->GetIntNumber());
-					pTextViewTesting->AddLine(buf);
-					pTextViewTesting->ScrollUp(100);
-					fclose(f);
-					return;
-				}
-
-				val = pM->ReadReg32(&pRegs->FifoWordCnt);
-				sprintf(buf, "FIFO Event Buffer Length: %u\n", val);
-				pTextViewTesting->AddLine(buf);
-				pTextViewTesting->ScrollUp(100);
-
-				unsigned int *pReadoutBuffer = (unsigned int *)malloc(READOUT_BUF_SIZE);
-
-				int ReadoutBufferLength, bytes_left = -1;
-				unsigned int tdcMin[96], tdcMax[96], tdcHit[96], tdcRMS[96];
-				memset(tdcMin, 0, sizeof(tdcMin));
-				memset(tdcMax, 0, sizeof(tdcMax));
-				memset(tdcHit, 0, sizeof(tdcHit));
-				memset(tdcRMS, 0, sizeof(tdcRMS));
-				//if(pM->pVMEClient->BlkReadVME_DMA(DCRB_BASE_ADDR_A32, pReadoutBuffer, READOUT_BUF_SIZE, VME_DMA_BLT32, &bytes_left) && bytes_left >= 0)
-				if(0)	// need to fix this....
-				{
-					ReadoutBufferLength = (READOUT_BUF_SIZE-bytes_left)/4;
-
-					for(int j = 0; j < ReadoutBufferLength; j++)
-					{
-						if(pReadoutBuffer[j] & 0x80000000)					// Data type define flag
-						{
-							if(((pReadoutBuffer[j]>>27) & 0xF) == 0x08)		// TDC hit
-							{
-								unsigned int ch = (pReadoutBuffer[j]>>16) & 0x7F;
-								unsigned int t = pReadoutBuffer[j] & 0xFFFF;
-
-								if(ch < 96)
-								{
-									tdcHit[ch]++;
-									if((tdcMin[ch] == 0) || (t < tdcMin[ch]))
-										tdcMin[ch] = t;
-									if((tdcMax[ch] == 0) || (t > tdcMax[ch]))
-										tdcMax[ch] = t;
-									tdcRMS[ch] += t*t;
-								}
-								else
-								{
-									sprintf(buf, "Error: invalid tdc channel reported %u\n", ch);
-									pTextViewTesting->AddLine(buf);
-									pTextViewTesting->ScrollUp(100);
-								}
-							}
-						}
-					}
-
-					if(pButtonCalSequential->IsDown())
-					{
-						for(int j = 0; j < 16; j++)
-						{
-							pHistTDCMin->SetBinContent(i*16+j, tdcMin[i*16+j]);
-							pHistTDCMax->SetBinContent(i*16+j, tdcMax[i*16+j]);
-							pHistTDCRMS->SetBinContent(i*16+j, sqrt((float)tdcRMS[i*16+j]));
-							pHistTDCHits->SetBinContent(i*16+j, tdcHit[i*16+j]);
-						}
-					}
-					else
-					{
-						for(int j = 0; j < 96; j++)
-						{
-							pHistTDCMin->SetBinContent(j, tdcMin[j]);
-							pHistTDCMax->SetBinContent(j, tdcMax[j]);
-							pHistTDCRMS->SetBinContent(j, sqrt((float)tdcRMS[j]));
-							pHistTDCHits->SetBinContent(j, tdcHit[j]);
-						}
-					}
-					pCanvasTDCMin->GetCanvas()->Modified();
-					pCanvasTDCMax->GetCanvas()->Modified();
-					pCanvasTDCRMS->GetCanvas()->Modified();
-					pCanvasTDCHits->GetCanvas()->Modified();
-					pCanvasTDCMin->GetCanvas()->Update();
-					pCanvasTDCMax->GetCanvas()->Update();
-					pCanvasTDCRMS->GetCanvas()->Update();
-					pCanvasTDCHits->GetCanvas()->Update();
-				}
-				else
-				{
-					sprintf(buf, "Error: BlkReadVME_DMA failed\n");
-					pTextViewTesting->AddLine(buf);
-					pTextViewTesting->ScrollUp(100);
-				}
-				free(pReadoutBuffer);
-				
-				///////// RANGE CHECKING FOR TDC DATA /////////////
-				///////// RANGE CHECKING FOR TDC DATA /////////////
-				///////// RANGE CHECKING FOR TDC DATA /////////////
-				///////// RANGE CHECKING FOR TDC DATA /////////////
-				///////// RANGE CHECKING FOR TDC DATA /////////////
-				///////// RANGE CHECKING FOR TDC DATA /////////////
-			}
-
-			if(!pButtonCalSequential->IsDown())
-				break;
-		}
-
-		Bool_t bFailed = kFALSE;
-
-		if(pButtonScalerEnable->IsDown())
-		{
-			for(int i = 0; i < 96; i++)
-			{
-				int counts = (int)pHistScalers->GetBinContent(i);
-				fprintf(f, "Scaler channel %d: %u received, %lu expected", i, counts, pNumEntryTestPulseCount->GetIntNumber());
-				if(counts < pNumEntryScalermin->GetIntNumber())
-				{
-					fprintf(f, " Failed min check (%lu)", pNumEntryScalermin->GetIntNumber());
-					bFailed = kTRUE;
-				}
-				if(counts > pNumEntryScalermax->GetIntNumber())
-				{
-					fprintf(f, " Failed max check (%lu)", pNumEntryScalermax->GetIntNumber());
-					bFailed = kTRUE;
-				}
-				fprintf(f, "\n");
-			}
-		}
-
-		sprintf(buf, "Testing Completed: Status = %s", bFailed ? "FAILED" : "PASSED");
-		fprintf(f, "%s\n", buf);
-		pTextViewTesting->AddLine(buf);
-		pTextViewTesting->ScrollUp(100);
-
-		fclose(f);
-	}
-
 private:
+	Bool_t				bPromptContinueReady;
+	Bool_t				bPromptInputReady;
 
-	enum Buttons
-	{
-		BTN_STARTTEST,
-		BTN_STOPTEST,
-		BTN_CONTINUETEST,
-		BTN_SEQUENTIAL,
-		BTN_SIMULTANEOUS,
-		EDT_RESULTSFILENAME
-	};
-	
+	int					nextTestingState;
+
+	TString				strPromptInput;
+	TString				strSerialNumber;
+
+	double				DacOffsetLow[2];
+	double				DacOffsetHigh[2];
+	int					DacGainCorrection[2];
+
 	ModuleFrame			*pM;
 	DCRB_regs			*pRegs;
 
-	TGTextButton		*pButtonCalSequential;
-	TGTextButton		*pButtonCalSimultaneous;
-	TGTextButton		*pButtonTDCEnable;
-	TGTextButton		*pButtonScalerEnable;
-	TGTextEntry			*pTextEntryResultsFile;
-	TGNumberEntry		*pNumEntryTestPulseCount;
-	TGNumberEntry		*pNumEntryTDCTmin;
-	TGNumberEntry		*pNumEntryTDCTmax;
-	TGNumberEntry		*pNumEntryScalermin;
-	TGNumberEntry		*pNumEntryScalermax;
-	TGNumberEntry		*pNumEntryThreshold;
-	TRootEmbeddedCanvas	*pCanvasTDCMin;
-	TRootEmbeddedCanvas	*pCanvasTDCMax;
-	TRootEmbeddedCanvas	*pCanvasTDCRMS;
-	TRootEmbeddedCanvas	*pCanvasTDCHits;
-	TRootEmbeddedCanvas	*pCanvasScalers;
-	TH1I				*pHistScalers;
-	TH1I				*pHistTDCHits;
-	TH1I				*pHistTDCRMS;
-	TH1I				*pHistTDCMax;
-	TH1I				*pHistTDCMin;
-	TGTextButton		*pButtonStart;
-	TGTextButton		*pButtonStop;
-	TGTextButton		*pButtonContinue;
-	TGTextView			*pTextViewTesting;
+	TGTextView			*pTextViewDebug;
 
-	Bool_t				gbContinueHit;
-	Bool_t				gbStopHit;
+	TGTextEntry			*pTextEntryDebug;
+
+	TGTextButton		*pButtonStart;
+	TGTextButton		*pButtonContinue;
+	TGTextButton		*pButtonStop;
+	TGTextButton		*pButtonUserInput;	
 };
 
 #endif

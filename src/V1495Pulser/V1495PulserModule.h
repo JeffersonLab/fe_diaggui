@@ -11,7 +11,7 @@ public:
 	{
 		SetupRegisters();
 
-		TGCompositeFrame *tFrame;
+//		TGCompositeFrame *tFrame;
 		AddFrame(pTabs = new TGTab(this), new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX | kLHintsExpandY));
 
 //		tFrame = pTabs->AddTab("Testing");		tFrame->AddFrame(new SSP_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));

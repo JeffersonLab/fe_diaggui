@@ -24,7 +24,7 @@ public:
 
 //		tFrame = pTabs->AddTab("Status");		tFrame->AddFrame(pStatus = new FADC250_Status(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("GTX");			tFrame->AddFrame(new FADC250_GTX(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-		tFrame = pTabs->AddTab("TrgHist");		tFrame->AddFrame(new FADC250_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+//		tFrame = pTabs->AddTab("TrgHist");		tFrame->AddFrame(new FADC250_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pTabs->AddTab("VXS Scope");	tFrame->AddFrame(new FADC250_SerialScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		for(int i = 0; i < 16; i++)
 		{
@@ -59,6 +59,24 @@ public:
 						{"tet13",			REGMEM_DESC_FLAGS_UINT,		{0x0144, 0, 12, 32}},
 						{"tet14",			REGMEM_DESC_FLAGS_UINT,		{0x0148, 16, 12, 32}},
 						{"tet15",			REGMEM_DESC_FLAGS_UINT,		{0x0148, 0, 12, 32}},
+					{NULL, 0},
+					{"AdcThresholdIgnore", 0},
+						{"tet_ignore0",	REGMEM_DESC_FLAGS_UINT,		{0x012C, 31, 1, 32}},
+						{"tet_ignore1",	REGMEM_DESC_FLAGS_UINT,		{0x012C, 15, 1, 32}},
+						{"tet_ignore2",	REGMEM_DESC_FLAGS_UINT,		{0x0130, 31, 1, 32}},
+						{"tet_ignore3",	REGMEM_DESC_FLAGS_UINT,		{0x0130, 15, 1, 32}},
+						{"tet_ignore4",	REGMEM_DESC_FLAGS_UINT,		{0x0134, 31, 1, 32}},
+						{"tet_ignore5",	REGMEM_DESC_FLAGS_UINT,		{0x0134, 15, 1, 32}},
+						{"tet_ignore6",	REGMEM_DESC_FLAGS_UINT,		{0x0138, 31, 1, 32}},
+						{"tet_ignore7",	REGMEM_DESC_FLAGS_UINT,		{0x0138, 15, 1, 32}},
+						{"tet_ignore8",	REGMEM_DESC_FLAGS_UINT,		{0x013C, 31, 1, 32}},
+						{"tet_ignore9",	REGMEM_DESC_FLAGS_UINT,		{0x013C, 15, 1, 32}},
+						{"tet_ignore10",	REGMEM_DESC_FLAGS_UINT,		{0x0140, 31, 1, 32}},
+						{"tet_ignore11",	REGMEM_DESC_FLAGS_UINT,		{0x0140, 15, 1, 32}},
+						{"tet_ignore12",	REGMEM_DESC_FLAGS_UINT,		{0x0144, 31, 1, 32}},
+						{"tet_ignore13",	REGMEM_DESC_FLAGS_UINT,		{0x0144, 15, 1, 32}},
+						{"tet_ignore14",	REGMEM_DESC_FLAGS_UINT,		{0x0148, 31, 1, 32}},
+						{"tet_ignore15",	REGMEM_DESC_FLAGS_UINT,		{0x0148, 15, 1, 32}},
 					{NULL, 0},
 					{"AdcPedestal", 0},
 						{"ped0",					REGMEM_DESC_FLAGS_UINT,		{0x0158, 0, 16, 32}},
@@ -274,7 +292,7 @@ public:
 	const char *GetSlotIdentifier() { return strSlotIdentifier.Data(); }
 
 private:
-	TString				strSlotIdentifier;
+	TString			strSlotIdentifier;
 	TGTab				*pTabs;
 };
 

@@ -22,7 +22,9 @@ public:
 		tFrame = pDSC2Tabs->AddTab("Config");		tFrame->AddFrame(new DSC2_Config(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pDSC2Tabs->AddTab("Status");		tFrame->AddFrame(new DSC2_Status(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pDSC2Tabs->AddTab("Scalers");		tFrame->AddFrame(new DSC2_Scalers(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-		tFrame = pDSC2Tabs->AddTab("Testing");		tFrame->AddFrame(new DSC2_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+		//tFrame = pDSC2Tabs->AddTab("Testing");		tFrame->AddFrame(new DSC2_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+		
+		strSlotIdentifier.Form("%d", ReadReg32((volatile unsigned int *)(BaseAddr+0xB0)) & 0x1F);
 	}
 
 	void SetupRegisters()
@@ -32,12 +34,14 @@ public:
 					{"Pulse",				REGMEM_DESC_FLAGS_UINT,		{0x0094, 31, 1, 32}},
 					{"EnIn1",				REGMEM_DESC_FLAGS_UINT,		{0x0094, 0, 1, 32}},
 					{"EnIn2",				REGMEM_DESC_FLAGS_UINT,		{0x0094, 1, 1, 32}},
+					{"Pulser",				REGMEM_DESC_FLAGS_UINT,		{0x0094, 2, 1, 32}},
 				{NULL, 0},
 				{"Pulser", 0},
 					{"Period",					REGMEM_DESC_FLAGS_UINT,		{0x00C0, 0, 32, 32}},
 					{"LowCycles",				REGMEM_DESC_FLAGS_UINT,		{0x00C4, 0, 32, 32}},
 					{"NPulses",					REGMEM_DESC_FLAGS_UINT,		{0x00C8, 0, 32, 32}},
 					{"Start",					REGMEM_DESC_FLAGS_UINT,		{0x00CC, 0, 0, 32}},
+					{"Stop",						REGMEM_DESC_FLAGS_UINT,		{0x00D4, 0, 0, 32}},
 					{"Done",						REGMEM_DESC_FLAGS_UINT,		{0x00D0, 0, 1, 32}},
 				{NULL, 0},
 				{"TDC Config", 0},
@@ -118,6 +122,10 @@ public:
 						{"Ch15",				REGMEM_DESC_FLAGS_UINT,		{0x0078, 0, 8, 32}},
 						{"Ch16",				REGMEM_DESC_FLAGS_UINT,		{0x007C, 0, 8, 32}},
 					{NULL, 0},
+					{"AllowOverflow",		REGMEM_DESC_FLAGS_UINT,		{0x0084, 0, 1, 32}},
+					{"ResetOnLatch",		REGMEM_DESC_FLAGS_UINT,		{0x0084, 1, 1, 32}},
+					{"ResetA",				REGMEM_DESC_FLAGS_UINT,		{0x0084, 2, 1, 32}},
+					{"ResetB",				REGMEM_DESC_FLAGS_UINT,		{0x0084, 3, 1, 32}},
 					{"Enable",				REGMEM_DESC_FLAGS_HEX,		{0x0088, 16, 16, 32}},
 					{"OR Mask",				REGMEM_DESC_FLAGS_HEX,		{0x008C, 16, 16, 32}},
 					{"Src Select Mask",	REGMEM_DESC_FLAGS_HEX,		{0x00A0, 0, 16, 32}},
@@ -131,6 +139,7 @@ public:
 
 	const char *GetModuleName() { return "DSC2"; }
 	const char *GetModuleFullName() { return "Dual Threshold Scaler"; }
+	const char *GetSlotIdentifier() { return strSlotIdentifier.Data(); }
 
 	Bool_t SetParameter(char *pParam1, char *pParam2)
 	{
@@ -145,7 +154,8 @@ public:
 	}
 
 private:
-	TGTab			*pDSC2Tabs;
+	TString			strSlotIdentifier;
+	TGTab				*pDSC2Tabs;
 };
 
 #endif

@@ -53,45 +53,19 @@ DiagGUI::DiagGUI(const TGWindow *p, unsigned int w, unsigned int h, const char *
 	for(int i = 0; i < HOST_COUNT_MAX; i++)
 		pCrateMsgClient[i] = NULL;
 
-  AddFrame(pFrameRight = 
-	   new TGVerticalFrame(this), 
-	   new TGLayoutHints(kLHintsTop | kLHintsExpandX | kLHintsExpandY | kLHintsRight));
-  pFrameRight->AddFrame(pFrameButtons = 
-			new TGHorizontalFrame(pFrameRight), 
-			new TGLayoutHints(kLHintsTop | kLHintsExpandX));
-  pFrameButtons->AddFrame(pCaptureEvent = 
-			  new TGTextButton(pFrameButtons, 
-					   new TGHotString("Capture Event"), 
-					   BTN_CAPTUREEVENT), 
-			  new TGLayoutHints(kLHintsCenterX));
-  pFrameButtons->AddFrame(pStopCaptureEvent = 
-			  new TGTextButton(pFrameButtons, 
-					   new TGHotString("Stop Capture"), 
-					   BTN_STOPCAPTURE), 
-			  new TGLayoutHints(kLHintsCenterX));
+	AddFrame(pFrameRight = new TGVerticalFrame(this), new TGLayoutHints(kLHintsTop | kLHintsExpandX | kLHintsExpandY | kLHintsRight));
+/*
+		pFrameRight->AddFrame(pFrameButtons = new TGHorizontalFrame(pFrameRight), new TGLayoutHints(kLHintsTop | kLHintsExpandX));
+  			pFrameButtons->AddFrame(pCaptureEvent = new TGTextButton(pFrameButtons, new TGHotString("Capture Event"), BTN_CAPTUREEVENT), new TGLayoutHints(kLHintsCenterX));
+			pFrameButtons->AddFrame(pStopCaptureEvent = new TGTextButton(pFrameButtons, new TGHotString("Stop Capture"), BTN_STOPCAPTURE), new TGLayoutHints(kLHintsCenterX));
 				pStopCaptureEvent->SetEnabled(kFALSE);
-  pFrameButtons->AddFrame(pNextEvent = 
-			  new TGTextButton(pFrameButtons, 
-					   new TGHotString("Next Event"), 
-					   BTN_NEXTEVENT), 
-			  new TGLayoutHints(kLHintsCenterX));
-  pFrameButtons->AddFrame(pPrevEvent = 
-			  new TGTextButton(pFrameButtons, 
-					   new TGHotString("Previous Event"), 
-					   BTN_PREVIOUSEVENT), 
-			  new TGLayoutHints(kLHintsCenterX));
-
-  pFrameButtons->AddFrame(pPrintScreen = 
-			  new TGTextButton(pFrameButtons, 
-					   new TGHotString("Print Screen"), 
-					   BTN_PRINTSCREEN), 
-			  new TGLayoutHints(kLHintsCenterX));
-
-  pFrameRight->AddFrame(pFrameModule = 
-			new TGHorizontalFrame(pFrameRight), 
-			new TGLayoutHints(kLHintsTop | kLHintsExpandX | kLHintsExpandY));
+			pFrameButtons->AddFrame(pNextEvent = new TGTextButton(pFrameButtons, new TGHotString("Next Event"), BTN_NEXTEVENT), new TGLayoutHints(kLHintsCenterX));
+			pFrameButtons->AddFrame(pPrevEvent = new TGTextButton(pFrameButtons, new TGHotString("Previous Event"), BTN_PREVIOUSEVENT), new TGLayoutHints(kLHintsCenterX));
+			pFrameButtons->AddFrame(pPrintScreen = new TGTextButton(pFrameButtons, new TGHotString("Print Screen"), BTN_PRINTSCREEN), new TGLayoutHints(kLHintsCenterX));
+*/
+		pFrameRight->AddFrame(pFrameModule = new TGHorizontalFrame(pFrameRight), new TGLayoutHints(kLHintsTop | kLHintsExpandX | kLHintsExpandY));
 			//pFrameModule->SetEditDisabled(kEditDisable | kEditDisableLayout);
-
+			
   AddFrame(pFrameLeft = 
 	   new TGVerticalFrame(this, 150, 20, kFixedWidth), 
 	   new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandY));
@@ -99,13 +73,13 @@ DiagGUI::DiagGUI(const TGWindow *p, unsigned int w, unsigned int h, const char *
 		DiagLoadConfigFile(configFile);
 		pFrameLeft->AddFrame(pShutter, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		pFrameLeft->Resize(150,300);
-
+/*
 	pCaptureEvent->Associate(this);
 	pStopCaptureEvent->Associate(this);
 	pNextEvent->Associate(this);
 	pPrevEvent->Associate(this);
 	pPrintScreen->Associate(this);
-
+*/
 	pTimerCapture = new TTimer(this, TIMER_CAPTURE_POLLRATE, kTRUE);
 
 	SetWindowName("DIAG GUI");

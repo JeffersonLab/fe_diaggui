@@ -43,12 +43,12 @@ private:
 
 	TGShutter			*pShutter;
 
-	TGTextButton		*pCaptureEvent;
-	TGTextButton		*pStopCaptureEvent;
-	TGTextButton		*pNextEvent;
-	TGTextButton		*pPrevEvent;
+//	TGTextButton		*pCaptureEvent;
+//	TGTextButton		*pStopCaptureEvent;
+//	TGTextButton		*pNextEvent;
+//	TGTextButton		*pPrevEvent;
 
-	TGTextButton          *pPrintScreen;
+//	TGTextButton          *pPrintScreen;
 
 	TGVerticalFrame		*pFrameLeft;
 	TGVerticalFrame		*pFrameRight;

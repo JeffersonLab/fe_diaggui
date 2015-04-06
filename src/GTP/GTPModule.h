@@ -46,7 +46,7 @@ public:
 		tFrame = pGTPTabs->AddTab("TAGH");			tFrame->AddFrame(new GTP_SSHitPattern(tFrame, this, GTP_HITPATTER_TYPE_TAGH), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pGTPTabs->AddTab("TAGM");			tFrame->AddFrame(new GTP_SSHitPattern(tFrame, this, GTP_HITPATTER_TYPE_TAGM), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pGTPTabs->AddTab("Scalers");		tFrame->AddFrame(new GTP_SS_Scalers(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-		tFrame = pGTPTabs->AddTab("TriggerBits");	tFrame->AddFrame(new GTP_TriggerBit(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+//		tFrame = pGTPTabs->AddTab("TriggerBits");	tFrame->AddFrame(new GTP_TriggerBit(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pGTPTabs->AddTab("Scope");			tFrame->AddFrame(new GTP_Scope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		
 		// serializer status page (ch up/down, lane up/down, latency, rxrdy, rxerror, crc status,...?)

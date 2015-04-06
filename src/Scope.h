@@ -621,7 +621,7 @@ public:
 	void ScopeTriggerReadout()
 	{
 		int i, j;
-		int **pBuf = new (nothrow) int *[ScopeConfig.dataRegs.num];
+		unsigned int **pBuf = new (nothrow) unsigned int *[ScopeConfig.dataRegs.num];
 		if(!pBuf)
 		{
 			printf("Error: ScopeTriggerReadout() memory failed to allocate\n");
@@ -630,7 +630,7 @@ public:
 		
 		for(i = 0; i < ScopeConfig.dataRegs.num; i++)
 		{
-			pBuf[i] = new (nothrow) int [ScopeConfig.sampleLen];
+			pBuf[i] = new (nothrow) unsigned int [ScopeConfig.sampleLen];
 			if(!pBuf[i])
 			{
 				printf("Error: ScopeTriggerReadout() memory failed to allocate\n");
@@ -646,7 +646,16 @@ public:
 		for(i = 0; i < ScopeConfig.dataRegs.num; i++)
 			pM->BlkReadReg32((volatile unsigned int *)ScopeConfig.dataRegs.addr+i, (unsigned int *)pBuf[i], ScopeConfig.sampleLen, CRATE_MSG_FLAGS_NOADRINC);
 
-		for(unsigned i = 0; i < ScopeConfig.traceDesc.size(); i++)
+		printf("Scope buffer:\n");
+		for(i = 0; i < ScopeConfig.sampleLen; i++)
+		{
+			printf("%4d:", i);
+			for(j = 0; j < ScopeConfig.dataRegs.num; j++)
+				printf(" 0x%08X", pBuf[j][i]);
+			printf("\n");
+		}
+		
+		for(i = 0; i < ScopeConfig.traceDesc.size(); i++)
 		{
 			int bufNum = ScopeConfig.traceDesc[i].bitOffsetData / 32;
 			int bufShift = ScopeConfig.traceDesc[i].bitOffsetData % 32;
@@ -667,7 +676,7 @@ public:
 //				}
 
 				if( (ScopeConfig.traceDesc[i].mode & TRACE_MODE_MASK0) && (maskval == 0) )
-						ScopeConfig.traceFrame[i]->pTraceData[j] = 0;
+					ScopeConfig.traceFrame[i]->pTraceData[j] = 0;
 				else if( (ScopeConfig.traceDesc[i].mode & TRACE_MODE_MASK1) && (maskval == 1) )
 					ScopeConfig.traceFrame[i]->pTraceData[j] = 0;
 				else

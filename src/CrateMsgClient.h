@@ -3,20 +3,34 @@
 
 #include "RootHeader.h"
 
-#define DEBUG_NOCONNECTION				0
-#define DEBUG_PRINT						0
+#define DEBUG_NOCONNECTION						0
+#define DEBUG_PRINT								0
 
-#define CRATEMSG_LISTEN_PORT			6102
-#define MAX_MSG_SIZE						10000
+#define CRATEMSG_LISTEN_PORT					6102
+#define MAX_MSG_SIZE								10000
 
-#define CRATEMSG_HDR_ID					0x12345678
+#define CRATEMSG_HDR_ID							0x12345678
 
-#define CRATEMSG_TYPE_READ16			0x01
-#define CRATEMSG_TYPE_WRITE16			0x02
-#define CRATEMSG_TYPE_READ32			0x03
-#define CRATEMSG_TYPE_WRITE32			0x04
-#define CRATEMSG_TYPE_DELAY			0x05
-#define CRATEMSG_TYPE_READSCALERS	0x06
+#define CRATEMSG_TYPE_READ16					0x01
+#define CRATEMSG_TYPE_WRITE16					0x02
+#define CRATEMSG_TYPE_READ32					0x03
+#define CRATEMSG_TYPE_WRITE32					0x04
+#define CRATEMSG_TYPE_DELAY					0x05
+#define CRATEMSG_TYPE_READSCALERS			0x06
+#define SCALER_SERVER_READ_BOARD				0x100
+#define SCALER_SERVER_GET_CRATE_MAP			0x101
+#define SCALER_SERVER_GET_BOARD_PARAMS		0x102
+#define SCALER_SERVER_GET_CHANNEL_PARAMS	0x103
+#define SCALER_SERVER_SET_CHANNEL_PARAMS	0x104
+
+#define SCALER_TYPE_DSC2						0
+#define SCALER_TYPE_FADC250					1
+#define SCALER_TYPE_MAX							2   /* the maximum number of different board types */
+
+#define SCALER_PARTYPE_THRESHOLD				0
+#define SCALER_PARTYPE_THRESHOLD2			1
+#define SCALER_PARTYPE_NCHANNELS				2
+
 
 #define CMD_RSP(cmd)					(cmd | 0x80000000)
 
@@ -86,8 +100,60 @@ typedef struct
 typedef struct
 {
 	int cnt;
+	int slot;
+} Cmd_ReadScalers;
+
+typedef struct
+{
+	int cnt;
 	unsigned int vals[1];
 } Cmd_ReadScalers_Rsp;
+
+typedef struct
+{
+	int cnt;
+} Cmd_GetCrateMap;
+
+typedef struct
+{
+	int cnt;
+	int nslots;
+	unsigned int vals[1];
+} Cmd_GetCrateMap_Rsp;
+
+typedef struct
+{
+	int slot;
+	int partype;
+} Cmd_GetBoardParams;
+
+typedef struct
+{
+	int cnt;
+	unsigned int vals[1];
+} Cmd_GetBoardParams_Rsp;
+
+typedef struct
+{
+	int slot;
+	int channel;
+	int partype;
+} Cmd_GetChannelParams;
+
+typedef struct
+{
+	int cnt;
+	unsigned int vals[1];
+} Cmd_GetChannelParams_Rsp;
+
+typedef struct
+{
+	int slot;
+	int channel;
+	int partype;
+	int cnt;
+	unsigned int vals[1];
+} Cmd_SetChannelParams;
 
 /*****************************************************/
 /*************** Main message structure **************/
@@ -99,15 +165,25 @@ typedef struct
   
 	union
 	{
-		Cmd_Read16				m_Cmd_Read16;
-		Cmd_Read16_Rsp			m_Cmd_Read16_Rsp;
-		Cmd_Write16				m_Cmd_Write16;
-		Cmd_Read32				m_Cmd_Read32;
-		Cmd_Read32_Rsp			m_Cmd_Read32_Rsp;
-		Cmd_Write32				m_Cmd_Write32;
-		Cmd_Delay				m_Cmd_Delay;
-		Cmd_ReadScalers_Rsp		m_Cmd_ReadScalers_Rsp;
-		unsigned char			m_raw[MAX_MSG_SIZE];
+		Cmd_Read16						m_Cmd_Read16;
+		Cmd_Read16_Rsp					m_Cmd_Read16_Rsp;
+		Cmd_Write16						m_Cmd_Write16;
+		Cmd_Read32						m_Cmd_Read32;
+		Cmd_Read32_Rsp					m_Cmd_Read32_Rsp;
+		Cmd_Write32						m_Cmd_Write32;
+		Cmd_Delay						m_Cmd_Delay;
+		
+		Cmd_ReadScalers				m_Cmd_ReadScalers;
+		Cmd_ReadScalers_Rsp			m_Cmd_ReadScalers_Rsp;
+		Cmd_GetCrateMap				m_Cmd_GetCrateMap;
+		Cmd_GetCrateMap_Rsp			m_Cmd_GetCrateMap_Rsp;
+		Cmd_GetBoardParams			m_Cmd_GetBoardParams;
+		Cmd_GetBoardParams_Rsp		m_Cmd_GetBoardParams_Rsp;
+		Cmd_GetChannelParams			m_Cmd_GetChannelParams;
+		Cmd_GetChannelParams_Rsp	m_Cmd_GetChannelParams_Rsp;
+		Cmd_SetChannelParams			m_Cmd_SetChannelParams;
+
+		unsigned char					m_raw[MAX_MSG_SIZE];
 	} msg;
 } CrateMsgStruct;
 
@@ -401,6 +477,77 @@ public:
 			{
 				for(int i = 0; i < Msg.msg.m_Cmd_Read32_Rsp.cnt; i++)
 					(*val)[i] = Msg.msg.m_Cmd_Read32_Rsp.vals[i];
+			}
+			return kTRUE;
+		}
+		return kFALSE;
+	}
+
+	Bool_t ScalerReadBoard(int slot, unsigned int **val, int *len)
+	{
+		if(!CheckConnection(__FUNCTION__))
+			return kFALSE;
+		
+		Msg.type = SCALER_SERVER_READ_BOARD;
+		Msg.len = 8;
+		Msg.msg.m_Cmd_ReadScalers.cnt = 70;
+		Msg.msg.m_Cmd_ReadScalers.slot = slot; 
+		SendRaw(&Msg, Msg.len+8);
+		
+		if(RcvRsp(Msg.type))
+		{
+			if(swap)
+				Msg.msg.m_Cmd_ReadScalers_Rsp.cnt = LSWAP(Msg.msg.m_Cmd_ReadScalers_Rsp.cnt);
+			
+			*val = new unsigned int[Msg.msg.m_Cmd_ReadScalers_Rsp.cnt];
+			if(!(*val))
+				return kFALSE;
+			
+			*len = Msg.msg.m_Cmd_ReadScalers_Rsp.cnt;
+			if(swap)
+			{
+				for(int i = 0; i < Msg.msg.m_Cmd_ReadScalers_Rsp.cnt; i++)
+					(*val)[i] = LSWAP(Msg.msg.m_Cmd_ReadScalers_Rsp.vals[i]);
+			}
+			else
+			{
+				for(int i = 0; i < Msg.msg.m_Cmd_ReadScalers_Rsp.cnt; i++)
+					(*val)[i] = Msg.msg.m_Cmd_ReadScalers_Rsp.vals[i];
+			}
+			return kTRUE;
+		}
+		return kFALSE;
+	}
+	
+	Bool_t GetCrateMap(unsigned int **val, int *len)
+	{
+		if(!CheckConnection(__FUNCTION__))
+			return kFALSE;
+		
+		Msg.type = SCALER_SERVER_GET_CRATE_MAP;
+		Msg.len = 8; /* always have 'cnt' and 'vals[1]' */
+		Msg.msg.m_Cmd_GetCrateMap.cnt = 0; /* not used in current command */
+		SendRaw(&Msg, Msg.len+8); /* count 'len' and 'type' from union */
+
+		if(RcvRsp(Msg.type))
+		{
+			if(swap)
+				Msg.msg.m_Cmd_GetCrateMap_Rsp.cnt = LSWAP(Msg.msg.m_Cmd_GetCrateMap_Rsp.cnt);
+
+			*val = new unsigned int[Msg.msg.m_Cmd_GetCrateMap_Rsp.cnt];
+			if(!(*val))
+				return kFALSE;
+			
+			*len = Msg.msg.m_Cmd_GetCrateMap_Rsp.cnt;
+			if(swap)
+			{
+				for(int i = 0; i < Msg.msg.m_Cmd_GetCrateMap_Rsp.cnt; i++)
+					(*val)[i] = LSWAP(Msg.msg.m_Cmd_GetCrateMap_Rsp.vals[i]);
+			}
+			else
+			{
+				for(int i = 0; i < Msg.msg.m_Cmd_GetCrateMap_Rsp.cnt; i++)
+					(*val)[i] = Msg.msg.m_Cmd_GetCrateMap_Rsp.vals[i];
 			}
 			return kTRUE;
 		}

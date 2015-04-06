@@ -160,6 +160,12 @@ public:
 			{NULL, 0},
 			{"Hps", 0},
 				{"TriggerLatency",			REGMEM_DESC_FLAGS_UINT,		{0x2100, 0, 10, 32}},
+				{"ScalerTrig0Busy",		REGMEM_DESC_FLAGS_UINT,		{0x2110, 0, 32, 32}},	//trigger(0)
+				{"ScalerTrig1Busy",		REGMEM_DESC_FLAGS_UINT,		{0x2114, 0, 32, 32}},	//trigger(1)
+				{"ScalerTrig2Busy",		REGMEM_DESC_FLAGS_UINT,		{0x2118, 0, 32, 32}},	//trigger(2)
+				{"ScalerTrig3Busy",		REGMEM_DESC_FLAGS_UINT,		{0x211C, 0, 32, 32}},	//trigger(3)
+				{"ScalerTrig4Busy",		REGMEM_DESC_FLAGS_UINT,		{0x2120, 0, 32, 32}},	//trigger(4)
+				{"ScalerTrig5Busy",		REGMEM_DESC_FLAGS_UINT,		{0x2124, 0, 32, 32}},	//trigger(5)
 				{"Singles 0 Trigger", 0},
 					{"Emin_en",					REGMEM_DESC_FLAGS_UINT,		{0x0700, 0, 1, 32}},
 					{"Emin",						REGMEM_DESC_FLAGS_UINT,		{0x0718, 0, 13, 32}},
@@ -167,6 +173,35 @@ public:
 					{"Emax",						REGMEM_DESC_FLAGS_UINT,		{0x071C, 0, 13, 32}},
 					{"Nmin_en",					REGMEM_DESC_FLAGS_UINT,		{0x0700, 2, 1, 32}},
 					{"Nmin",						REGMEM_DESC_FLAGS_UINT,		{0x0720, 0, 4, 32}},
+
+					{"Prescale0_Val",			REGMEM_DESC_FLAGS_UINT,		{0x0730, 0, 16, 32}},
+					{"Prescale0_MinX",		REGMEM_DESC_FLAGS_INT,		{0x0730, 16, 6, 32}},
+					{"Prescale0_MaxX",		REGMEM_DESC_FLAGS_INT,		{0x0730, 24, 6, 32}},
+
+					{"Prescale1_Val",			REGMEM_DESC_FLAGS_UINT,		{0x0734, 0, 16, 32}},
+					{"Prescale1_MinX",		REGMEM_DESC_FLAGS_INT,		{0x0734, 16, 6, 32}},
+					{"Prescale1_MaxX",		REGMEM_DESC_FLAGS_INT,		{0x0734, 24, 6, 32}},
+
+					{"Prescale2_Val",			REGMEM_DESC_FLAGS_UINT,		{0x0738, 0, 16, 32}},
+					{"Prescale2_MinX",		REGMEM_DESC_FLAGS_INT,		{0x0738, 16, 6, 32}},
+					{"Prescale2_MaxX",		REGMEM_DESC_FLAGS_INT,		{0x0738, 24, 6, 32}},
+
+					{"Prescale3_Val",			REGMEM_DESC_FLAGS_UINT,		{0x073C, 0, 16, 32}},
+					{"Prescale3_MinX",		REGMEM_DESC_FLAGS_INT,		{0x073C, 16, 6, 32}},
+					{"Prescale3_MaxX",		REGMEM_DESC_FLAGS_INT,		{0x073C, 24, 6, 32}},
+
+					{"Prescale4_Val",			REGMEM_DESC_FLAGS_UINT,		{0x0740, 0, 16, 32}},
+					{"Prescale4_MinX",		REGMEM_DESC_FLAGS_INT,		{0x0740, 16, 6, 32}},
+					{"Prescale4_MaxX",		REGMEM_DESC_FLAGS_INT,		{0x0740, 24, 6, 32}},
+
+					{"Prescale5_Val",			REGMEM_DESC_FLAGS_UINT,		{0x0744, 0, 16, 32}},
+					{"Prescale5_MinX",		REGMEM_DESC_FLAGS_INT,		{0x0744, 16, 6, 32}},
+					{"Prescale5_MaxX",		REGMEM_DESC_FLAGS_INT,		{0x0744, 24, 6, 32}},
+
+					{"Prescale6_Val",			REGMEM_DESC_FLAGS_UINT,		{0x0748, 0, 16, 32}},
+					{"Prescale6_MinX",		REGMEM_DESC_FLAGS_INT,		{0x0748, 16, 6, 32}},
+					{"Prescale6_MaxX",		REGMEM_DESC_FLAGS_INT,		{0x0748, 24, 6, 32}},
+
 					{"ScalerSinglePass",		REGMEM_DESC_FLAGS_UINT,		{0x0780, 0, 32, 32}},
 					{"ScalerSingleTot",		REGMEM_DESC_FLAGS_UINT,		{0x0784, 0, 32, 32}},
 				{NULL, 0},
@@ -185,7 +220,6 @@ public:
 					{"Diff_en",					REGMEM_DESC_FLAGS_UINT,		{0x0900, 1, 1, 32}},
 					{"Coplanarity_en",		REGMEM_DESC_FLAGS_UINT,		{0x0900, 2, 1, 32}},
 					{"EnergeyDist_en",		REGMEM_DESC_FLAGS_UINT,		{0x0900, 3, 1, 32}},
-					{"ClusterDelay",			REGMEM_DESC_FLAGS_UINT,		{0x0908, 0, 9, 32}},
 					{"TimeCoincidence",		REGMEM_DESC_FLAGS_UINT,		{0x090C, 0, 4, 32}},
 					{"Summax",					REGMEM_DESC_FLAGS_UINT,		{0x0910, 0, 13, 32}},
 					{"Diffmax",					REGMEM_DESC_FLAGS_UINT,		{0x0914, 0, 13, 32}},
@@ -207,7 +241,6 @@ public:
 					{"Diff_en",					REGMEM_DESC_FLAGS_UINT,		{0x0A00, 1, 1, 32}},
 					{"Coplanarity_en",		REGMEM_DESC_FLAGS_UINT,		{0x0A00, 2, 1, 32}},
 					{"EnergeyDist_en",		REGMEM_DESC_FLAGS_UINT,		{0x0A00, 3, 1, 32}},
-					{"ClusterDelay",			REGMEM_DESC_FLAGS_UINT,		{0x0A08, 0, 9, 32}},
 					{"TimeCoincidence",		REGMEM_DESC_FLAGS_UINT,		{0x0A0C, 0, 4, 32}},
 					{"Summax",					REGMEM_DESC_FLAGS_UINT,		{0x0A10, 0, 13, 32}},
 					{"Diffmax",					REGMEM_DESC_FLAGS_UINT,		{0x0A14, 0, 13, 32}},
@@ -227,7 +260,7 @@ public:
 				{NULL, 0},
 				{"Cosmic Trigger", 0},
 					{"TimeCoincidence",		REGMEM_DESC_FLAGS_UINT,		{0x0B00, 0, 8, 32}},
-					{"PatternCoincidence",	REGMEM_DESC_FLAGS_UINT,		{0x0B04, 0, 8, 32}},
+					{"PatternCoincidence",	REGMEM_DESC_FLAGS_UINT,		{0x0B04, 0, 16, 32}},
 					{"ScalerCosmicTop0",		REGMEM_DESC_FLAGS_UINT,		{0x0B10, 0, 32, 32}},
 					{"ScalerCosmicTop1",		REGMEM_DESC_FLAGS_UINT,		{0x0B14, 0, 32, 32}},
 					{"ScalerCosmicTop2",		REGMEM_DESC_FLAGS_UINT,		{0x0B18, 0, 32, 32}},

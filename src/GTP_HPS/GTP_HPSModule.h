@@ -4,6 +4,7 @@
 #include "RootHeader.h"
 #include "GTP_HPS_SerialScope.h"
 #include "GTP_HPS_FiberSerialScope.h"
+#include "GTP_HPS_TIScope.h"
 #include "GTP_HPSStatus.h"
 #include "ModuleFrame.h"
 #include "gtp.h"
@@ -20,6 +21,7 @@ public:
 
 		tFrame = pGTPTabs->AddTab("Status");	tFrame->AddFrame(new GTP_HPSStatus(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pGTPTabs->AddTab("QSFP");		tFrame->AddFrame(new GTP_HPS_FiberSerialScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+		tFrame = pGTPTabs->AddTab("TI");			tFrame->AddFrame(new GTP_HPS_TIScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pGTPTabs->AddTab("PP1");		tFrame->AddFrame(new GTP_HPS_SerialScope(tFrame, this, 0), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pGTPTabs->AddTab("PP2");		tFrame->AddFrame(new GTP_HPS_SerialScope(tFrame, this, 1), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pGTPTabs->AddTab("PP3");		tFrame->AddFrame(new GTP_HPS_SerialScope(tFrame, this, 2), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
@@ -62,7 +64,7 @@ public:
 			{"TiGtpLink", 0},
 				{"SendBlReq",					REGMEM_DESC_FLAGS_UINT,		{0x2500, 0, 1, 32}},
 				{"SendAck",						REGMEM_DESC_FLAGS_UINT,		{0x2500, 1, 1, 32}},
-				{"TestIrq",						REGMEM_DESC_FLAGS_UINT,		{0x2500, 2, 1, 32}},
+				{"ClearSyncEvtFlag",			REGMEM_DESC_FLAGS_UINT,		{0x2500, 2, 1, 32}},
 				{"RxErrors",					REGMEM_DESC_FLAGS_UINT,		{0x2504, 0, 16, 32}},
 				{"RxReady",						REGMEM_DESC_FLAGS_UINT,		{0x2504, 16, 1, 32}},
 				{"RxLocked",					REGMEM_DESC_FLAGS_UINT,		{0x2504, 17, 1, 32}},
@@ -71,7 +73,7 @@ public:
 				{"RxFifoReset",				REGMEM_DESC_FLAGS_UINT,		{0x2508, 2, 1, 32}},
 				{"FifoReset",					REGMEM_DESC_FLAGS_UINT,		{0x2510, 0, 1, 32}},
 				{"FifoDataStatus",			REGMEM_DESC_FLAGS_UINT,		{0x2514, 0, 8, 32}},
-				{"FifoLenStatus",				REGMEM_DESC_FLAGS_UINT,		{0x251C, 0, 8, 32}},
+				{"FifoLenStatus",				REGMEM_DESC_FLAGS_HEX,		{0x251C, 0, 32, 32}},
 			{NULL, 0},
 			{"Sd", 0},
 				{"Scalers", 0},

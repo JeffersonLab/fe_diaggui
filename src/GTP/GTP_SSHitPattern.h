@@ -61,18 +61,6 @@ public:
 		}
 		
 		TGCompositeFrame *pF1, *pF2;
-		AddFrame(pF1 = new TGGroupFrame(this, Form("%s Config", Name.Data()), kVerticalFrame), new TGLayoutHints(kLHintsExpandX | kLHintsTop));
-			pF1->AddFrame(pF2 = new TGHorizontalFrame(pF1), new TGLayoutHints(kLHintsExpandX));
-				pF2->AddFrame(new TGLabel(pF2, new TGString("Delay(ticks): ")), new TGLayoutHints(kLHintsLeft));
-				pF2->AddFrame(pNumberDelay = new TGNumberEntry(pF2, 0, 4, NUM_DELAY, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0.0, 255.0));
-					pNumberDelay->Associate(this);
-				pF2->AddFrame(pLabelDelay = new TGLabel(pF2, new TGString(" Actual Delay = 9999ns")), new TGLayoutHints(kLHintsLeft));
-			pF1->AddFrame(pF2 = new TGHorizontalFrame(pF1), new TGLayoutHints(kLHintsExpandX));
-				pF2->AddFrame(new TGLabel(pF2, new TGString("Pulse Width Extension(ticks): ")), new TGLayoutHints(kLHintsLeft));
-				pF2->AddFrame(pNumberWidth = new TGNumberEntry(pF2, 0, 4, NUM_WIDTH, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0.0, 255.0));
-					pNumberWidth->Associate(this);
-				pF2->AddFrame(pLabelWidth = new TGLabel(pF2, new TGString(" Actual Width Extension = 9999ns")), new TGLayoutHints(kLHintsLeft));
-		
 		AddFrame(pF1 = new TGGroupFrame(this, Form("%s Scalers", Name.Data()), kVerticalFrame), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			pF1->AddFrame(pF2 = new TGHorizontalFrame(pF1), new TGLayoutHints(kLHintsExpandX));
 				pF2->AddFrame(pButtonUpdateScalers = new TGTextButton(pF2, new TGHotString("Update Scalers"), BTN_UPDATE_SCALERS));
@@ -110,7 +98,41 @@ public:
 					
 		UpdateScalers();
 	}
-	
+
+	void PrintScalers(GtpScalers *pGtpScalers)
+	{
+		int i;
+		
+		printf("SysClk50 = %u\n", pGtpScalers->SysClk50);
+		printf("GClk = %u\n", pGtpScalers->GClk);
+		printf("Sync = %u\n", pGtpScalers->Sync);
+		printf("Trig1 = %u\n", pGtpScalers->Trig1);
+		printf("Trig2 = %u\n", pGtpScalers->Trig2);
+		printf("FpIn[4] = %u\n", i, pGtpScalers->FpIn[i]);
+		printf("FpOut[4] = %u\n", i, pGtpScalers->FpOut[i]);
+		printf("Busy = %u\n", pGtpScalers->Busy);
+		printf("BusyCycles = %u\n", pGtpScalers->BusyCycles);
+		for(i = 0; i < 32; i++) printf("FCalEnergy[%d] = %u\n", i, pGtpScalers->FCalEnergy[i]);
+		for(i = 0; i < 32; i++) printf("BCalEnergy[%d] = %u\n", i, pGtpScalers->BCalEnergy[i]);
+		for(i = 0; i < 16; i++) printf("BCalCosmic[%d] = %u\n", i, pGtpScalers->BCalCosmic[i]);
+		for(i = 0; i < 32; i++) printf("TOF[%d] = %u\n", i, pGtpScalers->TOF[i]);
+		for(i = 0; i < 32; i++) printf("TagM[%d] = %u\n", i, pGtpScalers->TagM[i]);
+		for(i = 0; i < 32; i++) printf("TagH[%d] = %u\n", i, pGtpScalers->TagH[i]);
+		for(i = 0; i < 32; i++) printf("PS[%d] = %u\n", i, pGtpScalers->PS[i]);
+		for(i = 0; i < 32; i++) printf("ST[%d] = %u\n", i, pGtpScalers->ST[i]);
+		for(i = 0; i < 16; i++)
+		{
+			printf("Trig_BCalCosmic[%d] = %u\n", i, pGtpScalers->Trig_BCalCosmic[i]);
+			printf("Trig_BFCal[%d] = %u\n", i, pGtpScalers->Trig_BFCal[i]);
+			printf("Trig_TAGM[%d] = %u\n", i, pGtpScalers->Trig_TAGM[i]);
+			printf("Trig_TAGH[%d] = %u\n", i, pGtpScalers->Trig_TAGH[i]);
+			printf("Trig_PS[%d] = %u\n", i, pGtpScalers->Trig_PS[i]);
+			printf("Trig_ST[%d] = %u\n", i, pGtpScalers->Trig_ST[i]);
+			printf("Trig_TOF[%d] = %u\n", i, pGtpScalers->Trig_TOF[i]);
+			printf("Trig[%d] = %u\n", i, pGtpScalers->Trig[i]);
+		}
+	}
+
 	void UpdateScalers()
 	{
 		TVirtualPad *pPad;
@@ -122,6 +144,8 @@ public:
 			return;
 
 		GtpScalers *pGtpScalers = (GtpScalers *)pScalers;
+		
+		PrintScalers(pGtpScalers);
 
 		if(Type == GTP_HITPATTER_TYPE_TOF)
 			pScalersToPlot = pGtpScalers->TOF;
@@ -169,74 +193,10 @@ public:
 	
 	virtual Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 	{
-		int v;
+		int v = 0;
 
 		if((GET_MSG(msg) == kC_TEXTENTRY) && (GET_SUBMSG(msg) == kTE_TEXTCHANGED))
 		{
-			switch(parm1)
-			{
-				case NUM_DELAY:
-				{
-					if(Type == GTP_HITPATTER_TYPE_TOF)
-						pM->WriteReg32(&pRegs->TOF.Delay, pNumberDelay->GetIntNumber());
-					else if(Type == GTP_HITPATTER_TYPE_PS)
-						pM->WriteReg32(&pRegs->PS.Delay, pNumberDelay->GetIntNumber());
-					else if(Type == GTP_HITPATTER_TYPE_ST)
-						pM->WriteReg32(&pRegs->ST.Delay, pNumberDelay->GetIntNumber());
-					else if(Type == GTP_HITPATTER_TYPE_TAGH)
-						pM->WriteReg32(&pRegs->TagH.Delay, pNumberDelay->GetIntNumber());
-					else if(Type == GTP_HITPATTER_TYPE_TAGM)
-						pM->WriteReg32(&pRegs->TagM.Delay, pNumberDelay->GetIntNumber());
-
-					if(Type == GTP_HITPATTER_TYPE_TOF)
-						v = pM->ReadReg32(&pRegs->TOF.Delay);
-					else if(Type == GTP_HITPATTER_TYPE_PS)
-						v = pM->ReadReg32(&pRegs->PS.Delay);
-					else if(Type == GTP_HITPATTER_TYPE_ST)
-						v = pM->ReadReg32(&pRegs->ST.Delay);
-					else if(Type == GTP_HITPATTER_TYPE_TAGH)
-						v = pM->ReadReg32(&pRegs->TagH.Delay);
-					else if(Type == GTP_HITPATTER_TYPE_TAGM)
-						v = pM->ReadReg32(&pRegs->TagM.Delay);
-
-					pNumberDelay->SetIntNumber(v);
-					pLabelDelay->SetText(Form("Actual Delay = %dns", (int)v*4));
-
-					break;
-				}
-				case NUM_WIDTH:
-				{
-					if(Type == GTP_HITPATTER_TYPE_TOF)
-						pM->WriteReg32(&pRegs->TOF.Width, pNumberWidth->GetIntNumber());
-					else if(Type == GTP_HITPATTER_TYPE_PS)
-						pM->WriteReg32(&pRegs->PS.Width, pNumberWidth->GetIntNumber());
-					else if(Type == GTP_HITPATTER_TYPE_ST)
-						pM->WriteReg32(&pRegs->ST.Width, pNumberWidth->GetIntNumber());
-					else if(Type == GTP_HITPATTER_TYPE_TAGH)
-						pM->WriteReg32(&pRegs->TagH.Width, pNumberWidth->GetIntNumber());
-					else if(Type == GTP_HITPATTER_TYPE_TAGM)
-						pM->WriteReg32(&pRegs->TagM.Width, pNumberWidth->GetIntNumber());
-
-					if(Type == GTP_HITPATTER_TYPE_TOF)
-						v = pM->ReadReg32(&pRegs->TOF.Width);
-					else if(Type == GTP_HITPATTER_TYPE_PS)
-						v = pM->ReadReg32(&pRegs->PS.Width);
-					else if(Type == GTP_HITPATTER_TYPE_ST)
-						v = pM->ReadReg32(&pRegs->ST.Width);
-					else if(Type == GTP_HITPATTER_TYPE_TAGH)
-						v = pM->ReadReg32(&pRegs->TagH.Width);
-					else if(Type == GTP_HITPATTER_TYPE_TAGM)
-						v = pM->ReadReg32(&pRegs->TagM.Width);
-
-					pNumberWidth->SetIntNumber(v);
-					pLabelWidth->SetText(Form("Actual Delay = %dns", (int)pNumberWidth->GetIntNumber()*4));
-
-					break;
-				}
-				default:
-					printf("textentry id %d selected\n", (int)parm1);
-					break;
-			}
 		}
 		else if((GET_MSG(msg) == kC_COMMAND) && (GET_SUBMSG(msg) == kCM_COMBOBOX))
 		{
@@ -265,8 +225,6 @@ public:
 private:
 	enum
 	{
-		NUM_DELAY,
-		NUM_WIDTH,
 		BTN_UPDATE_SCALERS
 	};
 
@@ -276,12 +234,6 @@ private:
 	int						Type;
 	int						NBins;
 	int						NDiv;
-	
-	TGNumberEntry			*pNumberDelay;
-	TGNumberEntry			*pNumberWidth;
-
-	TGLabel					*pLabelDelay;
-	TGLabel					*pLabelWidth;
 
 	TRootEmbeddedCanvas	*pCanvas;
 	

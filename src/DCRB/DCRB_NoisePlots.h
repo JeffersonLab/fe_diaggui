@@ -28,10 +28,10 @@ public:
 				pB->Associate(this);
 
 			pTF1->AddFrame(new TGLabel(pTF1, "Min Threshold(mV):"));
-			pTF1->AddFrame(pNumEntryMinThreshold = new TGNumberEntry(pTF1, 15, 4, NUM_HISTNUMBINS, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAPositive, TGNumberFormat::kNELLimitMinMax, 0.0, 100.0));
+			pTF1->AddFrame(pNumEntryMinThreshold = new TGNumberEntry(pTF1, 15, 4, NUM_HISTNUMBINS, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAPositive, TGNumberFormat::kNELLimitMinMax, 0.0, 200.0));
 				pNumEntryMinThreshold->Associate(this);
 			pTF1->AddFrame(new TGLabel(pTF1, "Max Threshold(mV):"));
-			pTF1->AddFrame(pNumEntryMaxThreshold = new TGNumberEntry(pTF1, 60, 4, NUM_HISTNUMBINS, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAPositive, TGNumberFormat::kNELLimitMinMax, 0.0, 100.0));
+			pTF1->AddFrame(pNumEntryMaxThreshold = new TGNumberEntry(pTF1, 60, 4, NUM_HISTNUMBINS, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAPositive, TGNumberFormat::kNELLimitMinMax, 0.0, 200.0));
 				pNumEntryMaxThreshold->Associate(this);
 
 		TGLayoutHints *hint = 0;
@@ -67,6 +67,30 @@ public:
 			pFuncThresholdHitsFit[i] = new TF1(Form("fa%d", i+1), "[0]*(1+TMath::Erf([1]*([2]-x)))", 10.0, 60.0);
 			pFuncThresholdHitsFit[i]->SetLineColor(4);
 		}
+		
+		Reg_DAC = (volatile unsigned int *)((int)pM->BaseAddr + 0x0024);
+		Reg_PulserPeriod = (volatile unsigned int *)((int)pM->BaseAddr + 0x0280);
+		Reg_PulserLowCycles = (volatile unsigned int *)((int)pM->BaseAddr + 0x0284);
+		Reg_PulserNPulses = (volatile unsigned int *)((int)pM->BaseAddr + 0x0288);
+		Reg_PulserStart = (volatile unsigned int *)((int)pM->BaseAddr + 0x028C);
+		Reg_PulserDone = (volatile unsigned int *)((int)pM->BaseAddr + 0x0290);
+		Reg_SD_DCE0 = (volatile unsigned int *)((int)pM->BaseAddr + 0x0200);
+		Reg_SD_DCE1 = (volatile unsigned int *)((int)pM->BaseAddr + 0x0204);
+		Reg_SD_DCE2 = (volatile unsigned int *)((int)pM->BaseAddr + 0x0208);
+		Reg_SD_FCE0 = (volatile unsigned int *)((int)pM->BaseAddr + 0x020C);
+		Reg_SD_FCE1 = (volatile unsigned int *)((int)pM->BaseAddr + 0x0210);
+		Reg_SD_FCE2 = (volatile unsigned int *)((int)pM->BaseAddr + 0x0214);
+		Reg_ScalerLatch = (volatile unsigned int *)((int)pM->BaseAddr + 0x0300);
+		Reg_ScalerClk50 = (volatile unsigned int *)((int)pM->BaseAddr + 0x0304);
+		
+		for(int i = 0; i < 96; i++)
+		{
+			int offset = 0x1100+4*(i%16)+0x200*(i/16);
+			Reg_Scaler[i] = (volatile unsigned int *)((int)pM->BaseAddr + offset);
+		}
+		
+		SetupPulser(0x38, 500.0, 0.0, 20.0, 10, 1.0E-6);
+		SetThreshold(-100.0);
 	}
 
 	virtual Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t)
@@ -94,21 +118,68 @@ public:
 		}
 		return kTRUE;
 	}
-
-	void SetThreshold(double mV)
+	
+	void SetupPulser(int grp_mask, double offset_mv, double low_mv, double high_mv, int width, double period)
 	{
-		double dac = mV * 24489360.0 / 262144.0;
-		pM->WriteReg32(&pRegs->DACConfig, (unsigned int)dac);
+		printf("mask=0x%02X,offset=%d,low=%d,high=%d,width=%d,period=%d\n", grp_mask, (int)offset_mv, (int)low_mv, (int)high_mv, width, (int)period);
+		WriteDac(1, high_mv/2.0+2048.0);
+		WriteDac(2, low_mv/2.0+2048.0);
+		WriteDac(3, -offset_mv+2048.0);
+		
+		int per = (int)(period*125000000.0);
+		pM->WriteReg32(Reg_PulserPeriod, per);
+		pM->WriteReg32(Reg_PulserLowCycles, per-width);
+		pM->WriteReg32(Reg_PulserNPulses, 0xFFFFFFFF);
+		
+		if(grp_mask & 0x1)	pM->WriteReg32(Reg_SD_DCE0, 18);
+		else						pM->WriteReg32(Reg_SD_DCE0, 0);
+			
+		if(grp_mask & 0x2)	pM->WriteReg32(Reg_SD_DCE1, 18);
+		else						pM->WriteReg32(Reg_SD_DCE1, 0);
+
+		if(grp_mask & 0x4)	pM->WriteReg32(Reg_SD_DCE2, 18);
+		else						pM->WriteReg32(Reg_SD_DCE2, 0);
+
+		if(grp_mask & 0x8)	pM->WriteReg32(Reg_SD_FCE0, 18);
+		else						pM->WriteReg32(Reg_SD_FCE0, 0);
+
+		if(grp_mask & 0x10)	pM->WriteReg32(Reg_SD_FCE1, 18);
+		else						pM->WriteReg32(Reg_SD_FCE1, 0);
+
+		if(grp_mask & 0x20)	pM->WriteReg32(Reg_SD_FCE2, 18);
+		else						pM->WriteReg32(Reg_SD_FCE2, 0);
+	}
+
+	void SetThreshold(double mv)
+	{
+		mv = (mv * 8.06) + 2048.0;
+		int dac;
+		
+		if(mv < 0.0) dac = 0;
+		if(mv > 4095.0) dac = 4095;
+		
+		WriteDac(0, dac);
+	}
+	
+	void WriteDac(int ch, int val)
+	{
+		pM->WriteReg32(Reg_DAC, 0xC0000);						// NRST=1,NLD=1,NCS=0,WR=0
+		pM->WriteReg32(Reg_DAC, 0xD0000 | val | (ch<<14));	// NRST=1,NLD=1,NCS=0,WR=1
+		pM->Delay(1);
+		pM->WriteReg32(Reg_DAC, 0x80000);						// NRST=1,NLD=0,NCS=0,WR=0
+		pM->WriteReg32(Reg_DAC, 0xC0000);						// NRST=1,NLD=1,NCS=0,WR=0
 	}
 
 	void SetLocalTest(Bool_t en)
 	{
+/*
 		unsigned int val = pM->ReadReg32(&pRegs->TestPulseConfig);
 		if(en)
 			val = 0x3f<<0;
 		else
 			val &= ~(0x3f<<0);
 		pM->WriteReg32(&pRegs->TestPulseConfig, val);
+*/
 	}
 
 	void Start()
@@ -139,15 +210,23 @@ public:
 
 		CurrentThreshold = minThreshold;
 		SetLocalTest(1);
-		for(CurrentThreshold = minThreshold; CurrentThreshold <= maxThreshold; CurrentThreshold+= 0.25)	//250uV steps
+		for(CurrentThreshold = minThreshold; CurrentThreshold <= maxThreshold; CurrentThreshold+= 1)	//1mV steps
 		{
 			SetThreshold(CurrentThreshold);
-			pM->WriteReg32(&pRegs->ScalerLatch, 0);
+			
+			pM->WriteReg32(Reg_ScalerLatch, 1);
+			pM->WriteReg32(Reg_ScalerLatch, 0);
 			gSystem->Sleep(1000);
-			pM->WriteReg32(&pRegs->ScalerLatch, 0);
+			pM->WriteReg32(Reg_ScalerLatch, 1);
 
-			ref = pM->ReadReg32(&pRegs->VmeClkScaler);
-			pM->BlkReadReg32(&pRegs->Scalers[0], scalers, 96, CRATE_MSG_FLAGS_ADRINC);
+			ref = pM->ReadReg32(Reg_ScalerClk50);
+			
+			pM->BlkReadReg32(Reg_Scaler[0], &scalers[0], 16, CRATE_MSG_FLAGS_ADRINC);
+			pM->BlkReadReg32(Reg_Scaler[16], &scalers[16], 16, CRATE_MSG_FLAGS_ADRINC);
+			pM->BlkReadReg32(Reg_Scaler[32], &scalers[32], 16, CRATE_MSG_FLAGS_ADRINC);
+			pM->BlkReadReg32(Reg_Scaler[48], &scalers[48], 16, CRATE_MSG_FLAGS_ADRINC);
+			pM->BlkReadReg32(Reg_Scaler[64], &scalers[64], 16, CRATE_MSG_FLAGS_ADRINC);
+			pM->BlkReadReg32(Reg_Scaler[80], &scalers[80], 16, CRATE_MSG_FLAGS_ADRINC);
 
 			if(ref)
 				dref = ref;
@@ -225,6 +304,22 @@ private:
 
 	TGNumberEntry			*pNumEntryMinThreshold;
 	TGNumberEntry			*pNumEntryMaxThreshold;
+	
+	volatile unsigned int	*Reg_DAC;
+	volatile unsigned int	*Reg_PulserPeriod;
+	volatile unsigned int	*Reg_PulserLowCycles;
+	volatile unsigned int	*Reg_PulserNPulses;
+	volatile unsigned int	*Reg_PulserStart;
+	volatile unsigned int	*Reg_PulserDone;
+	volatile unsigned int	*Reg_SD_DCE0;
+	volatile unsigned int	*Reg_SD_DCE1;
+	volatile unsigned int	*Reg_SD_DCE2;
+	volatile unsigned int	*Reg_SD_FCE0;
+	volatile unsigned int	*Reg_SD_FCE1;
+	volatile unsigned int	*Reg_SD_FCE2;
+	volatile unsigned int	*Reg_ScalerLatch;
+	volatile unsigned int	*Reg_Scaler[96];
+	volatile unsigned int	*Reg_ScalerClk50;
 };
 
 #endif

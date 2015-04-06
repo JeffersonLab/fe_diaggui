@@ -112,7 +112,7 @@ public:
 			buf[i] = SpiFlashTransferByte(0xFF);
 			if(buf[i] == 0x0)
 				break;
-			if(buf[i] == 0xFF)
+			if(buf[i] == (char)0xFF)
 			{
 				buf[0] = 'e';
 				buf[1] = 'r';
