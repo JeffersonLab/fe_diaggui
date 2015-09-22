@@ -604,6 +604,7 @@ public:
 		char buf[200];
 
 		pModFrame->WriteReg32(&pDSC2regs->calCmd, 0xFF);
+		pModFrame->WriteReg32(&pDSC2regs->calBuf[0], 0x5A0F1234);
 		pModFrame->WriteReg32(&pDSC2regs->calExe, 0x01);
 
 		TTimer calTimer(5000, kFALSE);
@@ -1282,6 +1283,7 @@ Amplitude: 1500mVpp
 		//sprintf(buf, "DSC2,Assy Rev: C,Serial Num: 14,Test Date: Fri Nov 18 19:02:14 2011");
 		//sprintf(buf, "DSC2,Assy Rev: C,Serial Num: 29,Test Date: Fri Nov 18 19:08:16 2011");
 		//sprintf(buf, "DSC2,Assy Rev: C,Serial Num: 26,Test Date: Fri Oct 14 10:01:05 2011");
+sprintf(buf, "DSC2,Assy Rev: D,Serial Num: 175,Test Date: Mon Sep 21 12:06:05 2015");
 
 		pTextViewTesting->AddLine("*** Storing board assembly info in flash ***");
 		pTextViewTesting->ScrollDown(50);

@@ -22,7 +22,7 @@ public:
 		tFrame = pDSC2Tabs->AddTab("Config");		tFrame->AddFrame(new DSC2_Config(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pDSC2Tabs->AddTab("Status");		tFrame->AddFrame(new DSC2_Status(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pDSC2Tabs->AddTab("Scalers");		tFrame->AddFrame(new DSC2_Scalers(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-		//tFrame = pDSC2Tabs->AddTab("Testing");		tFrame->AddFrame(new DSC2_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+		tFrame = pDSC2Tabs->AddTab("Testing");		tFrame->AddFrame(new DSC2_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		
 		strSlotIdentifier.Form("%d", ReadReg32((volatile unsigned int *)(BaseAddr+0xB0)) & 0x1F);
 	}

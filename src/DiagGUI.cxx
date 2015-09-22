@@ -11,6 +11,7 @@
 #include "SDModule.h"
 #include "SSPModule.h"
 #include "SSP_HPSModule.h"
+#include "SSP_MPDModule.h"
 #include "TIDModule.h"
 #include "VSCMModule.h"
 #include "GTPModule.h"
@@ -18,6 +19,7 @@
 #include "V1495PulserModule.h"
 #include "FADCScalers_HPSModule.h"
 #include "RICHModule.h"
+#include "vetroc_module.h"
 
 #define TIMER_CAPTURE_POLLRATE	100
 
@@ -282,6 +284,8 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, int count)
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new SSPModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_SSP_HPS", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new SSP_HPSModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+			else if(!stricmp("MOD_TYPE_SSP_MPD", paramB))
+				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new SSP_MPDModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_TID", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new TIDModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_FADC250", paramB))
@@ -308,6 +312,8 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, int count)
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new V1495PulserModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_RICH", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new RICHModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+			else if(!stricmp("MOD_TYPE_VETROC", paramB))
+				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new vetroc_module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else
 			{
 				printf("Error: Unknown module type: %s\n", paramB);

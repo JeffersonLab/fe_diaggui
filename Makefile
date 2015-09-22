@@ -25,11 +25,13 @@ CFLAGS			= -O2 -fno-exceptions -fPIC -I/usr/include\
 			-I./src/SD \
 			-I./src/SSP \
 			-I./src/SSP_HPS \
+			-I./src/SSP_MPD \
 			-I./src/TID \
 			-I./src/V1495Pulser \
 			-I./src/VSCM \
 			-I./src/FADCScalers_HPS \
 			-I./src/RICH \
+			-I./src/vetroc \
 			-L. -DJLAB \
 			`root-config --cflags`
 LINKLIBS		= -lrt \
