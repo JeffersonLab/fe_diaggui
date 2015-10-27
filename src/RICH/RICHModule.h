@@ -3,6 +3,7 @@
 
 #include "RootHeader.h"
 #include "ModuleFrame.h"
+#include "RICH_Testing.h"
 
 class RICHModule	: public ModuleFrame
 {
@@ -13,10 +14,7 @@ public:
 
 		TGCompositeFrame *tFrame;
 		AddFrame(pTabs = new TGTab(this), new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX | kLHintsExpandY));
-
-//		tFrame = pTabs->AddTab("Testing");		tFrame->AddFrame(new SSP_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-
-		strSlotIdentifier.Form("%d", (BaseAddr>>19) & 0x1F);
+		tFrame = pTabs->AddTab("Testing");		tFrame->AddFrame(new RICH_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 	}
 
 	void SetupRegisters()
