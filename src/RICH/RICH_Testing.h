@@ -635,14 +635,10 @@ void Print_SCRegs(MAROC_Regs *regs)
 		str.Form("   slow control 0s and 1s...");
 		
 		maroc_regs_wr.Global0.val = 0x55555555;
-		
-	printf("Global1 = %08X\n", regs->Global1.val);
-	printf("DAC     = %08X\n", regs->DAC.val);
-	printf("Rsvd0   = %08X\n", regs->Reserved0);
-	
-	for(i = 0; i < 32; i++)
-		printf("CH%2d = %08X\n", i, regs->CH[i].val);
-
+		maroc_regs_wr.Global1.val = 0x155;
+		maroc_regs_wr.DAC.val = 0x01550155;
+		for(i = 0; i < 32; i++)
+			maroc_regs_wr.CH[i].val = 0x05550555;
 		
 		memset(&maroc_regs_rd[0], 0, sizeof(maroc_regs_rd[0]));
 		memset(&maroc_regs_rd[1], 0, sizeof(maroc_regs_rd[1]));
