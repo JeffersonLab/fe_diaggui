@@ -58,6 +58,9 @@
 #define RICH_TEST_EXTADCRMS_MIN			1.0
 #define RICH_TEST_EXTADCRMS_MAX			4.0
 
+#define RICH_TEST_NOISESCALER_MIN		1000
+#define RICH_TEST_NOISESCALER_MAX		100000000
+
 // Supported testing states
 enum RICHTestingStates
 {
@@ -471,17 +474,17 @@ public:
 		pM->WriteReg32(&pRegs->MAROC_Cfg.SerCtrl, val);
 	}
 
-	Bool_t SCRegs_Shift(MAROC_Regs wr_regs, MAROC_Regs rd_regs)
+	Bool_t SCRegs_Shift(MAROC_Regs *wr_regs, MAROC_Regs *rd_regs)
 	{
 		int i, val;
 		
 		/* write settings to FPGA shift register */
-		pM->WriteReg32(&pRegs->MAROC_Cfg.Regs.Global0.val, wr_regs.Global0.val);
-		pM->WriteReg32(&pRegs->MAROC_Cfg.Regs.Global1.val, wr_regs.Global1.val);
-		pM->WriteReg32(&pRegs->MAROC_Cfg.Regs.DAC.val, wr_regs.DAC.val);
+		pM->WriteReg32(&pRegs->MAROC_Cfg.Regs.Global0.val, wr_regs->Global0.val);
+		pM->WriteReg32(&pRegs->MAROC_Cfg.Regs.Global1.val, wr_regs->Global1.val);
+		pM->WriteReg32(&pRegs->MAROC_Cfg.Regs.DAC.val, wr_regs->DAC.val);
 		
 		for(i = 0; i < 32; i++)
-			pM->WriteReg32(&pRegs->MAROC_Cfg.Regs.CH[i].val, wr_regs.CH[i].val);
+			pM->WriteReg32(&pRegs->MAROC_Cfg.Regs.CH[i].val, wr_regs->CH[i].val);
 		
 		/* do shift register transfer */
 		pM->WriteReg32(&pRegs->MAROC_Cfg.SerCtrl);
@@ -500,17 +503,16 @@ public:
 				printf("Error in %s: timeout on serial transfer...\n", __FUNCTION__);
 				return kFALSE;
 			}
-
 			gSystem->Sleep(1);
 		}
 
 		/* read back settings from FPGA shift register */
-		rd_regs.Global0.val = pM_ReadReg32(&pRegs->MAROC_Cfg.Regs.Global0.val);
-		rd_regs.Global1.val = pM_ReadReg32(&pRegs->MAROC_Cfg.Regs.Global1.val);
-		rd_regs.DAC.val = pM_ReadReg32(&pRegs->MAROC_Cfg.Regs.DAC.val);
+		rd_regs->Global0.val = pM_ReadReg32(&pRegs->MAROC_Cfg.Regs.Global0.val);
+		rd_regs->Global1.val = pM_ReadReg32(&pRegs->MAROC_Cfg.Regs.Global1.val);
+		rd_regs->DAC.val = pM_ReadReg32(&pRegs->MAROC_Cfg.Regs.DAC.val);
 		
 		for(i = 0; i < 32; i++)
-			rd_regs.CH[i].val = pM_ReadReg32(&pRegs->MAROC_Cfg.Regs.CH[i].val);
+			rd_regs->CH[i].val = pM_ReadReg32(&pRegs->MAROC_Cfg.Regs.CH[i].val);
 		
 		return kTRUE;
 	}
@@ -518,7 +520,7 @@ public:
 
 	void Testing_CheckSlowControl()
 	{
-		MAROC_Regs maroc_regs_wr, maroc_regs_rd;
+		MAROC_Regs maroc_regs_wr, maroc_regs_rd[3];
 		TString str;
 		unsigned int val;
 		int i;
@@ -527,58 +529,432 @@ public:
 		// Checking SlowControl
 		///////////////////////////////////
 		AddTextLine("********** CheckSlowControl **********");
+
+
+		///////////////////////////////////
+		str.Form("   slow control reset...");
 		
-		str.Form("   BoardId(0x%08X) == 0x%08X...", RICH_TEST_BOARDID, BoardId);
-		pM->WriteReg32(&pRegs->MAROC_Cfg.Regs.Global0.val, 0);
-		pM->WriteReg32(&pRegs->MAROC_Cfg.Regs.Global1.val, 0);
-		pM->WriteReg32(&pRegs->MAROC_Cfg.Regs.DAC.val, 0);
+		memset(&maroc_regs_wr, 0, sizeof(maroc_regs_wr));
 		
-		for(i = 0; i < 32; i++)
-			pM->WriteReg32(&pRegs->MAROC_Cfg.Regs.CH[i].val, 0);
+		SCRegs_Clear();
 		
-		val = pM->ReadReg32(&pRegs->MAROC_Cfg.SerCtrl) | 0x00000002;
+		if(!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[0]) ||
+			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[1]) ||
+			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[2])
+			)
+		{
+			str += "slow control timeout. ";
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+		
+		if(memcmp(&maroc_regs_wr, &maroc_regs_rd[2], sizeof(maroc_regs_wr)) ||
+		   memcmp(&maroc_regs_wr, &maroc_regs_rd[1], sizeof(maroc_regs_wr)) ||
+		   memcmp(&maroc_regs_wr, &maroc_regs_rd[0], sizeof(maroc_regs_wr))
+			)
+		{
+			str += "comparison failed. ";
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+		
+		str += "OK";
+		AddTextLine(str);
+		///////////////////////////////////
+
+
+		///////////////////////////////////
+		str.Form("   slow control write zeros...");
+		
+		memset(&maroc_regs_wr, 0, sizeof(maroc_regs_wr));
+		
+		SCRegs_Clear();
+		
+		if(!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[2]) ||
+			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[2]) ||
+			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[1]) ||
+			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[0])
+			)
+		{
+			str += "slow control timeout. ";
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+		
+		if(memcmp(&maroc_regs_wr, &maroc_regs_rd[0], sizeof(maroc_regs_wr)) ||
+		   memcmp(&maroc_regs_wr, &maroc_regs_rd[1], sizeof(maroc_regs_wr)) ||
+		   memcmp(&maroc_regs_wr, &maroc_regs_rd[2], sizeof(maroc_regs_wr))
+			)
+		{
+			str += "comparison failed. ";
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+		
+		str += "OK";
+		AddTextLine(str);
+		///////////////////////////////////
+
+
+
+		///////////////////////////////////
+		str.Form("   slow control 0s and 1s...", min, val, units);
+		
+		memset(&maroc_regs_wr, 0x55, sizeof(maroc_regs_wr));
+		
+		SCRegs_Clear();
+		
+		if(!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[2]) ||
+			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[2]) ||
+			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[1]) ||
+			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[0])
+			)
+		{
+			str += "slow control timeout. ";
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+		
+		if(memcmp(&maroc_regs_wr, &maroc_regs_rd[0], sizeof(maroc_regs_wr)) ||
+		   memcmp(&maroc_regs_wr, &maroc_regs_rd[1], sizeof(maroc_regs_wr)) ||
+		   memcmp(&maroc_regs_wr, &maroc_regs_rd[2], sizeof(maroc_regs_wr))
+			)
+		{
+			str += "comparison failed. ";
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+		
+		str += "OK";
+		AddTextLine(str);
+		///////////////////////////////////
+
+		str += "PASSED";
+		AddTextLine(str);
+		
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+	}
+
+	void DynRegs_Clear()
+	{
+		int val;
+
+		/* set rst_r low */
+		val = pM->ReadReg32(&pRegs->MAROC_Cfg.SerCtrl);
+		val &= 0xFFFFFFFB;
+		pM->WriteReg32(&pRegs->MAROC_Cfg.SerCtrl, val);
+
+		/* set rst_r high */
+		val |= 0x00000004;
+		pM->WriteReg32(&pRegs->MAROC_Cfg.SerCtrl, val);
+	}
+
+	Bool_t DynRegs_Shift(MAROC_DyRegs wr, MAROC_DyRegs *rd1, MAROC_DyRegs *rd2, MAROC_DyRegs *rd3)
+	{
+		int i, val;
+		
+		/* write settings to FPGA shift register */
+		pM->WriteReg32(&pRegs->MAROC_Cfg.DyRegs_WrAll.Ch0_31_Hold1, wr.Ch0_31_Hold1);
+		pM->WriteReg32(&pRegs->MAROC_Cfg.DyRegs_WrAll.Ch32_63_Hold1, wr.Ch32_63_Hold1);
+		pM->WriteReg32(&pRegs->MAROC_Cfg.DyRegs_WrAll.Ch0_31_Hold2, wr.Ch0_31_Hold2);
+		pM->WriteReg32(&pRegs->MAROC_Cfg.DyRegs_WrAll.Ch32_63_Hold2, wr.Ch32_63_Hold2);
+
+		/* do shift register transfer */
+		val = pM->ReadReg32(&pRegs->MAROC_Cfg.SerCtrl);
+		val |= 0x00000008;
 		pM->WriteReg32(&pRegs->MAROC_Cfg.SerCtrl, val);
 		
-		gSystem->Sleep(1);
-		
-		val = rich_read32(&pRICH_regs->MAROC_Cfg.SerStatus);
-		if(val & 0x00000001)
+		/* check for shift register transfer completion */
+		for(i = 10; i > 0; i--)
 		{
-			str += "FAILED";
-			AddTextLine(str);
-			TestingStop();
-			return;
-		}
-		
-		
-		
-		
-		
-		unsigned int BoardId = pM->ReadReg32(&pRegs->Clk.BoardId);
-		str.Form("   BoardId(0x%08X) == 0x%08X...", RICH_TEST_BOARDID, BoardId);
-		if(BoardId == RICH_TEST_BOARDID)
-		{
-			str += "PASSED";
-			AddTextLine(str);
-		}
-		else
-		{
-			str += "FAILED";
-			AddTextLine(str);
-			TestingStop();
-			return;
+			val = pM->ReadReg32(&pRegs->MAROC_Cfg.SerStatus);
+			if(!(val & 0x00000002))
+				break;
+			
+			if(!i)
+			{
+				printf("Error in %s: timeout on serial transfer...\n", __FUNCTION__);
+				return kFALSE;
+			}
+			gSystem->Sleep(1);
 		}
 
-//		str.Form("   Firmware revision = 0x%08X", pM->ReadReg32(&pRegs->Cfg.FirmwareRev) & 0xFFFF);
+		/* read back settings from FPGA shift register */
+		if(rd1)
+		{
+			rd1->Ch0_31_Hold1 = pM->ReadReg32(&pRegs->MAROC_Cfg.DyRegs_Rd[0].Ch0_31_Hold1);
+			rd1->Ch32_63_Hold1 = pM->ReadReg32(&pRegs->MAROC_Cfg.DyRegs_Rd[0].Ch32_63_Hold1);
+			rd1->Ch0_31_Hold2 = pM->ReadReg32(&pRegs->MAROC_Cfg.DyRegs_Rd[0].Ch0_31_Hold2);
+			rd1->Ch32_63_Hold2 = pM->ReadReg32(&pRegs->MAROC_Cfg.DyRegs_Rd[0].Ch32_63_Hold2);
+		}
+
+		if(rd2)
+		{
+			rd2->Ch0_31_Hold1 = pM->ReadReg32(&pRegs->MAROC_Cfg.DyRegs_Rd[1].Ch0_31_Hold1);
+			rd2->Ch32_63_Hold1 = pM->ReadReg32(&pRegs->MAROC_Cfg.DyRegs_Rd[1].Ch32_63_Hold1);
+			rd2->Ch0_31_Hold2 = pM->ReadReg32(&pRegs->MAROC_Cfg.DyRegs_Rd[1].Ch0_31_Hold2);
+			rd2->Ch32_63_Hold2 = pM->ReadReg32(&pRegs->MAROC_Cfg.DyRegs_Rd[1].Ch32_63_Hold2);
+		}
+
+		if(rd3)
+		{
+			rd3->Ch0_31_Hold1 = pM->ReadReg32(&pRegs->MAROC_Cfg.DyRegs_Rd[2].Ch0_31_Hold1);
+			rd3->Ch32_63_Hold1 = pM->ReadReg32(&pRegs->MAROC_Cfg.DyRegs_Rd[2].Ch32_63_Hold1);
+			rd3->Ch0_31_Hold2 = pM->ReadReg32(&pRegs->MAROC_Cfg.DyRegs_Rd[2].Ch0_31_Hold2);
+			rd3->Ch32_63_Hold2 = pM->ReadReg32(&pRegs->MAROC_Cfg.DyRegs_Rd[2].Ch32_63_Hold2);
+		}
+		return kTRUE;
+	}
+
+	void Testing_CheckDynControl()
+	{
+		MAROC_DyRegs maroc_regs_wr, maroc_regs_rd[3];
+		TString str;
+		unsigned int val;
+		int i;
+
+		///////////////////////////////////
+		// Checking DynamicControl
+		///////////////////////////////////
+		AddTextLine("********** CheckDynControl **********");
+
+
+		///////////////////////////////////
+		str.Form("   dynamic control reset...");
+		
+		memset(&maroc_regs_wr, 0, sizeof(maroc_regs_wr));
+		
+		DynRegs_Clear();
+		
+		if(!DynRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[0], &maroc_regs_rd[1], &maroc_regs_rd[2]) ||
+			!DynRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[0], &maroc_regs_rd[1], &maroc_regs_rd[2])
+			)
+		{
+			str += "dynamic control timeout. ";
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+		
+		if(memcmp(&maroc_regs_wr, &maroc_regs_rd[2], sizeof(maroc_regs_wr)) ||
+		   memcmp(&maroc_regs_wr, &maroc_regs_rd[1], sizeof(maroc_regs_wr)) ||
+		   memcmp(&maroc_regs_wr, &maroc_regs_rd[0], sizeof(maroc_regs_wr))
+			)
+		{
+			str += "comparison failed. ";
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+		
+		str += "OK";
 		AddTextLine(str);
+		///////////////////////////////////
 
-		pM->WriteReg32(&pRegs->Clk.Ctrl, 0x80000000);
-		pM->WriteReg32(&pRegs->Clk.Ctrl, 0x00000000);
-		pM->Delay(10);
-//		pM->WriteReg32(&pRegs->Cfg.Reset, 1);
-		pM->Delay(10);
-//		pM->WriteReg32(&pRegs->Cfg.Reset, 0);
-		pM->Delay(10);
+
+		///////////////////////////////////
+		str.Form("   dynamic control write zeros...");
+		
+		memset(&maroc_regs_wr, 0, sizeof(maroc_regs_wr));
+		
+		DynRegs_Clear();
+		
+		if(!DynRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[0], &maroc_regs_rd[1], &maroc_regs_rd[2]) ||
+			!DynRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[0], &maroc_regs_rd[1], &maroc_regs_rd[2])
+			)
+		{
+			str += "slow control timeout. ";
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+		
+		if(memcmp(&maroc_regs_wr, &maroc_regs_rd[0], sizeof(maroc_regs_wr)) ||
+		   memcmp(&maroc_regs_wr, &maroc_regs_rd[1], sizeof(maroc_regs_wr)) ||
+		   memcmp(&maroc_regs_wr, &maroc_regs_rd[2], sizeof(maroc_regs_wr))
+			)
+		{
+			str += "comparison failed. ";
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+		
+		str += "OK";
+		AddTextLine(str);
+		///////////////////////////////////
+
+
+		///////////////////////////////////
+		str.Form("   slow control set channel...", min, val, units);
+		
+		memset(&maroc_regs_wr, 0x0, sizeof(maroc_regs_wr));
+		maroc_regs_wr.Ch0_31_Hold1 = 0x00000001
+		
+		DynRegs_Clear();
+		
+		if(!DynRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[0], &maroc_regs_rd[1], &maroc_regs_rd[2]) ||
+			!DynRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[0], &maroc_regs_rd[1], &maroc_regs_rd[2])
+			)
+		{
+			str += "slow control timeout. ";
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+		
+		if(memcmp(&maroc_regs_wr, &maroc_regs_rd[0], sizeof(maroc_regs_wr)) ||
+		   memcmp(&maroc_regs_wr, &maroc_regs_rd[1], sizeof(maroc_regs_wr)) ||
+		   memcmp(&maroc_regs_wr, &maroc_regs_rd[2], sizeof(maroc_regs_wr))
+			)
+		{
+			str += "comparison failed. ";
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+		
+		str += "OK";
+		AddTextLine(str);
+		///////////////////////////////////
+
+		str += "PASSED";
+		AddTextLine(str);
+		
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+	}
+
+
+	void Testing_CheckScalerNoise()
+	{
+		TString str;
+		MAROC_Regs regs, rd_regs;
+		int i;
+
+		///////////////////////////////////
+		// Checking Scaler Noise
+		///////////////////////////////////
+		AddTextLine("********** CheckScalerNoise **********");
+
+		regs->Global0.bits.cmd_fsu = 1;
+		regs->Global0.bits.cmd_ss = 1;
+		regs->Global0.bits.cmd_fsb = 1;
+		regs->Global0.bits.swb_buf_250f = 0;
+		regs->Global0.bits.swb_buf_500f = 0;
+		regs->Global0.bits.swb_buf_1p = 0;
+		regs->Global0.bits.swb_buf_2p = 0;
+		regs->Global0.bits.ONOFF_ss = 1;
+		regs->Global0.bits.sw_ss_300f = 1;
+		regs->Global0.bits.sw_ss_600f = 1;
+		regs->Global0.bits.sw_ss_1200f = 0;
+		regs->Global0.bits.EN_ADC = 1;	// 1=enable,0=disable ADC
+		regs->Global0.bits.H1H2_choice = 0;
+		regs->Global0.bits.sw_fsu_20f = 1;
+		regs->Global0.bits.sw_fsu_40f = 1;
+		regs->Global0.bits.sw_fsu_25k = 0;
+		regs->Global0.bits.sw_fsu_50k = 0;
+		regs->Global0.bits.sw_fsu_100k = 0;
+		regs->Global0.bits.sw_fsb1_50k = 0;
+		regs->Global0.bits.sw_fsb1_100k = 0;
+		regs->Global0.bits.sw_fsb1_100f = 1;
+		regs->Global0.bits.sw_fsb1_50f = 1;
+		regs->Global0.bits.cmd_fsb_fsu = 0;
+		regs->Global0.bits.valid_dc_fs = 1;
+		regs->Global0.bits.sw_fsb2_50k = 0;
+		regs->Global0.bits.sw_fsb2_100k = 0;
+		regs->Global0.bits.sw_fsb2_100f = 0;
+		regs->Global0.bits.sw_fsb2_50f = 1;
+		regs->Global0.bits.valid_dc_fsb2 = 0;
+		regs->Global0.bits.ENb_tristate = 1;
+		regs->Global0.bits.polar_discri = 0;
+		regs->Global0.bits.inv_discriADC = 0;
+		regs->Global1.bits.d1_d2 = 0;
+		regs->Global1.bits.cmd_CK_mux = 0;
+		regs->Global1.bits.ONOFF_otabg = 0;
+		regs->Global1.bits.ONOFF_dac = 0;
+		regs->Global1.bits.small_dac = 0; /* 0=2.3mV/DAC LSB, 1=1.1mV/DAC LSB */
+		regs->Global1.bits.enb_outADC = 0;
+		regs->Global1.bits.inv_startCmptGray = 0;
+		regs->Global1.bits.ramp_8bit = 0;
+		regs->Global1.bits.ramp_10bit = 0;
+		regs->DAC.bits.DAC0 = 200; /* with small_dac = 0,  pedestal < ~200, signal ~200 to ~500, 500fC/pulse injected */
+		regs->DAC.bits.DAC1 = 0;
+
+		for(i = 0; i < 64; i++)
+		{
+			if(!(i & 0x1))
+			{
+				regs->CH[i>>1].bits.Gain0 = 64; /* Gain 64 = unity */
+				regs->CH[i>>1].bits.Sum0 = 0;
+				regs->CH[i>>1].bits.CTest0 = 0;
+				regs->CH[i>>1].bits.MaskOr0 = 0;
+			}
+			else
+			{
+				regs->CH[i>>1].bits.Gain1 = 64; /* Gain 64 = unity */
+				regs->CH[i>>1].bits.Sum1 = 0;
+				regs->CH[i>>1].bits.CTest1 = 0;
+				regs->CH[i>>1].bits.MaskOr1 = 0;
+			}
+		}
+
+		SCRegs_Clear();
+		SCRegs_Shift(&regs, &rd_regs);
+		SCRegs_Shift(&regs, &rd_regs);
+		SCRegs_Shift(&regs, &rd_regs);
+		
+		rich_write32(&pRICH_regs->Sd.ScalerLatch, 0x1);	// halt scaler counting
+		rich_write32(&pRICH_regs->Sd.ScalerLatch, 0x2);	// resets scalers
+		rich_write32(&pRICH_regs->Sd.ScalerLatch, 0x0);	// enable scaler counting
+		gSystem->Sleep(1000);
+		rich_write32(&pRICH_regs->Sd.ScalerLatch, 0x1);	// halt scaler counting
+
+		for(j = 0; j < 64; j++)
+		{
+			for(i = 0; i < 3; i++)
+			{
+				val = rich_read32(&pRICH_regs->MAROC_Proc[i].Scalers[j]);
+				str = Form("MAROC %2d, CH %2d: count = %u", i, j, val);
+
+				if( (val < RICH_TEST_NOISESCALER_MIN) ||
+				    (val > RICH_TEST_NOISESCALER_MAX)
+				    )
+				{
+					str += "FAILED.";
+					AddTextLine(str);
+					TestingStop();
+					return;
+				}
+				else
+				{
+					str += "ok.";
+					AddTextLine(str);
+				}
+			}
+		}
+	
+		str += "PASSED";
+		AddTextLine(str);
 		
 		AddTextLine("");
 		SetNextTestingState(nextTestingState+1);
@@ -784,8 +1160,8 @@ public:
 			case ERICHCheckIO0:							Testing_CheckIO(0); break;
 			case ERICHCheckIO1:							Testing_CheckIO(1); break;
 			case ERICHCheckSlowControl:				Testing_CheckSlowControl(); break;
-//			case ERICHCheckDynControl:					Testing_
-//			case ERICHCheckScalerNoise:				Testing_
+			case ERICHCheckDynControl:					Testing_CheckDynControl(); break;
+			case ERICHCheckScalerNoise:				Testing_CheckScalerNoise(); break;
 //			case ERICHCheckScalerPulser:				Testing_
 //			case ERICHCheckInternalADC:				Testing_
 //			case ERICHCheckExternalADC:				Testing_
