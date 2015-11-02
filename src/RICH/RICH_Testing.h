@@ -25,8 +25,8 @@
 #define RICH_TEST_CURRENT5V_MIN			0.5
 #define RICH_TEST_CURRENT5V_MAX			1.0
 
-#define RICH_TEST_TEMPFPGA_MIN			30
-#define RICH_TEST_TEMPFPGA_MAX			60
+#define RICH_TEST_TEMPFPGA_MIN			40
+#define RICH_TEST_TEMPFPGA_MAX			65
 
 #define RICH_TEST_VOLTAGEVCCINT_MIN		0.95
 #define RICH_TEST_VOLTAGEVCCINT_MAX		1.05
@@ -46,20 +46,18 @@
 #define RICH_TEST_VOLTAGE1_2VMGT_MIN	1.15
 #define RICH_TEST_VOLTAGE1_2VMGT_MAX	1.25
 
-#define RICH_TEST_TEMPLTM1_MIN			30.0
-#define RICH_TEST_TEMPLTM1_MAX			60.0
+#define RICH_TEST_TEMPLTM1_MIN			40.0
+#define RICH_TEST_TEMPLTM1_MAX			65.0
 
-#define RICH_TEST_TEMPLTM2_MIN			30.0
-#define RICH_TEST_TEMPLTM2_MAX			60.0
+#define RICH_TEST_TEMPLTM2_MIN			40.0
+#define RICH_TEST_TEMPLTM2_MAX			65.0
 
-#define RICH_TEST_INTADCRMS_MIN			1.0
-#define RICH_TEST_INTADCRMS_MAX			4.0
+#define RICH_TEST_INTADC_MIN				300
+#define RICH_TEST_INTADC_MAX				400
 
-#define RICH_TEST_EXTADCRMS_MIN			1.0
-#define RICH_TEST_EXTADCRMS_MAX			4.0
-
-#define RICH_TEST_NOISESCALER_MIN		1000
-#define RICH_TEST_NOISESCALER_MAX		100000000
+#define RICH_TEST_CTEST_SCALER_NUM		1000
+#define RICH_TEST_CTEST_SCALER_MIN		RICH_TEST_CTEST_SCALER_NUM
+#define RICH_TEST_CTEST_SCALER_MAX		RICH_TEST_CTEST_SCALER_NUM
 
 // Supported testing states
 enum RICHTestingStates
@@ -81,8 +79,7 @@ enum RICHTestingStates
 	ERICHCheckIO1,
 	ERICHCheckSlowControl,
 	ERICHCheckDynControl,
-	ERICHCheckScalerNoise,
-	ERICHCheckScalerPulser,
+	ERICHCheckScalerCTest,
 	ERICHCheckInternalADC,
 	ERICHCheckExternalADC,
 	ERICHStoreSerialNumber,
@@ -93,10 +90,8 @@ enum RICHTestingStates
 // Testing state sequence
 int RICHTestSequence[] = {
 	ERICHInitialize,
-	ERICHBoardId,
-/*	
+	ERICHBoardId,	
 	ERICHCheckSpiFlash,
-*/
 	ERICHInputCurrent5V,
 	ERICHCheckTempFPGA,
 	ERICHCheckVoltageVCCINT,
@@ -111,14 +106,11 @@ int RICHTestSequence[] = {
 	ERICHCheckIO1,
 	ERICHCheckSlowControl,
 	ERICHCheckDynControl,
-	ERICHCheckScalerNoise,
-/*
-	ERICHCheckScalerPulser,
+	ERICHCheckScalerCTest,
 	ERICHCheckInternalADC,
-	ERICHCheckExternalADC,
+//	ERICHCheckExternalADC,
 	ERICHStoreSerialNumber,
 	ERICHSaveTestResults,
-*/
 	ERICHComplete
 };
 
@@ -579,7 +571,7 @@ void Print_SCRegs(MAROC_Regs *regs)
 			return;
 		}
 		
-		str += "OK";
+		str += "PASSED";
 		AddTextLine(str);
 		///////////////////////////////////
 
@@ -595,6 +587,8 @@ void Print_SCRegs(MAROC_Regs *regs)
 		SCRegs_Clear();
 		
 		if(!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[2]) ||
+			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[2]) ||
+			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[2]) ||
 			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[2]) ||
 			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[1]) ||
 			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[0])
@@ -625,7 +619,7 @@ void Print_SCRegs(MAROC_Regs *regs)
 			return;
 		}
 		
-		str += "OK";
+		str += "PASSED";
 		AddTextLine(str);
 		///////////////////////////////////
 
@@ -648,6 +642,8 @@ void Print_SCRegs(MAROC_Regs *regs)
 		
 		if(!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[2]) ||
 			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[2]) ||
+			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[2]) ||
+			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[2]) ||
 			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[1]) ||
 			!SCRegs_Shift(&maroc_regs_wr, &maroc_regs_rd[0])
 			)
@@ -677,13 +673,10 @@ void Print_SCRegs(MAROC_Regs *regs)
 			return;
 		}
 		
-		str += "OK";
+		str += "PASSED";
 		AddTextLine(str);
 		///////////////////////////////////
 
-		str += "PASSED";
-		AddTextLine(str);
-		
 		AddTextLine("");
 		SetNextTestingState(nextTestingState+1);
 	}
@@ -802,7 +795,7 @@ void Print_SCRegs(MAROC_Regs *regs)
 			return;
 		}
 		
-		str += "OK";
+		str += "PASSED";
 		AddTextLine(str);
 		///////////////////////////////////
 
@@ -837,7 +830,7 @@ void Print_SCRegs(MAROC_Regs *regs)
 			return;
 		}
 		
-		str += "OK";
+		str += "PASSED";
 		AddTextLine(str);
 		///////////////////////////////////
 
@@ -873,29 +866,27 @@ void Print_SCRegs(MAROC_Regs *regs)
 			return;
 		}
 		
-		str += "OK";
+		str += "PASSED";
 		AddTextLine(str);
 		///////////////////////////////////
 
-		str += "PASSED";
-		AddTextLine(str);
-		
 		AddTextLine("");
 		SetNextTestingState(nextTestingState+1);
 	}
 
 
-	void Testing_CheckScalerNoise()
+	void Testing_CheckScalerCTest()
 	{
+		Bool_t passed = kTRUE;
 		TString str;
 		MAROC_Regs regs, rd_regs;
-		unsigned int val;
-		int i, j;
+		unsigned int val1, val2, val3;
+		int i, j, k;
 
 		///////////////////////////////////
-		// Checking Scaler Noise
+		// Checking Scaler CTest
 		///////////////////////////////////
-		AddTextLine("********** CheckScalerNoise **********");
+		AddTextLine("********** CheckScalerCTest **********");
 
 		regs.Global0.bits.cmd_fsu = 1;
 		regs.Global0.bits.cmd_ss = 1;
@@ -938,76 +929,174 @@ void Print_SCRegs(MAROC_Regs *regs)
 		regs.Global1.bits.inv_startCmptGray = 0;
 		regs.Global1.bits.ramp_8bit = 0;
 		regs.Global1.bits.ramp_10bit = 0;
-		regs.DAC.bits.DAC0 = 200; /* with small_dac = 0,  pedestal < ~200, signal ~200 to ~500, 500fC/pulse injected */
-		regs.DAC.bits.DAC1 = 0;
+		regs.DAC.bits.DAC0 = 550; /* with small_dac = 0,  pedestal < ~200, signal ~200 to ~500, 500fC/pulse injected */
+		regs.DAC.bits.DAC1 = 500;
 
-		for(i = 0; i < 64; i++)
-		{
-			if(!(i & 0x1))
-			{
-				regs.CH[i>>1].bits.Gain0 = 64; /* Gain 64 = unity */
-				regs.CH[i>>1].bits.Sum0 = 0;
-				regs.CH[i>>1].bits.CTest0 = 0;
-				regs.CH[i>>1].bits.MaskOr0 = 0;
-			}
-			else
-			{
-				regs.CH[i>>1].bits.Gain1 = 64; /* Gain 64 = unity */
-				regs.CH[i>>1].bits.Sum1 = 0;
-				regs.CH[i>>1].bits.CTest1 = 0;
-				regs.CH[i>>1].bits.MaskOr1 = 0;
-			}
-		}
-
-		SCRegs_Clear();
-		SCRegs_Shift(&regs, &rd_regs);
-		SCRegs_Shift(&regs, &rd_regs);
-		SCRegs_Shift(&regs, &rd_regs);
-		
-		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x1);	// halt scaler counting
-		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x2);	// resets scalers
-		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x0);	// enable scaler counting
-		gSystem->Sleep(1000);
-		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x1);	// halt scaler counting
+		pM->WriteReg32(&pRegs->Sd.CTestSrc, 0);		// select pulser to fire CTEST
 
 		for(j = 0; j < 64; j++)
 		{
-			for(i = 0; i < 3; i++)
+			for(k = 0; k < 64; k++)
 			{
-				val = pM->ReadReg32(&pRegs->MAROC_Proc[i].Scalers[j]);
-				str = Form("MAROC %2d, CH %2d: count = %u", i, j, val);
-
-				if( (val < RICH_TEST_NOISESCALER_MIN) ||
-				    (val > RICH_TEST_NOISESCALER_MAX)
-				    )
+				if(!(k & 0x1))
 				{
-					str += "FAILED.";
-					AddTextLine(str);
-					TestingStop();
-					return;
+					regs.CH[k>>1].bits.Gain0 = 64; /* Gain 64 = unity */
+					regs.CH[k>>1].bits.Sum0 = 0;
+					regs.CH[k>>1].bits.CTest0 = (k == j) ? 1 : 0;
+					regs.CH[k>>1].bits.MaskOr0 = 0;
 				}
 				else
 				{
-					str += "ok.";
+					regs.CH[k>>1].bits.Gain1 = 64; /* Gain 64 = unity */
+					regs.CH[k>>1].bits.Sum1 = 0;
+					regs.CH[k>>1].bits.CTest1 = (k == j) ? 1 : 0;
+					regs.CH[k>>1].bits.MaskOr1 = 0;
+				}
+			}
+			
+			SCRegs_Clear();
+			SCRegs_Shift(&regs, &rd_regs);
+			SCRegs_Shift(&regs, &rd_regs);
+			SCRegs_Shift(&regs, &rd_regs);
+		
+			pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x1);	// halt scaler counting
+			pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x2);	// resets scalers
+			for(i = 0; i < RICH_TEST_CTEST_SCALER_NUM; i++)
+			{
+				pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x0);	// enable scaler counting
+				pM->WriteReg32(&pRegs->Sd.CTestSrc, 1);
+				pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0x1);	// halt scaler counting
+				pM->WriteReg32(&pRegs->Sd.CTestSrc, 0);
+			}
+				
+			for(i = 0; i < 3; i++)
+			{
+				val1 = pM->ReadReg32(&pRegs->MAROC_Proc[i].Scalers[j]);
+				switch(i)
+				{
+					case 0:
+						val2 = pM->ReadReg32(&pRegs->Sd.Scaler_Or1[0]);
+						val3 = pM->ReadReg32(&pRegs->Sd.Scaler_Or1[1]);
+						break;
+					case 1:
+						val2 = pM->ReadReg32(&pRegs->Sd.Scaler_Or2[0]);
+						val3 = pM->ReadReg32(&pRegs->Sd.Scaler_Or2[1]);
+						break;
+					case 2:
+						val2 = pM->ReadReg32(&pRegs->Sd.Scaler_Or3[0]);
+						val3 = pM->ReadReg32(&pRegs->Sd.Scaler_Or3[1]);
+						break;
+				}
+
+				str = Form("MAROC %2d, CH %2d: count = %10u, or0 = %10u, or1 = %10u  ", i, j, val1, val2, val3);
+
+				if( (val1 < RICH_TEST_CTEST_SCALER_MIN) || (val1 > RICH_TEST_CTEST_SCALER_MAX) ||
+				    (val2 < RICH_TEST_CTEST_SCALER_MIN) || (val2 > RICH_TEST_CTEST_SCALER_MAX) ||
+				    (val3 < RICH_TEST_CTEST_SCALER_MIN) || (val3 > RICH_TEST_CTEST_SCALER_MAX)
+				    )
+				{
+					str += "FAILED";
+					AddTextLine(str);
+					passed = kFALSE;
+				}
+				else
+				{
+					str += "PASSED";
 					AddTextLine(str);
 				}
 			}
 		}
 	
-		str += "PASSED";
-		AddTextLine(str);
-		
+		if(!passed)
+		{
+			TestingStop();
+			return;
+		}
+	
 		AddTextLine("");
 		SetNextTestingState(nextTestingState+1);
 	}
 
-/*
+	unsigned int grayToBinary(unsigned int num)
+	{
+		unsigned int mask;
+		for (mask = num >> 1; mask != 0; mask = mask >> 1)
+			num = num ^ mask;
+		
+		return num;
+	}
+
+	void Testing_CheckInternalADC()
+	{
+		Bool_t passed = kTRUE;
+		TString str;
+		unsigned int val;
+		int i, addr;
+
+		///////////////////////////////////
+		// Checking Internal MAROC ADC
+		///////////////////////////////////
+		AddTextLine("********** CheckInternalADC **********");
+		
+		pM->WriteReg32(&pRegs->Sd.AdcTrigSrc, 0);
+		pM->WriteReg32(&pRegs->MAROC_Adc.Hold1Delay, 0);
+		pM->WriteReg32(&pRegs->MAROC_Adc.Hold2Delay, 0);
+		pM->WriteReg32(&pRegs->MAROC_Adc.AdcCtrl, (11<<4) | 0x1);
+		gSystem->Sleep(1);
+		
+		pM->WriteReg32(&pRegs->Sd.AdcTrigSrc, 1);
+		gSystem->Sleep(1);
+		
+		str = "   Waiting for ADC ready...";
+		val = pM->ReadReg32(&pRegs->MAROC_Adc.AdcStatus);
+		if((val & 0x7) != 0x7)
+		{
+			str += "FAILED";
+			AddTextLine(str);
+			TestingStop();
+			return;
+		}
+		str += "PASSED";
+		AddTextLine(str);
+
+		for(i = 0; i < 3; i++)
+		{
+			for(addr = 0; addr < 64; addr++)
+			{
+				pM->WriteReg32(&pRegs->MAROC_Adc.AdcAddr, addr);
+				val = grayToBinary(pM->ReadReg32(&pRegs->MAROC_Adc.AdcData[i]));
+				
+				str = Form("   MAROC %2d, CH%2d ADC baseline = %4d...", i, addr, val);
+				if( (val < RICH_TEST_INTADC_MIN) || (val > RICH_TEST_INTADC_MAX) )
+				{
+					str += "FAILED";
+					AddTextLine(str);
+					passed = kFALSE;
+				}
+				else
+				{
+					str += "PASSED";
+					AddTextLine(str);
+				}
+			}
+		}
+
+		if(!passed)
+		{
+			TestingStop();
+			return;
+		}
+
+		AddTextLine("");
+		SetNextTestingState(nextTestingState+1);
+	}
+
 	void SpiFlashSelect(int sel)
 	{
 		if(sel)
-			pM->WriteReg32(&pRegs->Cfg.SpiCtrl, 0x200);
+			pM->WriteReg32(&pRegs->Clk.SpiCtrl, 0x200);
 		else
-			pM->WriteReg32(&pRegs->Cfg.SpiCtrl, 0x100);
+			pM->WriteReg32(&pRegs->Clk.SpiCtrl, 0x100);
 	}
 
 	unsigned char SpiFlashTransferByte(unsigned char data)
@@ -1015,17 +1104,89 @@ void Print_SCRegs(MAROC_Regs *regs)
 		int i;
 		int rsp = 0;
 		
-		pM->WriteReg32(&pRegs->Cfg.SpiCtrl, data | 0x400);
+		pM->WriteReg32(&pRegs->Clk.SpiCtrl, data | 0x400);
 		for(i = 0; i < 8; i++)
 		{
-			rsp = pM->ReadReg32(&pRegs->Cfg.SpiStatus);
+			rsp = pM->ReadReg32(&pRegs->Clk.SpiStatus);
 			
 			if(rsp & 0x800)
-				break;
+				return rsp & 0xFF;
 		}
-		return rsp & 0xFF;
+		printf("Error: SpiFlashTransferByte() timeout\n");
+		return 0xFF;
 	}
+	
+	void SpiEnableWrite(int enable)
+	{
+		SpiFlashSelect(1);
+		if(enable)	SpiFlashTransferByte(0x06);	// Write enable
+		else			SpiFlashTransferByte(0x04);	// Write disable
+		SpiFlashSelect(0);
+	}
+	
+	void SpiEnable4ByteAddr(int enable)
+	{
+		SpiEnableWrite(1);
 		
+		SpiFlashSelect(1);
+		if(enable)	SpiFlashTransferByte(0xB7);	// 4byte address enable
+		else			SpiFlashTransferByte(0xE9);	// 4byte address disable
+		SpiFlashSelect(0);
+
+		SpiEnableWrite(0);
+	}
+	
+	void SpiSetUpperAddr(int addr)
+	{
+		SpiEnableWrite(1);
+		
+		SpiFlashSelect(1);
+		SpiFlashTransferByte(0xC5);	// write extended addr
+		SpiFlashTransferByte(addr);
+		SpiFlashSelect(0);
+
+		SpiEnableWrite(0);
+	}
+	
+	unsigned int SpiGetId()
+	{
+		unsigned int result;
+		
+		SpiFlashSelect(1);
+		SpiFlashTransferByte(0x9F);	// Read ID Cmd
+		result = SpiFlashTransferByte(0xFF);
+		result |= SpiFlashTransferByte(0xFF)<<8;
+		result |= SpiFlashTransferByte(0xFF)<<16;
+		result |= SpiFlashTransferByte(0xFF)<<24;
+		SpiFlashSelect(0);
+		
+		return result;
+	}
+	
+	void SpiDump(unsigned int addrStart, unsigned int len)
+	{
+		printf("SPI Config Dump:");
+		SpiFlashSelect(1);
+//		SpiFlashTransferByte(0x13);	// Read Continuous
+		SpiFlashTransferByte(0x03);	// Read Continuous
+
+		SpiFlashTransferByte((addrStart>>24) & 0xFF);
+		SpiFlashTransferByte((addrStart>>16) & 0xFF);
+		SpiFlashTransferByte((addrStart>>8) & 0xFF);
+		SpiFlashTransferByte((addrStart>>0) & 0xFF);
+
+		for(int i = 0; i < len; i++)
+		{
+			if(!(i % 16))
+				printf("\n0x%04X: ", i);
+
+			unsigned char val = SpiFlashTransferByte(0xFF);
+			printf("%02X ", (unsigned int)val);
+		}
+		SpiFlashSelect(0);
+		printf("\n\n");
+	}
+	
 	void Testing_CheckSpiFlash()
 	{
 		TString str;
@@ -1037,23 +1198,11 @@ void Print_SCRegs(MAROC_Regs *regs)
 		AddTextLine("********** CheckSpiFlash **********");
 
 		SpiFlashSelect(0);
-		pM->Delay(20);
-		SpiFlashSelect(1);
 		SpiFlashTransferByte(0xFF);
-		SpiFlashTransferByte(0xFF);
-		SpiFlashTransferByte(0xFF);
-		SpiFlashSelect(0);
-
-		SpiFlashSelect(1);
-		SpiFlashTransferByte(0x9F);	// Read ID Cmd
-		result = SpiFlashTransferByte(0xFF);
-		result |= SpiFlashTransferByte(0xFF)<<8;
-		result |= SpiFlashTransferByte(0xFF)<<16;
-		result |= SpiFlashTransferByte(0xFF)<<24;
-		SpiFlashSelect(0);
-
-		str.Form("   Spi Flash Id = 0x%08X...", result);
-		if(result != 0x10172020)
+		
+		result = SpiGetId();
+		str.Form("   Spi Flash Id(0x1019BB20) = 0x%08X...", result);
+		if(result != 0x1019BB20)
 		{
 			str += "FAILED";
 			AddTextLine(str);
@@ -1063,33 +1212,6 @@ void Print_SCRegs(MAROC_Regs *regs)
 		str += "PASSED";
 		AddTextLine(str);
 
-		//////////////////////////
-		//////////////////////////
-		//////////////////////////
-		//////////////////////////
-		printf("SPI Config Dump:\n");
-		SpiFlashSelect(1);
-		SpiFlashTransferByte(0x03);	// Read Continuous
-		SpiFlashTransferByte(0x7F);
-		SpiFlashTransferByte(0xF0);
-		SpiFlashTransferByte(0x00);
-
-		for(int i = 0; i < 256; i++)
-		{
-			if(!(i % 16))
-				printf("\n0x%04X: ", i);
-
-			unsigned char val = SpiFlashTransferByte(0xFF);
-
-			printf("%02X ", (unsigned int)val);
-		}
-		SpiFlashSelect(0);
-		printf("\n\n");
-		//////////////////////////
-		//////////////////////////
-		//////////////////////////
-		//////////////////////////
-		
 		AddTextLine("");
 		SetNextTestingState(nextTestingState+1);
 	}
@@ -1097,7 +1219,7 @@ void Print_SCRegs(MAROC_Regs *regs)
 	void Testing_StoreSerialNumber()
 	{
 		TString str = strPromptInput;
-		int i;
+		int i, status;
 		unsigned char buf[256];
 
 		///////////////////////////////////
@@ -1106,31 +1228,61 @@ void Print_SCRegs(MAROC_Regs *regs)
 		if(!bPromptInputReady)
 		{
 			AddTextLine("********** StoreSerialNumber **********");
-			TestingPromptInput("   Enter Serial Number(Format: CEM-XXXX) ");
+			TestingPromptInput("   Enter Serial Number(Format: CEM-RICHV2-XXXX) ");
 			return;
 		}
 
 		strSerialNumber = strPromptInput;
 		AddTextLine(str.Format("   Writing serial number: %s to flash", str.Data()));
 
-		SpiFlashSelect(1);
-		SpiFlashTransferByte(0x06);	// Write enable
-		SpiFlashSelect(0);
-		SpiFlashSelect(1);
-		SpiFlashTransferByte(0x20);	// Erase last chip sector
-		SpiFlashTransferByte(0x7F);
-		SpiFlashTransferByte(0xF0);
-		SpiFlashTransferByte(0x00);
-		SpiFlashSelect(0);
-		pM->Delay(500);	// 400ms Max sector erase time
+		SpiEnable4ByteAddr(1);
+		
+		printf("Current SPI config data:\n");
+		SpiDump(0x01FF0000, 256);
+		
+////////////////////////////////////////
+////////////////////////////////////////
+		SpiEnableWrite(1);
 
 		SpiFlashSelect(1);
-		SpiFlashTransferByte(0x06);	// Write enable
+		SpiFlashTransferByte(0xD8);	// Erase last chip sector
+		SpiFlashTransferByte(0x01);
+		SpiFlashTransferByte(0xFF);
+		SpiFlashTransferByte(0x00);
+		SpiFlashTransferByte(0x00);
 		SpiFlashSelect(0);
+		
+		for(i = 30; i >= 0; i--)			// 3000ms max sector erase time
+		{
+			SpiFlashSelect(1);
+			SpiFlashTransferByte(0x05);	// Get status
+			status = SpiFlashTransferByte(0xFF);
+			SpiFlashSelect(0);
+printf("status = %02X\n", status);
+			if(!(status & 0x1))
+				break;
+			
+			if(!i)
+			{
+				AddTextLine("erase timeout. FAILED");
+				TestingStop();
+				return;
+			}
+			gSystem->Sleep(100);
+		}
+		SpiEnableWrite(0);
+
+		printf("Erased SPI config data:\n");
+		SpiDump(0x01FF0000, 256);
+////////////////////////////////////////
+////////////////////////////////////////
+		SpiEnableWrite(1);
+
 		SpiFlashSelect(1);
 		SpiFlashTransferByte(0x02);	// Page program
-		SpiFlashTransferByte(0x7F);
-		SpiFlashTransferByte(0xF0);
+		SpiFlashTransferByte(0x01);
+		SpiFlashTransferByte(0xFF);
+		SpiFlashTransferByte(0x00);
 		SpiFlashTransferByte(0x00);
 		for(i = 0; i < 256; i++)
 		{
@@ -1144,13 +1296,19 @@ void Print_SCRegs(MAROC_Regs *regs)
 		for(i = 0; i < 256; i++)
 			SpiFlashTransferByte(buf[i]);
 		SpiFlashSelect(0);
-		pM->Delay(10);	// 3ms Max erase+program time
+		SpiEnableWrite(0);
+		gSystem->Sleep(10);
 
+		printf("Programmed SPI config data:\n");
+		SpiDump(0x01FF0000, 256);
+////////////////////////////////////////
+////////////////////////////////////////
 		str.Form("   Verifying...");
 		SpiFlashSelect(1);
 		SpiFlashTransferByte(0x03);	// Read Continuous
-		SpiFlashTransferByte(0x7F);
-		SpiFlashTransferByte(0xF0);
+		SpiFlashTransferByte(0x01);
+		SpiFlashTransferByte(0xFF);
+		SpiFlashTransferByte(0x00);
 		SpiFlashTransferByte(0x00);
 
 		for(i = 0; i < 256; i++)
@@ -1165,13 +1323,16 @@ void Print_SCRegs(MAROC_Regs *regs)
 			}
 		}
 		SpiFlashSelect(0);
+		
+		SpiEnable4ByteAddr(0);
+
 		str += "PASSED";
 		AddTextLine(str);
-		
+
 		AddTextLine("");
 		SetNextTestingState(nextTestingState+1);
 	}
-*/
+
 	void Testing_Complete()
 	{
 		AddTextLine("RICH Testing Complete. Unit PASSED");
@@ -1187,7 +1348,7 @@ void Print_SCRegs(MAROC_Regs *regs)
 		{
 			case ERICHInitialize:						Testing_Initialize(); break;
 			case ERICHBoardId:							Testing_CheckBoardId(); break;
-//			case ERICHCheckSpiFlash:					Testing_
+			case ERICHCheckSpiFlash:					Testing_CheckSpiFlash(); break;
 			case ERICHInputCurrent5V:					Testing_MinMaxRangeDouble("+5V Input Current", "A", RICH_TEST_CURRENT5V_MIN, RICH_TEST_CURRENT5V_MAX, 0, kTRUE); break;
 			case ERICHCheckTempFPGA:					Testing_MinMaxRangeDouble("FPGA Temp", "C", RICH_TEST_TEMPFPGA_MIN, RICH_TEST_TEMPFPGA_MAX, Get_FPGATemp(), kFALSE); break;
 			case ERICHCheckVoltageVCCINT:				Testing_MinMaxRangeDouble("VCCINT Rail", "V", RICH_TEST_VOLTAGEVCCINT_MIN, RICH_TEST_VOLTAGEVCCINT_MAX, Get_VCCINT(), kFALSE); break;
@@ -1202,12 +1363,11 @@ void Print_SCRegs(MAROC_Regs *regs)
 			case ERICHCheckIO1:							Testing_CheckIO(1); break;
 			case ERICHCheckSlowControl:				Testing_CheckSlowControl(); break;
 			case ERICHCheckDynControl:					Testing_CheckDynControl(); break;
-			case ERICHCheckScalerNoise:				Testing_CheckScalerNoise(); break;
-//			case ERICHCheckScalerPulser:				Testing_
-//			case ERICHCheckInternalADC:				Testing_
-//			case ERICHCheckExternalADC:				Testing_
-//			case ERICHStoreSerialNumber:				Testing_
-//			case ERICHSaveTestResults:					Testing_
+			case ERICHCheckScalerCTest:				Testing_CheckScalerCTest(); break;
+			case ERICHCheckInternalADC:				Testing_CheckInternalADC(); break;
+//			case ERICHCheckExternalADC:				??? - going to become interface for the DAC/pulser...so skip this part of test...
+			case ERICHStoreSerialNumber:				Testing_StoreSerialNumber(); break;
+			case ERICHSaveTestResults:					TestingSave(); break;
 			case ERICHComplete:							Testing_Complete(); break;
 		}
 	}
@@ -1238,7 +1398,7 @@ void Print_SCRegs(MAROC_Regs *regs)
 	void AddTextLine(const char *pText)
 	{
 		pTextViewDebug->AddLine(pText);
-		pTextViewDebug->ScrollUp(200);//->ScrollDown(50);
+		pTextViewDebug->ShowBottom();
 		pTextViewDebug->Update();
 	}
 
