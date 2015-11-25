@@ -60,7 +60,7 @@ typedef struct
 typedef struct
 {
 	int cnt;
-	short vals[1];
+	short vals[MAX_MSG_SIZE/2];
 } Cmd_Read16_Rsp;
 
 typedef struct
@@ -68,7 +68,7 @@ typedef struct
 	int cnt;
 	int addr;
 	int flags;
-	short vals[1];
+	short vals[MAX_MSG_SIZE/2];
 } Cmd_Write16;
 
 typedef struct
@@ -81,7 +81,7 @@ typedef struct
 typedef struct
 {
 	int cnt;
-	int vals[1];
+	int vals[MAX_MSG_SIZE/4];
 } Cmd_Read32_Rsp;
 
 typedef struct
@@ -89,7 +89,7 @@ typedef struct
 	int cnt;
 	int addr;
 	int flags;
-	int vals[1];
+	int vals[MAX_MSG_SIZE/4];
 } Cmd_Write32;
 
 typedef struct
@@ -106,7 +106,7 @@ typedef struct
 typedef struct
 {
 	int cnt;
-	unsigned int vals[1];
+	unsigned int vals[MAX_MSG_SIZE/4];
 } Cmd_ReadScalers_Rsp;
 
 typedef struct
@@ -118,7 +118,7 @@ typedef struct
 {
 	int cnt;
 	int nslots;
-	unsigned int vals[1];
+	unsigned int vals[MAX_MSG_SIZE/4];
 } Cmd_GetCrateMap_Rsp;
 
 typedef struct
@@ -130,7 +130,7 @@ typedef struct
 typedef struct
 {
 	int cnt;
-	unsigned int vals[1];
+	unsigned int vals[MAX_MSG_SIZE/4];
 } Cmd_GetBoardParams_Rsp;
 
 typedef struct
@@ -143,7 +143,7 @@ typedef struct
 typedef struct
 {
 	int cnt;
-	unsigned int vals[1];
+	unsigned int vals[MAX_MSG_SIZE/4];
 } Cmd_GetChannelParams_Rsp;
 
 typedef struct
@@ -152,7 +152,7 @@ typedef struct
 	int channel;
 	int partype;
 	int cnt;
-	unsigned int vals[1];
+	unsigned int vals[MAX_MSG_SIZE/4];
 } Cmd_SetChannelParams;
 
 /*****************************************************/
