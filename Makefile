@@ -32,6 +32,7 @@ CFLAGS			= -O2 -fno-exceptions -fPIC -I/usr/include\
 			-I./src/FADCScalers_HPS \
 			-I./src/RICH \
 			-I./src/vetroc \
+			-I./src/VTP \
 			-L. -DJLAB \
 			`root-config --cflags`
 LINKLIBS		= -lrt \

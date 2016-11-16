@@ -9,7 +9,7 @@
 #include "SSP_Status.h"
 //#include "SSP_Scalers.h"
 //#include "SSP_Fiber.h"
-//#include "SSP_Testing.h"
+#include "SSP_Testing.h"
 #include "SSP_SerialScope.h"
 #include "ModuleFrame.h"
 
@@ -48,7 +48,7 @@ public:
 //		tFrame = pSSPTabs->AddTab("Fiber 5");		tFrame->AddFrame(new SSP_Fiber(tFrame, this, GTX_FIB, 5), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Fiber 6");		tFrame->AddFrame(new SSP_Fiber(tFrame, this, GTX_FIB, 6), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Fiber 7");		tFrame->AddFrame(new SSP_Fiber(tFrame, this, GTX_FIB, 7), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-//		tFrame = pSSPTabs->AddTab("Testing");		tFrame->AddFrame(new SSP_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+		tFrame = pSSPTabs->AddTab("Testing");		tFrame->AddFrame(new SSP_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
 		strSlotIdentifier.Form("%d", (BaseAddr>>19) & 0x1F);
 	}

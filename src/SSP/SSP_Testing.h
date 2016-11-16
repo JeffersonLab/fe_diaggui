@@ -4,7 +4,229 @@
 #include <stdlib.h>
 #include "RootHeader.h"
 #include "ModuleFrame.h"
-#include"ssp.h"
+
+#define SYSCLK_FREQ                     62500000
+
+#define DDR2_I2C_SLADDR         0x50
+#define DDR2_I2C_RD                     0x01
+#define DDR2_I2C_WR                     0x00
+
+#define I2C_SR_TXEMPTY          0x00000080
+
+#define I2C_CR_EN                       0x01
+#define I2C_CR_TXRST            0x02
+#define I2C_CR_MSMS                     0x04
+#define I2C_CR_TX                       0x08
+#define I2C_CR_RSTA                     0x20
+
+#define SWx_GPIO_NOEx           0x80
+#define MUX_SRC_0                       0
+#define MUX_SRC_1                       1
+#define MUX_SRC_SYNC            2
+#define MUX_SRC_TRIG1           3
+#define MUX_SRC_TRIG2           4
+#define MUX_SRC_FPINPUT0        5
+#define MUX_SRC_FPINPUT1        6
+#define MUX_SRC_FPINPUT2        7
+#define MUX_SRC_FPINPUT3        8
+#define MUX_SRC_FPINPUT4        9
+#define MUX_SRC_GPIO0           10
+#define MUX_SRC_GPIO1           11
+#define MUX_SRC_SWAGPIO0        12
+#define MUX_SRC_SWAGPIO1        13
+#define MUX_SRC_SWBGPIO0        14
+#define MUX_SRC_SWBGPIO1        15
+#define MUX_SRC_PULSER          16
+#define MUX_SRC_TOKENOUT        17
+#define MUX_SRC_TOKENIN         18
+#define MUX_SRC_BUSY            19
+#define MUX_SRC_P2LVDSIN0       20
+#define MUX_SRC_P2LVDSIN1       21
+#define MUX_SRC_P2LVDSIN2       22
+#define MUX_SRC_P2LVDSIN3       23
+#define MUX_SRC_P2LVDSIN4       24
+#define MUX_SRC_P2LVDSIN5       25
+#define MUX_SRC_P2LVDSIN6       26
+#define MUX_SRC_P2LVDSIN7       27
+#define MUX_SRC_SUMDISC         28
+
+
+#define CLKSRC_DISABLED         0
+#define CLKSRC_SWB                      1
+#define CLKSRC_P2                       2
+#define CLKSRC_LOCAL            3
+
+#define GPIO_GCLKPLL_LOCKED     0x00000001
+#define GPIO_IDELAY_RDY         0x00000002
+#define GPIO_GCLKPLL_RESET      0x00000004
+#define GPIO_HB_LED                     0x00000008
+#define GPIO_I2C_RESET          0x00000010
+#define GPIO_I2C_INT_N          0x00000020
+#define GPIO_CLK_SOUT0          0x00000040
+#define GPIO_CLK_SOUT1          0x00000080
+#define GPIO_CLK_SIN0           0x00000100
+#define GPIO_CLK_SIN1           0x00000200
+#define GPIO_CLK_LOAD           0x00000400
+#define GPIO_CLK_CONF           0x00000800
+#define GPIO_LINKSTATUS0        0x00001000
+#define GPIO_LINKSTATUS1        0x00002000
+#define GPIO_LINKSTATUS2        0x00004000
+#define GPIO_LINKSTATUS3        0x00008000
+#define GPIO_LINKSTATUS4        0x00010000
+#define GPIO_LINKSTATUS5        0x00020000
+#define GPIO_LINKSTATUS6        0x00040000
+#define GPIO_LINKSTATUS7        0x00080000
+#define GPIO_PLL_LOL            0x00100000
+#define GPIO_TESTING            0x80000000
+
+typedef struct
+{
+/* 0x0000-0x0003 */ unsigned int Data;
+/* 0x0004-0x0007 */ unsigned int Tri;
+/* 0x0008-0x01FF */ unsigned int Reserved0[(0x0200-0x0008)/4];
+} SSPTesting_XpsGpio_regs;
+
+typedef struct
+{
+/* 0x0000-0x001B */ unsigned int Reserved0[(0x001C-0x0000)/4];
+/* 0x001C-0x001F */ unsigned int DGIER;
+/* 0x0020-0x0023 */ unsigned int IPISR;
+/* 0x0024-0x0027 */ unsigned int Reserved1[(0x0028-0x0024)/4];
+/* 0x0028-0x002B */ unsigned int IPIER;
+/* 0x002C-0x003F */ unsigned int Reserved2[(0x0040-0x002C)/4];
+/* 0x0040-0x0043 */ unsigned int SRR;
+/* 0x0044-0x005F */ unsigned int Reserved3[(0x0060-0x0044)/4];
+/* 0x0060-0x0063 */ unsigned int CR;
+/* 0x0064-0x0067 */ unsigned int SR;
+/* 0x0068-0x006B */ unsigned int DTR;
+/* 0x006C-0x006F */ unsigned int DRR;
+/* 0x0070-0x0073 */ unsigned int SSR;
+/* 0x0074-0x0077 */ unsigned int TXFIFO;
+/* 0x0078-0x007B */ unsigned int RXFIFO;
+/* 0x007C-0x01FF */ unsigned int Reserved4[(0x0200-0x007C)/4];
+} SSPTesting_XpsSpi_regs;
+
+typedef struct
+{
+/* 0x0000-0x001B */ unsigned int Reserved0[(0x001C-0x0000)/4];
+/* 0x001C-0x001F */ unsigned int GIE;
+/* 0x0020-0x0023 */ unsigned int ISR;
+/* 0x0024-0x0027 */ unsigned int Reserved1[(0x0028-0x0024)/4];
+/* 0x0028-0x002B */ unsigned int IER;
+/* 0x002C-0x003F */ unsigned int Reserved2[(0x0040-0x002C)/4];
+/* 0x0040-0x0043 */ unsigned int SOFTR;
+/* 0x0044-0x00FF */ unsigned int Reserved3[(0x0100-0x0044)/4];
+/* 0x0100-0x0103 */ unsigned int CR;
+/* 0x0104-0x0107 */ unsigned int SR;
+/* 0x0108-0x010B */ unsigned int TX_FIFO;
+/* 0x010C-0x010F */ unsigned int RX_FIFO;
+/* 0x0110-0x0113 */ unsigned int ADR;
+/* 0x0114-0x0117 */ unsigned int TX_FIFO_OCY;
+/* 0x0118-0x011B */ unsigned int RX_FIFO_OCY;
+/* 0x011C-0x011F */ unsigned int TEN_ADR;
+/* 0x0120-0x0123 */ unsigned int RX_FIFO_PIRQ;
+/* 0x0124-0x0127 */ unsigned int GPO;
+/* 0x0128-0x01FF */ unsigned int Reserved4[(0x0200-0x0128)/4];
+} SSPTesting_XpsI2C_regs;
+
+typedef struct
+{
+/* 0x0000-0x0003 */ unsigned int ScalerLatch;
+/* 0x0004-0x0007 */ unsigned int ScalerSysclk;
+/* 0x0008-0x000B */ unsigned int ScalerGclk;
+/* 0x000C-0x000F */ unsigned int ScalerSync;
+/* 0x0010-0x0017 */ unsigned int ScalerTrig[2];
+/* 0x0018-0x001F */ unsigned int ScalerGpio[2];
+/* 0x0020-0x0033 */ unsigned int ScalerLvdsIn[5];
+/* 0x0034-0x0047 */ unsigned int ScalerLvdsOut[5];
+/* 0x0048-0x004F */ unsigned int ScalerSwAGpio[2];
+/* 0x0050-0x0057 */ unsigned int ScalerSwBGpio[2];
+/* 0x0058-0x005B */ unsigned int ScalerTokenIn;
+/* 0x005C-0x005F */ unsigned int ScalerTokenOut;
+/* 0x0060-0x0063 */ unsigned int ScalerBusy;
+/* 0x0064-0x0067 */ unsigned int ScalerBusyCycles;
+/* 0x0068-0x0087 */ unsigned int ScalerP2LvdsIn[8];
+/* 0x0088-0x00A7 */ unsigned int ScalerP2LvdsOut[8];
+/* 0x00A8-0x00AB */ unsigned int ScalerSdLink;
+/* 0x00AC-0x00AF */ unsigned int ScalerTrigOut;
+/* 0x00B0-0x00FF */ unsigned int Reserved0[(0x0100-0x00B0)/4];
+/* 0x0100-0x0113 */ unsigned int LvdsOutSrc[5];
+/* 0x0114-0x011B */ unsigned int GpioSrc[2];
+/* 0x011C-0x0123 */ unsigned int SwAGpioSrc[2];
+/* 0x0124-0x012B */ unsigned int SwBGpioSrc[2];
+/* 0x012C-0x012F */ unsigned int TokenOutSrc;
+/* 0x0130-0x0133 */ unsigned int SdLinkSrc;
+/* 0x0134-0x0137 */ unsigned int TrigOutSrc;
+/* 0x0138-0x0157 */ unsigned int P2LvdsOutSrc[8];
+/* 0x0158-0x015B */ unsigned int SyncSrc;
+/* 0x015C-0x015F */ unsigned int TrigSrc;
+/* 0x0160-0x0163 */ unsigned int TokenInSrc;
+/* 0x0164-0x017F */ unsigned int Reserved1[(0x0180-0x0164)/4];
+/* 0x0180-0x0183 */ unsigned int PulserStart;
+/* 0x0184-0x0187 */ unsigned int PulserPeriod;
+/* 0x0188-0x018B */ unsigned int PulserHighCycles;
+/* 0x018C-0x018F */ unsigned int PulserNPulses;
+/* 0x0190-0x0193 */ unsigned int PulserStatus;
+/* 0x0194-0x01FF */ unsigned int Reserved2[(0x0200-0x0194)/4];
+} SSPTesting_Sd_regs;
+
+typedef struct
+{
+/* 0x0000-0x0003 */ unsigned int BoardId;
+/* 0x0004-0x0007 */ unsigned int FirmwareRev;
+/* 0x0008-0x000B */ unsigned int Adr32M;
+/* 0x000C-0x000F */ unsigned int Adr32;
+/* 0x0010-0x0013 */ unsigned int VmeCfg;
+/* 0x0014-0x0017 */ unsigned int Interrupt;
+/* 0x0018-0x01FF */ unsigned int Reserved0[(0x0200-0x0018)/4];
+} SSPTesting_SSPCfg_regs;
+
+typedef struct
+{
+/* 0x0000-0x0003 */ unsigned int Ctrl;
+/* 0x0004-0x0007 */ unsigned int TxRxSettings0;
+/* 0x0008-0x000B */ unsigned int TxRxSettings1;
+/* 0x000C-0x000F */ unsigned int DrpCtrl;
+/* 0x0010-0x0013 */ unsigned int DrpStatus;
+/* 0x0014-0x0017 */ unsigned int Status;
+/* 0x0018-0x001B */ unsigned int SoftErrors0;
+/* 0x001C-0x001F */ unsigned int SoftErrors1;
+/* 0x0020-0x0023 */ unsigned int PrbsErrors0;
+/* 0x0024-0x0027 */ unsigned int PrbsErrors1;
+/* 0x0028-0x002B */ unsigned int RefTime;
+/* 0x002C-0x002F */ unsigned int GClkFibTime;
+/* 0x0030-0x01FF */ unsigned int Reserved0[(0x0200-0x0030)/4];
+} SSPTesting_GtxQsfp_regs;
+
+typedef struct
+{
+/* 0x0000-0x001F */ unsigned int Fiber[8];
+/* 0x0020-0x0023 */ unsigned int SumDiscMode;
+/* 0x0024-0x0027 */ unsigned int SumDiscThreshold;
+/* 0x0028-0x002B */ unsigned int SumDiscWidth;
+/* 0x002C-0x002F */ unsigned int Ctrl;
+/* 0x0030-0x0033 */ unsigned int ILASumData;
+/* 0x0034-0x0037 */ unsigned int ILASumThreshold;
+/* 0x0038-0x003B */ unsigned int ILACtrl;
+/* 0x003C-0x003F */ unsigned int ILAStatus;
+/* 0x0040-0x01FF */ unsigned int Reserved0[(0x0200-0x0040)/4];
+} SSPTesting_Trig_regs;
+
+typedef struct
+{
+/* 0x0000-0x01FF */ SSPTesting_SSPCfg_regs         SSPCfg;
+/* 0x0200-0x03FF */ SSPTesting_XpsI2C_regs         I2CIOExp;
+/* 0x0400-0x05FF */ SSPTesting_XpsSpi_regs         SpiFlash;
+/* 0x0600-0x07FF */ SSPTesting_XpsGpio_regs        Gpio;
+/* 0x0800-0x0BFF */ unsigned int							Reserved1[(0x0C00-0x0800)/4];
+/* 0x0C00-0x0DFF */ SSPTesting_Sd_regs					Sd;
+/* 0x0E00-0x0FFF */ SSPTesting_Trig_regs				Trigger;
+/* 0x1000-0x23FF */ SSPTesting_GtxQsfp_regs			GtxQsfp[10];
+/* 0x2400-0x25FF */ SSPTesting_XpsI2C_regs			I2CDDR2;
+/* 0x2600-0x2FFF */ unsigned int							Reserved2[(0x3000-0x2600)/4];
+/* 0x3000-0x3FFF */ unsigned int							Bram[(0x4000-0x3000)/4];
+} SSPTesting_SSP_regs;
+
 
 #define CMD_SDRAM_STATUS	100
 #define CMD_SDRAM_TEST0		101
@@ -54,14 +276,14 @@
 #define SSP_TEST_LOCALNOOSC_MIN			0
 #define SSP_TEST_LOCALNOOSC_MAX			0
 
-#define SSP_TEST_LOCAL250OSC_MIN		(250000000*0.999)
-#define SSP_TEST_LOCAL250OSC_MAX		(250000000*1.001)
+#define SSP_TEST_LOCAL250OSC_MIN		(250000000*0.99)
+#define SSP_TEST_LOCAL250OSC_MAX		(250000000*1.01)
 
-#define SSP_TEST_P0250OSC_MIN			(250000000*0.999)
-#define SSP_TEST_P0250OSC_MAX			(250000000*1.001)
+#define SSP_TEST_P0250OSC_MIN			(250000000*0.99)
+#define SSP_TEST_P0250OSC_MAX			(250000000*1.01)
 
-#define SSP_TEST_P2OSC_MIN				(240000000*0.999)
-#define SSP_TEST_P2OSC_MAX				(240000000*1.001)
+#define SSP_TEST_P2OSC_MIN				(240000000*0.99)
+#define SSP_TEST_P2OSC_MAX				(240000000*1.01)
 
 #define SSP_TEST_LOOPBACK_TOGGLE_NUM	10
 
@@ -122,7 +344,7 @@ int SSPTestSequence[] = {
 		ESSPVmeDataBits,
 		ESSPClockLocal50,
 		ESSPClockP0,
-		ESSPClockP2,
+/*		ESSPClockP2,*/
 		ESSPClockLocal250,
 		ESSPCheckSdram,
 		ESSPCheckSdramI2C,
@@ -130,7 +352,7 @@ int SSPTestSequence[] = {
 		ESSPCheckP0SwAStatus,
 		ESSPCheckP0SwBStatus,
 		ESSPCheckFrontPanelLvds,
-		ESSPCheckP2Lvds,
+/*		ESSPCheckP2Lvds,*/
 		ESSPCheckP0SwALanes01,
 		ESSPCheckP0SwALanes23,
 		ESSPCheckFiber0Lanes,
@@ -144,11 +366,11 @@ int SSPTestSequence[] = {
 		ESSPCheckP0SwBToken,
 		ESSPCheckP0SwBTrig,
 		ESSPCheckP0SwBSync,
-		ESSPCheckP0SwBTrig2,
-		ESSPCheckFrontPanelNim,
+/*		ESSPCheckP0SwBTrig2,*/
+/*		ESSPCheckFrontPanelNim,*/
 		ESSPCheckFiberLeds,
 		ESSPInputCurrent5V,
-		ESSPInputCurrent12VN,
+/*		ESSPInputCurrent12VN,*/
 /*		ESSPVoltage3p3V,
 		ESSPVoltage2p5V,
 		ESSPVoltage1p8V,
@@ -166,7 +388,7 @@ public:
 		SetLayoutManager(new TGVerticalLayout(this));
 
 		pM = pModule;
-		pRegs = (SSP_regs *)pM->BaseAddr;
+		pRegs = (SSPTesting_SSP_regs *)pM->BaseAddr;
 
 		TGCompositeFrame *pTF1;
 
@@ -202,7 +424,7 @@ public:
 	{
 		pM->WriteReg32(&pRegs->Bram[1], src);
 		pM->WriteReg32(&pRegs->Bram[0], CMD_CLK_SET);
-		pM->pVMEClient->Delay(500);
+		pM->Delay(500);
 		if(pM->ReadReg32(&pRegs->Bram[0]))
 		{
 			AddTextLine("      FAILED");
@@ -396,6 +618,14 @@ public:
 			str += "FAILED";
 			AddTextLine(str);
 			TestingStop();
+
+while(1)
+{
+			pM->WriteReg32(&pRegs->Sd.SdLinkSrc, MUX_SRC_1);
+gSystem->Sleep(1);
+			pM->WriteReg32(&pRegs->Sd.SdLinkSrc, MUX_SRC_0);
+gSystem->Sleep(1);
+}
 			return;
 		}
 
@@ -632,7 +862,7 @@ public:
 		double scale = (double)pM->ReadReg32(&pRegs->Sd.ScalerSysclk) / SYSCLK_FREQ;
 		if(scale != 0.0)
 			ref = (double)pM->ReadReg32(&pRegs->Sd.ScalerGclk) / scale;
-
+		printf("Testing_CheckP0250MHzOsc() ref=%lf\n", ref);
 		Testing_MinMaxRangeInt32("CheckP0250MHzOsc", "", (int)SSP_TEST_P0250OSC_MIN, (int)SSP_TEST_P0250OSC_MAX, (int)ref, kFALSE);
 	}
 
@@ -734,7 +964,7 @@ public:
 		pM->WriteReg32(&pRegs->SpiFlash.SRR, 0x0000000A);
 		pM->WriteReg32(&pRegs->SpiFlash.CR, 0xE6);
 		SpiFlashSelect(0);
-		pM->pVMEClient->Delay(20);
+		pM->Delay(20);
 		SpiFlashSelect(1);
 		SpiFlashTransferByte(0xFF);
 		SpiFlashTransferByte(0xFF);
@@ -756,6 +986,8 @@ public:
 		SpiFlashSelect(0);
 */
 
+//while(1)
+//{
 		SpiFlashSelect(1);
 		SpiFlashTransferByte(0x9F);	// Read ID Cmd
 		result = SpiFlashTransferByte(0xFF);
@@ -763,7 +995,9 @@ public:
 		result |= SpiFlashTransferByte(0xFF)<<16;
 		result |= SpiFlashTransferByte(0xFF)<<24;
 		SpiFlashSelect(0);
-
+//printf("SpiFlashId = %08X\n", result);
+//gSystem->Sleep(100);
+//}
 		str.Form("   Spi Flash Id = 0x%08X...", result);
 		if(result != 0x0000281F)
 		{
@@ -825,7 +1059,7 @@ public:
 		SpiFlashTransferByte(0x00);
 		SpiFlashSelect(0);
 
-		pM->pVMEClient->Delay(50);	// 40ms Max erase+program time
+		pM->Delay(50);	// 40ms Max erase+program time
 
 		SpiFlashSelect(1);
 		SpiFlashTransferByte(0xD7);	// Status Read
@@ -850,7 +1084,7 @@ public:
 		SpiFlashTransferByte(0x00);
 		SpiFlashSelect(0);
 
-		pM->pVMEClient->Delay(1);	// 400us Max compare time
+		pM->Delay(1);	// 400us Max compare time
 
 		str.Form("      Spi Status(0x%02X)...", result);
 		if((result & 0xFF) != 0xBC)
@@ -944,7 +1178,7 @@ public:
 		str.Form("   Checking Sdram SPD...");
 		pM->WriteReg32(&pRegs->Bram[1], 18);
 		pM->WriteReg32(&pRegs->Bram[0], CMD_SDRAM_I2C_TEST);
-		pM->pVMEClient->Delay(500);
+		pM->Delay(500);
 		if(pM->ReadReg32(&pRegs->Bram[0]))
 		{
 			str += "timeout. FAILED";
@@ -1007,7 +1241,7 @@ public:
 
 		str.Form("   Checking Sdram status...");
 		pM->WriteReg32(&pRegs->Bram[0], CMD_SDRAM_STATUS);
-		pM->pVMEClient->Delay(500);
+		pM->Delay(500);
 		if(pM->ReadReg32(&pRegs->Bram[0]))
 		{
 			str += "FAILED";
@@ -1060,7 +1294,7 @@ public:
 		str.Form("   Checking Sdram read/write 0...");
 		pM->WriteReg32(&pRegs->Bram[1], SDRAM_TEST_LEN);
 		pM->WriteReg32(&pRegs->Bram[0], CMD_SDRAM_TEST0);
-		pM->pVMEClient->Delay(1000);
+		pM->Delay(1000);
 		if(pM->ReadReg32(&pRegs->Bram[0]) || pM->ReadReg32(&pRegs->Bram[1]))
 		{
 			str += "FAILED";
@@ -1074,7 +1308,7 @@ public:
 		str.Form("   Checking Sdram read/write 1...");
 		pM->WriteReg32(&pRegs->Bram[1], SDRAM_TEST_LEN);
 		pM->WriteReg32(&pRegs->Bram[0], CMD_SDRAM_TEST1);
-		pM->pVMEClient->Delay(1000);
+		pM->Delay(1000);
 		if(pM->ReadReg32(&pRegs->Bram[0]) || pM->ReadReg32(&pRegs->Bram[1]))
 		{
 			str += "FAILED";
@@ -1213,7 +1447,7 @@ public:
 		SetNextTestingState(nextTestingState+1);
 	}
 
-	void Testing_CheckTransceiver(const char *measurement, GtxQsfp_regs *pGtx, int nlanes)
+	void Testing_CheckTransceiver(const char *measurement, SSPTesting_GtxQsfp_regs *pGtx, int nlanes)
 	{
 		unsigned int result, i;
 		TString str;
@@ -1230,13 +1464,13 @@ public:
 		pM->WriteReg32(&pGtx->Ctrl, 0x00000000);
 
 		pM->RMWReg32(&pGtx->Ctrl, 0x80000000, 0x80000000);
-		pM->pVMEClient->Delay(500);
+		pM->Delay(500);
 		pM->RMWReg32(&pGtx->Ctrl, 0x80000000, 0x80000000);
-		pM->pVMEClient->Delay(500);
+		pM->Delay(500);
 
 		// Latch error counter after 1s
 		pM->RMWReg32(&pGtx->Ctrl, 0x80000000, 0x80000000);
-		pM->pVMEClient->Delay(1000);
+		pM->Delay(1000);
 		pM->RMWReg32(&pGtx->Ctrl, 0x80000000, 0x80000000);
 
 		for(i = 0; i < nlanes; i++)
@@ -1583,7 +1817,7 @@ private:
 	TString				strSerialNumber;
 
 	ModuleFrame			*pM;
-	SSP_regs				*pRegs;
+	SSPTesting_SSP_regs		*pRegs;
 
 	TGTextView			*pTextViewDebug;
 
