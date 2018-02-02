@@ -20,7 +20,9 @@
 #include "FADCScalers_HPSModule.h"
 #include "RICHModule.h"
 #include "vetroc_module.h"
-#include "VTP_Module.h"
+#include "VTP_EC_Module.h"
+#include "VTP_GT_Module.h"
+#include "SSP_GT_Module.h"
 
 #define TIMER_CAPTURE_POLLRATE	100
 
@@ -315,8 +317,12 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, int count)
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new RICHModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_VETROC", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new vetroc_module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-         else if(!stricmp("MOD_TYPE_VTP", paramB))
-            pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+      else if(!stricmp("MOD_TYPE_VTP_EC", paramB))
+        pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_EC_Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+      else if(!stricmp("MOD_TYPE_VTP_GT", paramB))
+        pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_GT_Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+      else if(!stricmp("MOD_TYPE_SSP_GT", paramB))
+        pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new SSP_GT_Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else
 			{
 				printf("Error: Unknown module type: %s\n", paramB);

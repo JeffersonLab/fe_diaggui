@@ -8,10 +8,10 @@
 //#include "SSP_Config.h"
 //#include "SSP_Status.h"
 //#include "SSP_Scalers.h"
-//#include "SSP_Fiber.h"
 //#include "SSP_Testing.h"
 #include "SSP_HPS_TrgHist.h"
 #include "SSP_HPSSerialScope.h"
+#include "SSP_HPSSerialScopeVXS.h"
 #include "ModuleFrame.h"
 
 class SSP_HPSModule	: public ModuleFrame
@@ -38,11 +38,11 @@ public:
 //		tFrame = pSSPTabs->AddTab("Fiber 5");		tFrame->AddFrame(new SSP_SerialScope(tFrame, this, 5), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Fiber 6");		tFrame->AddFrame(new SSP_SerialScope(tFrame, this, 6), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Fiber 7");		tFrame->AddFrame(new SSP_SerialScope(tFrame, this, 7), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-//		tFrame = pSSPTabs->AddTab("SWA VXS 1");		tFrame->AddFrame(new SSP_SerialScope(tFrame, this, 9), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+		tFrame = pSSPTabs->AddTab("SWA VXS 1");		tFrame->AddFrame(new SSP_HPSSerialScopeVXS(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("WaveCapture");	tFrame->AddFrame(new SSP_WaveCapture(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Scalers");		tFrame->AddFrame(new SSP_Scalers(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("SWA VXS 0");	tFrame->AddFrame(new SSP_Fiber(tFrame, this, GTX_VXS, 8), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-//		tFrame = pSSPTabs->AddTab("SWA VXS 1");	tFrame->AddFrame(new SSP_Fiber(tFrame, this, GTX_VXS, 9), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+//		tFrame = pSSPTabs->AddTab("SWA VXS 1");	tFrame->AddFrame(new SSP_HPSFiber(tFrame, this, GTX_VXS, 9), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Fiber 0");		tFrame->AddFrame(new SSP_Fiber(tFrame, this, GTX_FIB, 0), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Fiber 1");		tFrame->AddFrame(new SSP_Fiber(tFrame, this, GTX_FIB, 1), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Fiber 2");		tFrame->AddFrame(new SSP_Fiber(tFrame, this, GTX_FIB, 2), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
@@ -418,3 +418,4 @@ private:
 };
 
 #endif
+

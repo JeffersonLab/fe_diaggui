@@ -231,7 +231,7 @@ public:
 		else if(!stricmp(pParam1, "A24BaseAddr11") && count) pRegs[11] = (DCRB_regs_v1 *)val;
 		else if(!stricmp(pParam1, "A24BaseAddr12") && count) pRegs[12] = (DCRB_regs_v1 *)val;
 		else if(!stricmp(pParam1, "A24BaseAddr13") && count) pRegs[13] = (DCRB_regs_v1 *)val;
-		else if(!stricmp(pParam1, "DacThreshold") && count) SetThreshold(val);
+//		else if(!stricmp(pParam1, "DacThreshold") && count) SetThreshold(val);
 		else
 			return kFALSE;
 
@@ -270,31 +270,31 @@ public:
 						UpdateScalers();
 						break;
 					case BTN_LOCAL_TST:
-						if(pButtonLocalTest->IsDown())
-							SetLocalTest(kTRUE);
-						else
-							SetLocalTest(kFALSE);
+						//if(pButtonLocalTest->IsDown())
+						//	SetLocalTest(kTRUE);
+						//else
+						//	SetLocalTest(kFALSE);
 						break;
 					case BTN_REMOTE_TST:
-						if(pButtonRemoteTest->IsDown())
-							SetRemoteTest(kTRUE);
-						else
-							SetRemoteTest(kFALSE);
+						//if(pButtonRemoteTest->IsDown())
+						//	SetRemoteTest(kTRUE);
+						//else
+						//	SetRemoteTest(kFALSE);
 						break;
 					case BTN_DCRBSCALERS_RESET:
-						SetReset();
+						//SetReset();
 						break;
 				
 					case BTN_HARDRESET_SER:
-						HardReset();
+						//HardReset();
 						break;
 						
 					case BTN_SOFTRESET_SER:
-						SoftReset();
+						//SoftReset();
 						break;
 						
 					case BTN_SMARTRESET_SER:
-						SmartReset();
+						//SmartReset();
 						break;
 												
 					default:
@@ -366,6 +366,7 @@ public:
 
 	void SetLocalTest(Bool_t en)
 	{
+/*
 		unsigned int val;
 		
 		for(int i = 0; i < MAX_DCRB_NUM; i++)
@@ -380,10 +381,12 @@ public:
 				pM->WriteReg32(&pRegs[i]->TestPulseConfig, val);
 			}
 		}
+*/
 	}
 	
 	void SetRemoteTest(Bool_t en)
 	{
+/*
 		unsigned int val;
 		
 		for(int i = 0; i < MAX_DCRB_NUM; i++)
@@ -398,10 +401,12 @@ public:
 				pM->WriteReg32(&pRegs[i]->TestPulseConfig, val);
 			}
 		}
+*/
 	}
 	
 	void SetReset()
 	{
+/*
 		unsigned int val;
 		
 		for(int i = 0; i < MAX_DCRB_NUM; i++)
@@ -421,10 +426,12 @@ public:
 				pM->WriteReg32(&pRegs[i]->GtpCtrl, 0x203);
 			}
 		}
+*/
 	}
 
 	void HardReset()
 	{
+/*
 		for(int i = 0; i < MAX_DCRB_NUM; i++)
 		{
 			if(pRegs[i])
@@ -435,10 +442,12 @@ public:
 				pM->WriteReg32(&pRegs[i]->GtpCtrl, 0x000);
 			}
 		}
+*/
 	}
 
 	void SoftReset()
 	{
+/*
 		for(int i = 0; i < MAX_DCRB_NUM; i++)
 		{
 			if(pRegs[i])
@@ -448,10 +457,12 @@ public:
 				pM->WriteReg32(&pRegs[i]->GtpCtrl, 0x000);
 			}
 		}
+*/
 	}
 
 	void SmartReset()
 	{
+/*
 		for(int i = 0; i < MAX_DCRB_NUM; i++)
 		{
 			if(pRegs[i] && !(pM->ReadReg32(&pRegs[i]->GtpStatus) & 0x1000))
@@ -462,6 +473,7 @@ public:
 				pM->WriteReg32(&pRegs[i]->GtpCtrl, 0x000);
 			}
 		}
+*/
 	}
 
 	char *ReadNormalizedScaler(char *buf, char *prefix, unsigned int ref, unsigned int scaler)

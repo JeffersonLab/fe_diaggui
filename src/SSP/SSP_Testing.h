@@ -338,7 +338,7 @@ enum SSPTestingStates
 int SSPTestSequence[] = {
 		ESSPInitialize,
 		ESSPCheckSpiFlash,
-		ESSPStoreSerialNumber,
+/*		ESSPStoreSerialNumber,*/
 		ESSPBoardId,
 		ESSPBoardPos,
 		ESSPVmeDataBits,
@@ -999,7 +999,7 @@ gSystem->Sleep(1);
 //gSystem->Sleep(100);
 //}
 		str.Form("   Spi Flash Id = 0x%08X...", result);
-		if(result != 0x0000281F)
+		if((result != 0x0000281F) && (result != 0x0100281F))
 		{
 			str += "FAILED";
 			AddTextLine(str);

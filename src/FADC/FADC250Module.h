@@ -7,6 +7,7 @@
 #include "ModuleFrame.h"
 //#include "FADC250_GTX.h"
 #include "FADC250_TrgHist.h"
+#include "FADC250_TrgHist2D.h"
 #include "FADC250_SerialScope.h"
 #include "FADC250_AdcScope.h"
 
@@ -25,6 +26,7 @@ public:
 //		tFrame = pTabs->AddTab("Status");		tFrame->AddFrame(pStatus = new FADC250_Status(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("GTX");			tFrame->AddFrame(new FADC250_GTX(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pTabs->AddTab("TrgHist");		tFrame->AddFrame(new FADC250_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+//    tFrame = pTabs->AddTab("TrgHist");    tFrame->AddFrame(new FADC250_TrgHist2D(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pTabs->AddTab("VXS Scope");	tFrame->AddFrame(new FADC250_SerialScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		for(int i = 0; i < 16; i++)
 		{

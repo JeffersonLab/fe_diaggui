@@ -29,7 +29,7 @@ public:
 //		tFrame = pTabs->AddTab("GTP");			tFrame->AddFrame(new DCRB_GTP(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("Scalers");		tFrame->AddFrame(new DCRB_Scalers(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("Status");		tFrame->AddFrame(new DCRB_Status(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-		tFrame = pTabs->AddTab("Testing");		tFrame->AddFrame(new DCRB_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+//		tFrame = pTabs->AddTab("Testing");		tFrame->AddFrame(new DCRB_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		
 		strSlotIdentifier.Form("%d", ReadReg32((volatile unsigned int *)(BaseAddr+0x0050)) & 0x1F);
 	}
