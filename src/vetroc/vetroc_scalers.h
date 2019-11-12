@@ -148,21 +148,28 @@ public:
 
 	char *ReadNormalizedScaler(char *buf, char *prefix, unsigned int ref, unsigned int scaler)
 	{
-		double normalized = 100.0e6 * (double)scaler / (double)ref;
+		double normalized = 125.0e6 * (double)scaler / (double)ref;
 		sprintf(buf, "%s = %08X, %.3fHz", prefix, scaler, normalized);
 		return buf;
 	}
 
 	void UpdateScalers()
 	{
+    unsigned int ref;
 		int i, j;
 
 		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 1);
+    ref = pM->ReadReg32(&pRegs->Sd.Scalers[VETROC_SCALER_GCLK125]);
+    if(!ref) ref = 1;
+
 		for(i = 0; i < 8; i++)
 		{
 			pHistScalers[i]->Clear();
 			for(j = 0; j < 16; j++)
-				pHistScalers[i]->SetBinContent(j+1, pM->ReadReg32(&pRegs->Tdc[i].Scalers[j]));
+      {
+        double bin = pM->ReadReg32(&pRegs->Tdc[i].Scalers[j]) * 125.0e6 / (double)ref;
+				pHistScalers[i]->SetBinContent(j+1, bin);
+      }
 		}
 		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 3);
 		pM->WriteReg32(&pRegs->Sd.ScalerLatch, 0);
