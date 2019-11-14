@@ -7,7 +7,6 @@
 #include "ModuleFrame.h"
 //#include "FADC250_GTX.h"
 #include "FADC250_TrgHist.h"
-#include "FADC250_TrgHist2D.h"
 #include "FADC250_SerialScope.h"
 #include "FADC250_AdcScope.h"
 
@@ -25,13 +24,9 @@ public:
 
 //		tFrame = pTabs->AddTab("Status");		tFrame->AddFrame(pStatus = new FADC250_Status(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("GTX");			tFrame->AddFrame(new FADC250_GTX(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-		tFrame = pTabs->AddTab("TrgHist");		tFrame->AddFrame(new FADC250_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-//    tFrame = pTabs->AddTab("TrgHist");    tFrame->AddFrame(new FADC250_TrgHist2D(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+//		tFrame = pTabs->AddTab("TrgHist");		tFrame->AddFrame(new FADC250_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pTabs->AddTab("VXS Scope");	tFrame->AddFrame(new FADC250_SerialScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-		for(int i = 0; i < 16; i++)
-		{
-			tFrame = pTabs->AddTab(Form("Ch%d", i));	tFrame->AddFrame(new FADC250_AdcScope(tFrame, this, i), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-		}
+		tFrame = pTabs->AddTab("Ch Scope");	tFrame->AddFrame(new FADC250_AdcScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
 
 		//		tFrame = pTabs->AddTab("EventHist");	tFrame->AddFrame(new FADC250_EventHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
@@ -44,6 +39,11 @@ public:
 	{
 		static RegMemDesc regs[] = {
 				{"AdcParameters", 0},
+          {"ChargeScalers", 0},
+            {"Acc0",      REGMEM_DESC_FLAGS_UINT, {0x0260, 0, 16, 16}},
+            {"Acc1",      REGMEM_DESC_FLAGS_UINT, {0x0280, 0, 16, 16}},
+            {"Acc2",      REGMEM_DESC_FLAGS_UINT, {0x02A0, 0, 16, 16}},
+          {NULL, 0},
 					{"AdcThreshold", 0},
 						{"tet0",				REGMEM_DESC_FLAGS_UINT,		{0x012C, 16, 12, 32}},
 						{"tet1",				REGMEM_DESC_FLAGS_UINT,		{0x012C, 0, 12, 32}},
@@ -81,22 +81,22 @@ public:
 						{"tet_ignore15",	REGMEM_DESC_FLAGS_UINT,		{0x0148, 15, 1, 32}},
 					{NULL, 0},
 					{"AdcPedestal", 0},
-						{"ped0",					REGMEM_DESC_FLAGS_UINT,		{0x0158, 0, 16, 32}},
-						{"ped1",					REGMEM_DESC_FLAGS_UINT,		{0x015C, 0, 16, 32}},
-						{"ped2",					REGMEM_DESC_FLAGS_UINT,		{0x0160, 0, 16, 32}},
-						{"ped3",					REGMEM_DESC_FLAGS_UINT,		{0x0164, 0, 16, 32}},
-						{"ped4",					REGMEM_DESC_FLAGS_UINT,		{0x0168, 0, 16, 32}},
-						{"ped5",					REGMEM_DESC_FLAGS_UINT,		{0x016C, 0, 16, 32}},
-						{"ped6",					REGMEM_DESC_FLAGS_UINT,		{0x0170, 0, 16, 32}},
-						{"ped7",					REGMEM_DESC_FLAGS_UINT,		{0x0174, 0, 16, 32}},
-						{"ped8",					REGMEM_DESC_FLAGS_UINT,		{0x0178, 0, 16, 32}},
-						{"ped9",					REGMEM_DESC_FLAGS_UINT,		{0x017C, 0, 16, 32}},
-						{"ped10",				REGMEM_DESC_FLAGS_UINT,		{0x0180, 0, 16, 32}},
-						{"ped11",				REGMEM_DESC_FLAGS_UINT,		{0x0184, 0, 16, 32}},
-						{"ped12",				REGMEM_DESC_FLAGS_UINT,		{0x0188, 0, 16, 32}},
-						{"ped13",				REGMEM_DESC_FLAGS_UINT,		{0x018C, 0, 16, 32}},
-						{"ped14",				REGMEM_DESC_FLAGS_UINT,		{0x0190, 0, 16, 32}},
-						{"ped15",				REGMEM_DESC_FLAGS_UINT,		{0x0194, 0, 16, 32}},
+						{"ped0",					REGMEM_DESC_FLAGS_UINT,		{0x0158, 16, 16, 32}},
+						{"ped1",					REGMEM_DESC_FLAGS_UINT,		{0x0158, 0, 16, 32}},
+						{"ped2",					REGMEM_DESC_FLAGS_UINT,		{0x015C, 16, 16, 32}},
+						{"ped3",					REGMEM_DESC_FLAGS_UINT,		{0x015C, 0, 16, 32}},
+						{"ped4",					REGMEM_DESC_FLAGS_UINT,		{0x0160, 16, 16, 32}},
+						{"ped5",					REGMEM_DESC_FLAGS_UINT,		{0x0160, 0, 16, 32}},
+						{"ped6",					REGMEM_DESC_FLAGS_UINT,		{0x0164, 16, 16, 32}},
+						{"ped7",					REGMEM_DESC_FLAGS_UINT,		{0x0164, 0, 16, 32}},
+						{"ped8",					REGMEM_DESC_FLAGS_UINT,		{0x0168, 16, 16, 32}},
+						{"ped9",					REGMEM_DESC_FLAGS_UINT,		{0x0168, 0, 16, 32}},
+						{"ped10",				REGMEM_DESC_FLAGS_UINT,		{0x016C, 16, 16, 32}},
+						{"ped11",				REGMEM_DESC_FLAGS_UINT,		{0x016C, 0, 16, 32}},
+						{"ped12",				REGMEM_DESC_FLAGS_UINT,		{0x0170, 16, 16, 32}},
+						{"ped13",				REGMEM_DESC_FLAGS_UINT,		{0x0170, 0, 16, 32}},
+						{"ped14",				REGMEM_DESC_FLAGS_UINT,		{0x0174, 16, 16, 32}},
+						{"ped15",				REGMEM_DESC_FLAGS_UINT,		{0x0174, 0, 16, 32}},
 					{NULL, 0},
 					{"AdcGain", 0},
 						{"gain0",				REGMEM_DESC_FLAGS_UINT,		{0x0198, 0, 16, 32}},
@@ -115,6 +115,24 @@ public:
 						{"gain13",				REGMEM_DESC_FLAGS_UINT,		{0x01CC, 0, 16, 32}},
 						{"gain14",				REGMEM_DESC_FLAGS_UINT,		{0x01D0, 0, 16, 32}},
 						{"gain15",				REGMEM_DESC_FLAGS_UINT,		{0x01D4, 0, 16, 32}},
+					{NULL, 0},
+					{"AdcDelay", 0},
+						{"delay0",			REGMEM_DESC_FLAGS_UINT,		{0x0178, 16, 16, 32}},
+						{"delay1",			REGMEM_DESC_FLAGS_UINT,		{0x0178, 0, 16, 32}},
+						{"delay2",			REGMEM_DESC_FLAGS_UINT,		{0x017C, 16, 16, 32}},
+						{"delay3",			REGMEM_DESC_FLAGS_UINT,		{0x017C, 0, 16, 32}},
+						{"delay4",			REGMEM_DESC_FLAGS_UINT,		{0x0180, 16, 16, 32}},
+						{"delay5",			REGMEM_DESC_FLAGS_UINT,		{0x0180, 0, 16, 32}},
+						{"delay6",			REGMEM_DESC_FLAGS_UINT,		{0x0184, 16, 16, 32}},
+						{"delay7",			REGMEM_DESC_FLAGS_UINT,		{0x0184, 0, 16, 32}},
+						{"delay8",			REGMEM_DESC_FLAGS_UINT,		{0x0188, 16, 16, 32}},
+						{"delay9",			REGMEM_DESC_FLAGS_UINT,		{0x0188, 0, 16, 32}},
+						{"delay10",			REGMEM_DESC_FLAGS_UINT,		{0x018C, 16, 16, 32}},
+						{"delay11",			REGMEM_DESC_FLAGS_UINT,		{0x018C, 0, 16, 32}},
+						{"delay12",			REGMEM_DESC_FLAGS_UINT,		{0x0190, 16, 16, 32}},
+						{"delay13",			REGMEM_DESC_FLAGS_UINT,		{0x0190, 0, 16, 32}},
+						{"delay14",			REGMEM_DESC_FLAGS_UINT,		{0x0194, 16, 16, 32}},
+						{"delay15",			REGMEM_DESC_FLAGS_UINT,		{0x0194, 0, 16, 32}},
 					{NULL, 0},
 					{"Dac", 0},
 						{"dac0",					REGMEM_DESC_FLAGS_UINT,		{0x0050, 16, 16, 32}},
@@ -135,7 +153,7 @@ public:
 						{"dac15",				REGMEM_DESC_FLAGS_UINT,		{0x006C, 0, 16, 32}},
 					{NULL, 0},
 					{"ptw",						REGMEM_DESC_FLAGS_UINT,		{0x011C, 0, 9, 32}},
-					{"pl",						REGMEM_DESC_FLAGS_UINT,		{0x0120, 0, 10, 32}},
+					{"pl",						REGMEM_DESC_FLAGS_UINT,		{0x0120, 0, 11, 32}},
 					{"nsb",						REGMEM_DESC_FLAGS_UINT,		{0x0124, 0, 9, 32}},
 					{"nsa",						REGMEM_DESC_FLAGS_UINT,		{0x0128, 0, 9, 32}},
 				{NULL, 0},
@@ -235,6 +253,9 @@ public:
 					{"TrigSoftEnable",		REGMEM_DESC_FLAGS_HEX,		{0x0008, 7, 1, 32}},
 					{"SyncSource",				REGMEM_DESC_FLAGS_STRING,	{0x0008, 8, 3, 32}, {5,{"FP-ASYNC","FP-SYNC","P0-ASYNC","P0-SYNC","SW"},{0,1,2,3,6}}},
 					{"SyncSoftEnable",		REGMEM_DESC_FLAGS_HEX,		{0x0008, 11, 1, 32}},
+					{"LiveTrgOutEnable",		REGMEM_DESC_FLAGS_HEX,		{0x0008, 12, 1, 32}},
+					{"TrgOutP0Enable",		REGMEM_DESC_FLAGS_HEX,		{0x0008, 13, 1, 32}},
+					{"TrgOutFPEnable",		REGMEM_DESC_FLAGS_HEX,		{0x0008, 14, 1, 32}},
 				{NULL, 0},
 				{"CTRL2", 0},
 					{"Go",						REGMEM_DESC_FLAGS_HEX,		{0x000C, 0, 1, 32}},

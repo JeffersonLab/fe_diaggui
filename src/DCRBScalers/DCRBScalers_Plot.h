@@ -8,73 +8,7 @@
 #define TRIGSRC_SWSYNC		0x800
 #define TRIGSRC_SWTRIG		0x008
 
-typedef struct
-{
-/* 0x0000-0x0003 */ volatile unsigned int FirmwareRev;
-/* 0x0004-0x0007 */ volatile unsigned int BoardID;
-/* 0x0008-0x000B */ volatile unsigned int GrpBusyFifo;
-/* 0x000C-0x000F */ volatile unsigned int GrpBusyTrig;
-/* 0x0010-0x0013 */ volatile unsigned int GrpErrorFifo;
-/* 0x0014-0x0017 */ volatile unsigned int SpiFlash;
-/* 0x0018-0x001B */ volatile unsigned int ICap;
-/* 0x001C-0x001F */ volatile unsigned int Adr32M;
-/* 0x0020-0x0023 */ volatile unsigned int LookBack;
-/* 0x0024-0x0027 */ volatile unsigned int WindowWidth;
-/* 0x0028-0x002B */ volatile unsigned int BlockConfig;
-/* 0x002C-0x002F */ volatile unsigned int TDCConfig;
-/* 0x0030-0x0033 */ volatile unsigned int ClockConfig;
-/* 0x0034-0x0037 */ volatile unsigned int TestPulseConfig;
-/* 0x0038-0x003B */ volatile unsigned int DACConfig;
-/* 0x003C-0x003F */ volatile unsigned int TriggerBusyThreshold;
-/* 0x0040-0x0043 */ volatile unsigned int TriggerSource;
-/* 0x0044-0x0047 */ volatile unsigned int ADR32;
-/* 0x0048-0x004B */ volatile unsigned int Interrupt;
-/* 0x004C-0x004F */ volatile unsigned int InterruptAck;
-/* 0x0050-0x0053 */ volatile unsigned int Geo;
-/* 0x0054-0x0057 */ volatile unsigned int FifoWordCnt;
-/* 0x0058-0x005B */ volatile unsigned int FifoEventCnt;
-/* 0x005C-0x005F */ volatile unsigned int ReadoutConfig;
-/* 0x0060-0x0063 */ volatile unsigned int SRAMDebugAddr;
-/* 0x0064-0x0067 */ volatile unsigned int SRAMDebugData;
-/* 0x0068-0x006B */ volatile unsigned int Reset;
-/* 0x006C-0x0077 */ volatile unsigned int ChDisable[3];
-/* 0x0078-0x007B */ volatile unsigned int ScalerLatch;
-/* 0x007C-0x007F */ volatile unsigned int Reserved1[(0x0080-0x007C)/4];
-/* 0x0080-0x0083 */ volatile unsigned int FifoBlockCnt;
-/* 0x0084-0x0087 */ volatile unsigned int InterruptWordCnt;
-/* 0x0088-0x008B */ volatile unsigned int InterruptEventCnt;
-/* 0x008C-0x008F */ volatile unsigned int InterruptBlockCnt;
-/* 0x0090-0x0093 */ volatile unsigned int BusyWordCnt;
-/* 0x0094-0x0097 */ volatile unsigned int BusyEventCnt;
-/* 0x0098-0x009B */ volatile unsigned int BusyBlockCnt;
-/* 0x009C-0x009F */ volatile unsigned int TriggerCtrl;
-/* 0x00A0-0x00A3 */ volatile unsigned int GtpCtrl;
-/* 0x00A4-0x00A7 */ volatile unsigned int GtpCtrlTile0;
-/* 0x00A8-0x00AB */ volatile unsigned int GtpDrpCtrl;
-/* 0x00AC-0x00AF */ volatile unsigned int GtpStatus;
-/* 0x00B0-0x00B3 */ volatile unsigned int SoftErrCnt;
-/* 0x00B4-0x00B7 */ volatile unsigned int PrbsErrCnt;
-/* 0x00B8-0x0107 */ volatile unsigned int Reserved3[(0x0108-0x00B8)/4];
-/* 0x0108-0x010B */ volatile unsigned int SwAGpio;
-/* 0x010C-0x010F */ volatile unsigned int SwBGpio;
-/* 0x0110-0x0113 */ volatile unsigned int TokenInCfg;
-/* 0x0114-0x0117 */ volatile unsigned int TokenOutCfg;
-/* 0x0118-0x011B */ volatile unsigned int SdLinkCfg;
-/* 0x011C-0x011F */ volatile unsigned int TrigOutCfg;
-/* 0x0120-0x0123 */ volatile unsigned int PulserPeriod;
-/* 0x0124-0x0127 */ volatile unsigned int PulserLow;
-/* 0x0128-0x012B */ volatile unsigned int PulserNPulses;
-/* 0x012C-0x012F */ volatile unsigned int PulserStart;
-/* 0x0130-0x0133 */ volatile unsigned int PulserStatus;
-/* 0x0134-0x0FE7 */ volatile unsigned int Reserved4[(0x0FE8-0x0134)/4];
-/* 0x0FE8-0x0FEB */ volatile unsigned int BusyScaler;
-/* 0x0FEC-0x0FEF */ volatile unsigned int BusyCyclesScaler;
-/* 0x0FF0-0x0FF3 */ volatile unsigned int VmeClkScaler;
-/* 0x0FF4-0x0FF7 */ volatile unsigned int SyncScaler;
-/* 0x0FF8-0x0FFB */ volatile unsigned int Trig1Scaler;
-/* 0x0FFC-0x0FFF */ volatile unsigned int Trig2Scaler;
-/* 0x1000-0x117F */ volatile unsigned int Scalers[96];
-} DCRB_regs_v1;
+#include "DCRB.h"
 
 #define UDPATETIME_MAX		60
 #define THRESHOLD_MAX		200
@@ -90,7 +24,7 @@ public:
 
 		pM = pModule;
 		for(int i = 0; i < MAX_DCRB_NUM; i++)
-			pRegs[i] = (DCRB_regs_v1 *)0x0;
+			pRegs[i] = (DCRB_regs *)0x0;
 
 		TGCompositeFrame		*pFrame;
 		
@@ -122,6 +56,8 @@ public:
 		AddFrame(pFrame = new TGHorizontalFrame(this), new TGLayoutHints(kLHintsExpandX | kLHintsTop));
 			pFrame->AddFrame(pButtonNormalize = new TGTextButton(pFrame, new TGHotString("NormalizeScalers")), new TGLayoutHints(kLHintsCenterY | kLHintsLeft));
 				pButtonNormalize->AllowStayDown(kTRUE);
+      pFrame->AddFrame(pButtonLogScalers = new TGTextButton(pFrame, new TGHotString("LogScalers")), new TGLayoutHints(kLHintsCenterY | kLHintsLeft));
+        pButtonLogScalers->AllowStayDown(kTRUE);
 			pFrame->AddFrame(pButtonLocalTest = new TGTextButton(pFrame, new TGHotString("LocalTest"), BTN_LOCAL_TST), new TGLayoutHints(kLHintsCenterY | kLHintsLeft));
 				pButtonLocalTest->AllowStayDown(kTRUE);
 				pButtonLocalTest->Associate(this);
@@ -217,21 +153,23 @@ public:
 		else
 			count = sscanf(pParam2, "%u", &val);
 
-		if(!stricmp(pParam1, "A24BaseAddr0") && count) pRegs[0] = (DCRB_regs_v1 *)val;
-		else if(!stricmp(pParam1, "A24BaseAddr1") && count) pRegs[1] = (DCRB_regs_v1 *)val;
-		else if(!stricmp(pParam1, "A24BaseAddr2") && count) pRegs[2] = (DCRB_regs_v1 *)val;
-		else if(!stricmp(pParam1, "A24BaseAddr3") && count) pRegs[3] = (DCRB_regs_v1 *)val;
-		else if(!stricmp(pParam1, "A24BaseAddr4") && count) pRegs[4] = (DCRB_regs_v1 *)val;
-		else if(!stricmp(pParam1, "A24BaseAddr5") && count) pRegs[5] = (DCRB_regs_v1 *)val;
-		else if(!stricmp(pParam1, "A24BaseAddr6") && count) pRegs[6] = (DCRB_regs_v1 *)val;
-		else if(!stricmp(pParam1, "A24BaseAddr7") && count) pRegs[7] = (DCRB_regs_v1 *)val;
-		else if(!stricmp(pParam1, "A24BaseAddr8") && count) pRegs[8] = (DCRB_regs_v1 *)val;
-		else if(!stricmp(pParam1, "A24BaseAddr9") && count) pRegs[9] = (DCRB_regs_v1 *)val;
-		else if(!stricmp(pParam1, "A24BaseAddr10") && count) pRegs[10] = (DCRB_regs_v1 *)val;
-		else if(!stricmp(pParam1, "A24BaseAddr11") && count) pRegs[11] = (DCRB_regs_v1 *)val;
-		else if(!stricmp(pParam1, "A24BaseAddr12") && count) pRegs[12] = (DCRB_regs_v1 *)val;
-		else if(!stricmp(pParam1, "A24BaseAddr13") && count) pRegs[13] = (DCRB_regs_v1 *)val;
-//		else if(!stricmp(pParam1, "DacThreshold") && count) SetThreshold(val);
+		if(!stricmp(pParam1, "A24BaseAddr0") && count) pRegs[0] = (DCRB_regs *)val;
+		else if(!stricmp(pParam1, "A24BaseAddr1") && count) pRegs[1] = (DCRB_regs *)val;
+		else if(!stricmp(pParam1, "A24BaseAddr2") && count) pRegs[2] = (DCRB_regs *)val;
+		else if(!stricmp(pParam1, "A24BaseAddr3") && count) pRegs[3] = (DCRB_regs *)val;
+		else if(!stricmp(pParam1, "A24BaseAddr4") && count) pRegs[4] = (DCRB_regs *)val;
+		else if(!stricmp(pParam1, "A24BaseAddr5") && count) pRegs[5] = (DCRB_regs *)val;
+		else if(!stricmp(pParam1, "A24BaseAddr6") && count) pRegs[6] = (DCRB_regs *)val;
+		else if(!stricmp(pParam1, "A24BaseAddr7") && count) pRegs[7] = (DCRB_regs *)val;
+		else if(!stricmp(pParam1, "A24BaseAddr8") && count) pRegs[8] = (DCRB_regs *)val;
+		else if(!stricmp(pParam1, "A24BaseAddr9") && count) pRegs[9] = (DCRB_regs *)val;
+		else if(!stricmp(pParam1, "A24BaseAddr10") && count) pRegs[10] = (DCRB_regs *)val;
+		else if(!stricmp(pParam1, "A24BaseAddr11") && count) pRegs[11] = (DCRB_regs *)val;
+		else if(!stricmp(pParam1, "A24BaseAddr12") && count) pRegs[12] = (DCRB_regs *)val;
+		else if(!stricmp(pParam1, "A24BaseAddr13") && count) pRegs[13] = (DCRB_regs *)val;
+		else if(!stricmp(pParam1, "DacThreshold") && count) SetThreshold(val);
+		else if(!stricmp(pParam1, "Initialize")) Initialize();
+    else if(!stricmp(pParam1, "Deadtime")) SetDeadtime(val);
 		else
 			return kFALSE;
 
@@ -270,31 +208,31 @@ public:
 						UpdateScalers();
 						break;
 					case BTN_LOCAL_TST:
-						//if(pButtonLocalTest->IsDown())
-						//	SetLocalTest(kTRUE);
-						//else
-						//	SetLocalTest(kFALSE);
+						if(pButtonLocalTest->IsDown())
+							SetLocalTest(kTRUE);
+						else
+							SetLocalTest(kFALSE);
 						break;
 					case BTN_REMOTE_TST:
-						//if(pButtonRemoteTest->IsDown())
-						//	SetRemoteTest(kTRUE);
-						//else
-						//	SetRemoteTest(kFALSE);
+						if(pButtonRemoteTest->IsDown())
+							SetRemoteTest(kTRUE);
+						else
+							SetRemoteTest(kFALSE);
 						break;
 					case BTN_DCRBSCALERS_RESET:
-						//SetReset();
+						SetReset();
 						break;
 				
 					case BTN_HARDRESET_SER:
-						//HardReset();
+						HardReset();
 						break;
 						
 					case BTN_SOFTRESET_SER:
-						//SoftReset();
+						SoftReset();
 						break;
 						
 					case BTN_SMARTRESET_SER:
-						//SmartReset();
+						SmartReset();
 						break;
 												
 					default:
@@ -339,25 +277,48 @@ public:
 		return kTRUE;
 	}
 
+	void Initialize()
+	{
+		for(int i = 0; i < MAX_DCRB_NUM; i++)
+		{
+			if(pRegs[i])
+			{
+				pM->WriteReg32(&pRegs[i]->Clk.Ctrl, 0x80000000);
+				pM->WriteReg32(&pRegs[i]->Clk.Ctrl, 0);
+			}
+		}
+	}
+
+	void SetDeadtime(unsigned int val)
+  {
+    for(int i = 0; i < MAX_DCRB_NUM; i++)
+    {
+      if(pRegs[i])
+      {
+        for(int j = 0; j < 6; j++)
+          pM->WriteReg32(&pRegs[i]->Tdc[j].DeadCycles, val);
+      }
+    }
+  }
+	
 	void SetThreshold(unsigned int val)
 	{
 		for(int i = 0; i < MAX_DCRB_NUM; i++)
 		{
 			if(pRegs[i])
-				pM->WriteReg32(&pRegs[i]->DACConfig, ((unsigned int)val * 24489360)>>18);
+				pM->WriteReg32(&pRegs[i]->Cfg.DacThreshold, (int)(((float)val) * -8.06f + 2048.0f));
 		}
 	}
 
 	unsigned int GetThreshold()
 	{
-		unsigned int val = 0;
+		int val = 0;
 		
 		for(int i = 0; i < MAX_DCRB_NUM; i++)
 		{
 			if(pRegs[i])
 			{
-				val = pM->ReadReg32(&pRegs[i]->DACConfig);
-				val = (val<<18) / 24489360;
+				val = ((float)((int)pM->ReadReg32(&pRegs[i]->Cfg.DacThreshold) - 2048)) / -8.06f;
 				printf("%d: GetThreshold() = %dmV\n", i, val);
 			}
 		}
@@ -366,115 +327,114 @@ public:
 
 	void SetLocalTest(Bool_t en)
 	{
-/*
 		unsigned int val;
 		
 		for(int i = 0; i < MAX_DCRB_NUM; i++)
 		{
 			if(pRegs[i])
 			{
-				val = pM->ReadReg32(&pRegs[i]->TestPulseConfig);
 				if(en)
-					val |= 0x3f<<0;
+				{
+					pM->WriteReg32(&pRegs[i]->Sd.PulserPeriod, 125000); 
+					pM->WriteReg32(&pRegs[i]->Sd.PulserLowCycles, 2); 
+					pM->WriteReg32(&pRegs[i]->Sd.PulserNPulses, 0xFFFFFFFF);
+					pM->WriteReg32(&pRegs[i]->Cfg.DacLow, 2048+1000);
+					pM->WriteReg32(&pRegs[i]->Cfg.DacHigh, 2048+1010);
+					pM->WriteReg32(&pRegs[i]->Cfg.DacOffset, 2048+2000);
+					pM->WriteReg32(&pRegs[i]->Sd.SrcSel[DCRB_OUTPUT_FCE0], DCRB_SD_MUX_PULSER);
+					pM->WriteReg32(&pRegs[i]->Sd.SrcSel[DCRB_OUTPUT_FCE1], DCRB_SD_MUX_PULSER);
+					pM->WriteReg32(&pRegs[i]->Sd.SrcSel[DCRB_OUTPUT_FCE2], DCRB_SD_MUX_PULSER);
+				}
 				else
-					val &= ~(0x3f<<0);
-				pM->WriteReg32(&pRegs[i]->TestPulseConfig, val);
+				{
+					pM->WriteReg32(&pRegs[i]->Sd.PulserPeriod, 125000); 
+					pM->WriteReg32(&pRegs[i]->Sd.PulserLowCycles, 2); 
+					pM->WriteReg32(&pRegs[i]->Sd.PulserNPulses, 0);
+					pM->WriteReg32(&pRegs[i]->Cfg.DacLow, 2048+1000);
+					pM->WriteReg32(&pRegs[i]->Cfg.DacHigh, 2048+1050);
+					pM->WriteReg32(&pRegs[i]->Cfg.DacOffset, 2048+2000);
+					pM->WriteReg32(&pRegs[i]->Sd.SrcSel[DCRB_OUTPUT_FCE0], 0);
+					pM->WriteReg32(&pRegs[i]->Sd.SrcSel[DCRB_OUTPUT_FCE1], 0);
+					pM->WriteReg32(&pRegs[i]->Sd.SrcSel[DCRB_OUTPUT_FCE2], 0);
 			}
 		}
-*/
+		}
 	}
 	
 	void SetRemoteTest(Bool_t en)
 	{
-/*
 		unsigned int val;
 		
 		for(int i = 0; i < MAX_DCRB_NUM; i++)
 		{
 			if(pRegs[i])
 			{
-				val = pM->ReadReg32(&pRegs[i]->TestPulseConfig);
 				if(en)
-					val |= 0x3f<<6;
+				{
+					pM->WriteReg32(&pRegs[i]->Sd.PulserPeriod, 125000); 
+					pM->WriteReg32(&pRegs[i]->Sd.PulserLowCycles, 2); 
+					pM->WriteReg32(&pRegs[i]->Sd.PulserNPulses, 0xFFFFFFFF);
+					pM->WriteReg32(&pRegs[i]->Cfg.DacLow, 2048+1000);
+					pM->WriteReg32(&pRegs[i]->Cfg.DacHigh, 2048+1010);
+					pM->WriteReg32(&pRegs[i]->Cfg.DacOffset, 2048+2000);
+					pM->WriteReg32(&pRegs[i]->Sd.SrcSel[DCRB_OUTPUT_FCE0], DCRB_SD_MUX_PULSER);
+					pM->WriteReg32(&pRegs[i]->Sd.SrcSel[DCRB_OUTPUT_FCE1], DCRB_SD_MUX_PULSER);
+					pM->WriteReg32(&pRegs[i]->Sd.SrcSel[DCRB_OUTPUT_FCE2], DCRB_SD_MUX_PULSER);
+				}
 				else
-					val &= ~(0x3f<<6);
-				pM->WriteReg32(&pRegs[i]->TestPulseConfig, val);
+				{
+					pM->WriteReg32(&pRegs[i]->Sd.PulserPeriod, 125000); 
+					pM->WriteReg32(&pRegs[i]->Sd.PulserLowCycles, 2); 
+					pM->WriteReg32(&pRegs[i]->Sd.PulserNPulses, 0);
+					pM->WriteReg32(&pRegs[i]->Cfg.DacLow, 2048+1000);
+					pM->WriteReg32(&pRegs[i]->Cfg.DacHigh, 2048+1010);
+					pM->WriteReg32(&pRegs[i]->Cfg.DacOffset, 2048+2000);
+					pM->WriteReg32(&pRegs[i]->Sd.SrcSel[DCRB_OUTPUT_FCE0], 0);
+					pM->WriteReg32(&pRegs[i]->Sd.SrcSel[DCRB_OUTPUT_FCE1], 0);
+					pM->WriteReg32(&pRegs[i]->Sd.SrcSel[DCRB_OUTPUT_FCE2], 0);
 			}
 		}
-*/
+		}
 	}
 	
 	void SetReset()
 	{
-/*
 		unsigned int val;
 		
 		for(int i = 0; i < MAX_DCRB_NUM; i++)
 		{
 			if(pRegs[i])
 			{
-				pM->WriteReg32(&pRegs[i]->Reset, 1);
-				pM->WriteReg32(&pRegs[i]->Reset, 0);
-				
-				val = pM->ReadReg32(&pRegs[i]->ClockConfig) & 0xFFFFFFFC;
-				pM->WriteReg32(&pRegs[i]->ClockConfig, val | 0x3);
-				pM->WriteReg32(&pRegs[i]->ClockConfig, val | 0x1);
-				pM->WriteReg32(&pRegs[i]->TestPulseConfig, 0x3f);
-				
-				pM->WriteReg32(&pRegs[i]->TriggerCtrl, 0x800);
-
-				pM->WriteReg32(&pRegs[i]->GtpCtrl, 0x203);
 			}
 		}
-*/
 	}
 
 	void HardReset()
 	{
-/*
 		for(int i = 0; i < MAX_DCRB_NUM; i++)
 		{
 			if(pRegs[i])
 			{
-				pM->WriteReg32(&pRegs[i]->GtpCtrl, 0x203);
-				pM->WriteReg32(&pRegs[i]->GtpCtrl, 0x202);
-				pM->WriteReg32(&pRegs[i]->GtpCtrl, 0x200);
-				pM->WriteReg32(&pRegs[i]->GtpCtrl, 0x000);
 			}
 		}
-*/
 	}
 
 	void SoftReset()
 	{
-/*
 		for(int i = 0; i < MAX_DCRB_NUM; i++)
 		{
 			if(pRegs[i])
 			{
-				pM->WriteReg32(&pRegs[i]->GtpCtrl, 0x202);
-				pM->WriteReg32(&pRegs[i]->GtpCtrl, 0x200);
-				pM->WriteReg32(&pRegs[i]->GtpCtrl, 0x000);
 			}
 		}
-*/
 	}
 
 	void SmartReset()
 	{
-/*
 		for(int i = 0; i < MAX_DCRB_NUM; i++)
 		{
-			if(pRegs[i] && !(pM->ReadReg32(&pRegs[i]->GtpStatus) & 0x1000))
-			{
-				printf("Resetting dcrb serdes %d\n", i);
-				pM->WriteReg32(&pRegs[i]->GtpCtrl, 0x202);
-				pM->WriteReg32(&pRegs[i]->GtpCtrl, 0x200);
-				pM->WriteReg32(&pRegs[i]->GtpCtrl, 0x000);
 			}
 		}
-*/
-	}
 
 	char *ReadNormalizedScaler(char *buf, char *prefix, unsigned int ref, unsigned int scaler)
 	{
@@ -492,7 +452,7 @@ public:
 		for(i = 0; i < MAX_DCRB_NUM; i++)
 		{
 			if(pRegs[i])
-				pM->WriteReg32(&pRegs[i]->ScalerLatch, 0);
+				pM->WriteReg32(&pRegs[i]->Sd.ScalerLatch, 1);
 		}
 		
 		memset(scalers, 0, sizeof(scalers));
@@ -500,11 +460,22 @@ public:
 		{
 			if(pRegs[i])
 			{
-				refscalers[i] = pM->ReadReg32(&pRegs[i]->VmeClkScaler);
-				pM->BlkReadReg32(&pRegs[i]->Scalers[0], scalers[i], 96, CRATE_MSG_FLAGS_ADRINC);
+				refscalers[i] = pM->ReadReg32(&pRegs[i]->Sd.Scalers[DCRB_SCALER_SYSCLK50]);
+				pM->BlkReadReg32(&pRegs[i]->Tdc[0].Scalers[0], &scalers[i][0], 16, CRATE_MSG_FLAGS_ADRINC);
+				pM->BlkReadReg32(&pRegs[i]->Tdc[1].Scalers[0], &scalers[i][16], 16, CRATE_MSG_FLAGS_ADRINC);
+				pM->BlkReadReg32(&pRegs[i]->Tdc[2].Scalers[0], &scalers[i][32], 16, CRATE_MSG_FLAGS_ADRINC);
+				pM->BlkReadReg32(&pRegs[i]->Tdc[3].Scalers[0], &scalers[i][48], 16, CRATE_MSG_FLAGS_ADRINC);
+				pM->BlkReadReg32(&pRegs[i]->Tdc[4].Scalers[0], &scalers[i][64], 16, CRATE_MSG_FLAGS_ADRINC);
+				pM->BlkReadReg32(&pRegs[i]->Tdc[5].Scalers[0], &scalers[i][80], 16, CRATE_MSG_FLAGS_ADRINC);
 			}
 		}
 		
+		for(i = 0; i < MAX_DCRB_NUM; i++)
+		{
+			if(pRegs[i])
+				pM->WriteReg32(&pRegs[i]->Sd.ScalerLatch, 0);
+		}
+
 		if(pButtonNormalize->IsDown())
 		{
 			for(i = 0; i < MAX_DCRB_NUM; i++)
@@ -520,6 +491,9 @@ public:
 			}
 		}
 
+    double tot[2];
+    memset(tot, 0, sizeof(tot));
+    
 		for(i = 0; i < 2; i++)
 		{
 			pScalers[i]->Reset("");
@@ -545,16 +519,29 @@ public:
 						}
 						else
 							pScalers[i]->Fill(x, y, (double)scalers[j+i*7][k]);
+            
+            tot[i]+= scalers[j+i*7][k];
 					}
 				}
 			}
 			pCanvasScalers[i]->GetCanvas()->cd();
 			pCanvasScalers[i]->GetCanvas()->Clear();
-			pScalers[i]->Draw("COLZTEXT");
+			pCanvasScalers[i]->GetCanvas()->SetLogz(1);
+			pScalers[i]->SetMaximum(1000000.0);
+			pScalers[i]->SetMinimum(0.0);
+			pScalers[i]->Draw("COLZ");
 			pScalers[i]->GetZaxis()->SetLabelSize(0.06);
 			pCanvasScalers[i]->GetCanvas()->Modified();
 			pCanvasScalers[i]->GetCanvas()->Update();
 		}
+		
+		if(pButtonLogScalers->IsDown())
+    {
+      FILE *f = fopen("dc_scalers.log", "a");
+      TTimeStamp t;
+      fprintf(f, "%s, %lf, %lf\n", t.AsString(), tot[0], tot[1]);
+      fclose(f);
+    }
 	}
 
 private:
@@ -571,12 +558,13 @@ private:
 		BTN_HARDRESET_SER,
 		BTN_SOFTRESET_SER,
 		BTN_SMARTRESET_SER,
+    BTN_LOGSCALERS,
 		SDR_UPDATETIME,
 		SDR_THRESHOLD
 	};
 
 	ModuleFrame				*pM;
-	DCRB_regs_v1			*pRegs[MAX_DCRB_NUM];
+	DCRB_regs				*pRegs[MAX_DCRB_NUM];
 
 	TH2Poly					*pScalers[2];
 
@@ -594,6 +582,7 @@ private:
 	TGTextButton			*pButtonRemoteTest;
 	TGTextButton			*pButtonReset;
 	TGTextButton			*pButtonNormalize;
+  TGTextButton      *pButtonLogScalers;
 };
 
 #endif

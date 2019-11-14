@@ -19,9 +19,6 @@ public:
 
 		TGTab *pTabs;
 
-#pragma warning("need to get this done through SetParameter")
-		A32BaseAddr = 0x08000000;
-
 		TGCompositeFrame *tFrame;
 		AddFrame(pTabs = new TGTab(this), new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("NoisePlots");	tFrame->AddFrame(new DCRB_NoisePlots(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
@@ -29,9 +26,9 @@ public:
 //		tFrame = pTabs->AddTab("GTP");			tFrame->AddFrame(new DCRB_GTP(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("Scalers");		tFrame->AddFrame(new DCRB_Scalers(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("Status");		tFrame->AddFrame(new DCRB_Status(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-//		tFrame = pTabs->AddTab("Testing");		tFrame->AddFrame(new DCRB_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+		tFrame = pTabs->AddTab("Testing");		tFrame->AddFrame(new DCRB_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		
-		strSlotIdentifier.Form("%d", ReadReg32((volatile unsigned int *)(BaseAddr+0x0050)) & 0x1F);
+		strSlotIdentifier.Form("%d", (ReadReg32((volatile unsigned int *)(BaseAddr+0x0004))>>24) & 0x1F);
 	}
 
 	const char *GetModuleName() { return "DCRB"; }
@@ -40,7 +37,6 @@ public:
 
 private:
 	TString			strSlotIdentifier;
-	TGTab				*pTabs;
 
 	Bool_t SetParameter(char *pParam1, char *pParam2)
 	{

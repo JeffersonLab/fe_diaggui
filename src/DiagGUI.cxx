@@ -16,10 +16,12 @@
 #include "VSCMModule.h"
 #include "GTPModule.h"
 #include "GTP_HPSModule.h"
+#include "VTP_HPSModule.h"
 #include "V1495PulserModule.h"
 #include "FADCScalers_HPSModule.h"
 #include "RICHModule.h"
 #include "vetroc_module.h"
+#include "VTP_COMPTONModule.h"
 #include "VTP_EC_Module.h"
 #include "VTP_GT_Module.h"
 #include "SSP_GT_Module.h"
@@ -311,12 +313,16 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, int count)
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new GTPModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_GTP_HPS", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new GTP_HPSModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+      else if(!stricmp("MOD_TYPE_VTP_HPS", paramB))
+        pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_HPSModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_V1495_PULSER", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new V1495PulserModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_RICH", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new RICHModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_VETROC", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new vetroc_module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+      else if(!stricmp("MOD_TYPE_VTP_COMPTON", paramB))
+        pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_COMPTONModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_EC", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_EC_Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_GT", paramB))
@@ -413,3 +419,4 @@ void DiagGUI::CloseWindow()
 	HandleDisconnect();
 	gApplication->Terminate();
 }
+

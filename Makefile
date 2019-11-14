@@ -32,8 +32,10 @@ CFLAGS			= -O2 -fno-exceptions -fPIC -I/usr/include\
 			-I./src/FADCScalers_HPS \
 			-I./src/RICH \
 			-I./src/vetroc \
+			-I./src/VTP_COMPTON \
 			-I./src/VTP_EC \
 			-I./src/VTP_GT \
+			-I./src/VTP_HPS \
 			-I./src/SSP_GT \
 			-L. -DJLAB \
 			`root-config --cflags`

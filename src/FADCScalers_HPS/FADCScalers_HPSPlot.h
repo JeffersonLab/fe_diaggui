@@ -159,50 +159,9 @@ public:
 		return buf;
 	}
 	
-	int hps_map_getidx(int x, int y)
-	{
-		int x_pos = 23;
-		int y_pos= 1;
-		int idx = 1;
-
-		while(x_pos > -23)
-		{
-			if((x = x_pos) && (y = y_pos))
-				return idx;
-
-			idx++;
-
-			if(y_pos = 5)
-			{
-				if((x_pos <= -1) && (x_pos >= -9))
-					y_pos = 2;
-				else
-					y_pos = 1;
-
-				x_pos--;
-			}
-			else
-				y_pos++;
-		}
-		return -1;
-	}
-	
-	int hps_getadc_ch(int x, int y)
-	{
-		int idx = hps_map_getidx(x, y);
-		
-		if((idx >= 1) and (idx <= 112))
-			return idx-1;
-
-		if((idx >= 113) and (idx <= 221))
-			return 9*16+(idx-113);
-
-		return -1;
-	}
-
 	void UpdateScalers()
 	{
-		int i, j, k;
+		int i, j;
 		unsigned int scalers[MAX_FADC_NUM][16];
 		unsigned int refscalers[MAX_FADC_NUM];
 
@@ -242,18 +201,18 @@ public:
 		}
 
 		pScalers->Reset();
+		int ch = 0;
+		int val;
 		for(int x = -22; x <= 23; x++)
 		{
 			for(int y = 1; y <= 5; y++)
 			{
-				int ch = hps_getadc_ch(x, y);
-				int val;
+				if((y == 1) && ((x <= -1) && (x >= -9)))
+					continue;
 				
-				if(ch >= 0)
-				{
 					val = scalers[ch / 16][ch % 16];
 					pScalers->Fill(x, y, val);
-				}
+				ch++;
 			}
 		}
 		pCanvasScalers->GetCanvas()->Modified();

@@ -8,10 +8,10 @@
 //#include "SSP_Config.h"
 //#include "SSP_Status.h"
 //#include "SSP_Scalers.h"
+//#include "SSP_Fiber.h"
 //#include "SSP_Testing.h"
 #include "SSP_HPS_TrgHist.h"
 #include "SSP_HPSSerialScope.h"
-#include "SSP_HPSSerialScopeVXS.h"
 #include "ModuleFrame.h"
 
 class SSP_HPSModule	: public ModuleFrame
@@ -38,11 +38,11 @@ public:
 //		tFrame = pSSPTabs->AddTab("Fiber 5");		tFrame->AddFrame(new SSP_SerialScope(tFrame, this, 5), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Fiber 6");		tFrame->AddFrame(new SSP_SerialScope(tFrame, this, 6), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Fiber 7");		tFrame->AddFrame(new SSP_SerialScope(tFrame, this, 7), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-		tFrame = pSSPTabs->AddTab("SWA VXS 1");		tFrame->AddFrame(new SSP_HPSSerialScopeVXS(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+//		tFrame = pSSPTabs->AddTab("SWA VXS 1");		tFrame->AddFrame(new SSP_SerialScope(tFrame, this, 9), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("WaveCapture");	tFrame->AddFrame(new SSP_WaveCapture(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Scalers");		tFrame->AddFrame(new SSP_Scalers(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("SWA VXS 0");	tFrame->AddFrame(new SSP_Fiber(tFrame, this, GTX_VXS, 8), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-//		tFrame = pSSPTabs->AddTab("SWA VXS 1");	tFrame->AddFrame(new SSP_HPSFiber(tFrame, this, GTX_VXS, 9), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+//		tFrame = pSSPTabs->AddTab("SWA VXS 1");	tFrame->AddFrame(new SSP_Fiber(tFrame, this, GTX_VXS, 9), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Fiber 0");		tFrame->AddFrame(new SSP_Fiber(tFrame, this, GTX_FIB, 0), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Fiber 1");		tFrame->AddFrame(new SSP_Fiber(tFrame, this, GTX_FIB, 1), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Fiber 2");		tFrame->AddFrame(new SSP_Fiber(tFrame, this, GTX_FIB, 2), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
@@ -212,6 +212,36 @@ public:
 					{"Emax",						REGMEM_DESC_FLAGS_UINT,		{0x081C, 0, 13, 32}},
 					{"Nmin_en",					REGMEM_DESC_FLAGS_UINT,		{0x0800, 2, 1, 32}},
 					{"Nmin",						REGMEM_DESC_FLAGS_UINT,		{0x0820, 0, 4, 32}},
+
+
+					{"Prescale0_Val",			REGMEM_DESC_FLAGS_UINT,		{0x0830, 0, 16, 32}},
+					{"Prescale0_MinX",		REGMEM_DESC_FLAGS_INT,		{0x0830, 16, 6, 32}},
+					{"Prescale0_MaxX",		REGMEM_DESC_FLAGS_INT,		{0x0830, 24, 6, 32}},
+
+					{"Prescale1_Val",			REGMEM_DESC_FLAGS_UINT,		{0x0834, 0, 16, 32}},
+					{"Prescale1_MinX",		REGMEM_DESC_FLAGS_INT,		{0x0834, 16, 6, 32}},
+					{"Prescale1_MaxX",		REGMEM_DESC_FLAGS_INT,		{0x0834, 24, 6, 32}},
+
+					{"Prescale2_Val",			REGMEM_DESC_FLAGS_UINT,		{0x0838, 0, 16, 32}},
+					{"Prescale2_MinX",		REGMEM_DESC_FLAGS_INT,		{0x0838, 16, 6, 32}},
+					{"Prescale2_MaxX",		REGMEM_DESC_FLAGS_INT,		{0x0838, 24, 6, 32}},
+
+					{"Prescale3_Val",			REGMEM_DESC_FLAGS_UINT,		{0x083C, 0, 16, 32}},
+					{"Prescale3_MinX",		REGMEM_DESC_FLAGS_INT,		{0x083C, 16, 6, 32}},
+					{"Prescale3_MaxX",		REGMEM_DESC_FLAGS_INT,		{0x083C, 24, 6, 32}},
+
+					{"Prescale4_Val",			REGMEM_DESC_FLAGS_UINT,		{0x0840, 0, 16, 32}},
+					{"Prescale4_MinX",		REGMEM_DESC_FLAGS_INT,		{0x0840, 16, 6, 32}},
+					{"Prescale4_MaxX",		REGMEM_DESC_FLAGS_INT,		{0x0840, 24, 6, 32}},
+
+					{"Prescale5_Val",			REGMEM_DESC_FLAGS_UINT,		{0x0844, 0, 16, 32}},
+					{"Prescale5_MinX",		REGMEM_DESC_FLAGS_INT,		{0x0844, 16, 6, 32}},
+					{"Prescale5_MaxX",		REGMEM_DESC_FLAGS_INT,		{0x0844, 24, 6, 32}},
+
+					{"Prescale6_Val",			REGMEM_DESC_FLAGS_UINT,		{0x0848, 0, 16, 32}},
+					{"Prescale6_MinX",		REGMEM_DESC_FLAGS_INT,		{0x0848, 16, 6, 32}},
+					{"Prescale6_MaxX",		REGMEM_DESC_FLAGS_INT,		{0x0848, 24, 6, 32}},
+
 					{"ScalerSinglePass",		REGMEM_DESC_FLAGS_UINT,		{0x0880, 0, 32, 32}},
 					{"ScalerSingleTot",		REGMEM_DESC_FLAGS_UINT,		{0x0884, 0, 32, 32}},
 				{NULL, 0},
@@ -417,5 +447,4 @@ private:
 	TGTab				*pSSPTabs;
 };
 
-#endif
-
+#endif

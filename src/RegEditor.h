@@ -219,8 +219,16 @@ public:
 	{
 		if(!(pRegMemDesc->mode & REGMEM_DESC_FLAGS_LIMITS))
 		{
+      if(pRegMemDesc->mode & REGMEM_DESC_FLAGS_INT)
+      {
+  			pRegMemDesc->limits.min = -pow(2.0, pRegMemDesc->info.nbits-1);
+	  		pRegMemDesc->limits.max = pow(2.0, pRegMemDesc->info.nbits-1) - 1.0;
+      }
+      else
+      {
 			pRegMemDesc->limits.min = 0;
 			pRegMemDesc->limits.max = pow(2.0, pRegMemDesc->info.nbits) - 1.0;
+		}
 		}
 		pListTree->AddItem(pParent, Form("%-20s unknown", pRegMemDesc->name), pRegMemDesc, picBinaryData, picBinaryData);
 	}
@@ -417,6 +425,13 @@ public:
 
 		result >>= pRegMemDesc->info.shift;
 		result &= mask;
+
+		if(pRegMemDesc->mode & REGMEM_DESC_FLAGS_INT)
+    {
+      if(result & (1<<(pRegMemDesc->info.nbits-1)))
+        result |= ((1<<(32-pRegMemDesc->info.nbits))-1)<<pRegMemDesc->info.nbits;
+    }
+
 		return result;
 	}
 
