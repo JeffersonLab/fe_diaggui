@@ -23,7 +23,7 @@ public:
 //		tFrame = pTabs->AddTab("NoisePlots");	tFrame->AddFrame(new DCRB_NoisePlots(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("TDCPlots");		tFrame->AddFrame(new DCRB_TDCPlots(tFrame, this, A32BaseAddr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("GTP");			tFrame->AddFrame(new DCRB_GTP(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-		tFrame = pTabs->AddTab("VXSScope");		tFrame->AddFrame(new vetroc_serialscope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+//		tFrame = pTabs->AddTab("VXSScope");		tFrame->AddFrame(new vetroc_serialscope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pTabs->AddTab("Scalers");		tFrame->AddFrame(new vetroc_scalers(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("Status");		tFrame->AddFrame(new DCRB_Status(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("Testing");		tFrame->AddFrame(new DCRB_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));

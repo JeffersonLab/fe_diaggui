@@ -129,6 +129,7 @@ public:
 
       {"Compton", 0},
         {"FADCThreshold",       REGMEM_DESC_FLAGS_UINT,   {0x9000, 0,13,32}},
+        {"VETROCWidth",         REGMEM_DESC_FLAGS_UINT,   {0x9000,16, 8,32}},
 
         {"LA_CTRL",             REGMEM_DESC_FLAGS_HEX,    {0x9020, 0,32,32}},
         {"LA_STATUS",           REGMEM_DESC_FLAGS_HEX,    {0x9024, 0,32,32}},
