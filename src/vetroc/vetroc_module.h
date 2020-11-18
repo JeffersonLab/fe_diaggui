@@ -18,7 +18,6 @@ public:
 #pragma warning("need to get this done through SetParameter")
     A32BaseAddr = 0x08000000;
 
-<<<<<<< HEAD
 		TGCompositeFrame *tFrame;
 		AddFrame(pTabs = new TGTab(this), new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("NoisePlots");	tFrame->AddFrame(new DCRB_NoisePlots(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
@@ -31,20 +30,6 @@ public:
 		
 		strSlotIdentifier.Form("%d", (ReadReg32((volatile unsigned int *)(BaseAddr+0x0000))>>24) & 0x1F);
 	}
-=======
-    TGCompositeFrame *tFrame;
-    AddFrame(pTabs = new TGTab(this), new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX | kLHintsExpandY));
-//    tFrame = pTabs->AddTab("NoisePlots"); tFrame->AddFrame(new DCRB_NoisePlots(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-//    tFrame = pTabs->AddTab("TDCPlots");   tFrame->AddFrame(new DCRB_TDCPlots(tFrame, this, A32BaseAddr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-//    tFrame = pTabs->AddTab("GTP");      tFrame->AddFrame(new DCRB_GTP(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-    tFrame = pTabs->AddTab("VXSScope");   tFrame->AddFrame(new vetroc_serialscope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-    tFrame = pTabs->AddTab("Scalers");    tFrame->AddFrame(new vetroc_scalers(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-//    tFrame = pTabs->AddTab("Status");   tFrame->AddFrame(new DCRB_Status(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-//    tFrame = pTabs->AddTab("Testing");    tFrame->AddFrame(new DCRB_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-    
-    strSlotIdentifier.Form("%d", (ReadReg32((volatile unsigned int *)(BaseAddr+0x0000))>>24) & 0x1F);
-  }
->>>>>>> f034e2a9f00ba6f826f8c5e109912daef9e3d596
 
   const char *GetModuleName() { return "VETROC"; }
   const char *GetModuleFullName() { return "VETROC"; }
