@@ -2,7 +2,7 @@
 #define VTP_HPSModule_H
 
 #include "RootHeader.h"
-#include "VTP_HPS_TrgHist.h"
+//#include "VTP_HPS_TrgHist.h"
 //#include "VTP_HPS_PairTrg.h"
 #include "ModuleFrame.h"
 
@@ -16,7 +16,7 @@ public:
     TGCompositeFrame *tFrame;
     AddFrame(pTabs = new TGTab(this), new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX | kLHintsExpandY));
 
-    tFrame = pTabs->AddTab("TrgHist");   tFrame->AddFrame(new VTP_HPS_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+//    tFrame = pTabs->AddTab("TrgHist");   tFrame->AddFrame(new VTP_HPS_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //    tFrame = pTabs->AddTab("PairTrg");   tFrame->AddFrame(new VTP_HPS_PairTrg(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
     strSlotIdentifier.Form("SWA");

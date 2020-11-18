@@ -6,19 +6,19 @@
 #include "ModuleFrame.h"
 #include "gtp.h"
 
-#define SCOPE_PIXELS_PER_BIT          5
+#define SCOPE_PIXELS_PER_BIT        5
 
 #define SCOPE_NAME_WIDTH            100
 #define SCOPE_COLOR_EN              0xB0FFB0
 #define SCOPE_COLOR_DIS             0xFFB0B0
 
-#define SCOPE_DESC_MAX_CFG_REGS       16
-#define SCOPE_DESC_MAX_DATA_REGS        16
-#define SCOPE_DESC_CFG_MODE_COMPARE     0
-#define SCOPE_DESC_CFG_MODE_MASK        1
+#define SCOPE_DESC_MAX_CFG_REGS     16
+#define SCOPE_DESC_MAX_DATA_REGS    16
+#define SCOPE_DESC_CFG_MODE_COMPARE 0
+#define SCOPE_DESC_CFG_MODE_MASK    1
 
 #define TRACE_MODE_ANALOG           0x00000001
-#define TRACE_MODE_DIGITAL            0x00000002
+#define TRACE_MODE_DIGITAL          0x00000002
 #define TRACE_MODE_MASK0            0x80000000  // don't draw non-zero values when mask bit=0
 #define TRACE_MODE_MASK1            0x40000000  // don't draw non-zero values when mask bit=1
 
@@ -68,15 +68,15 @@ public:
       if(mode & TRACE_MODE_ANALOG)
       {
         for(int i = 0; i < sampleLen; i++)
-					pTraceData[i] = (int)(100.0*r.Rndm());	// noise
+          pTraceData[i] = (int)(100.0*r.Rndm());  // noise
 
-				int n = (int)(10.0*r.Rndm());	// number of pulses to generate
+        int n = (int)(10.0*r.Rndm()); // number of pulses to generate
         while(n--)
         {
           double amp = 200.0*r.Rndm();  // pulse height
-					int t = (int)(sampleLen*r.Rndm());
+          int t = (int)(sampleLen*r.Rndm());
           for(int i = 0; i < (sampleLen-t); i++)
-						pTraceData[t+i] += (int)((double)i*amp*TMath::Exp(-(double)i/20.0));
+            pTraceData[t+i] += (int)((double)i*amp*TMath::Exp(-(double)i/20.0));
         }
 
         for(int i = 0; i < sampleLen; i++)
@@ -97,11 +97,11 @@ public:
 
         for(int i = 0; i < bitCount; i++)
         {
-					int n = (int)(10.0*r.Rndm());	// number of pulses to generate
+          int n = (int)(10.0*r.Rndm()); // number of pulses to generate
           while(n--)
           {
-						int t = (int)(sampleLen*r.Rndm());
-						int w = (int)(20.0*r.Rndm());
+            int t = (int)(sampleLen*r.Rndm());
+            int w = (int)(20.0*r.Rndm());
             int p = t+w;
             while(w--)
             {
@@ -143,7 +143,7 @@ public:
 
       if( (mode & TRACE_MODE_ANALOG) && (pTraceData[i] > 0) )
       {
-        pTraceDataPersist[0][i]++;
+        pTraceDataPersist[0][i]+= pTraceData[i];
         if(pTraceDataPersist[0][i] > maxPersist) maxPersist = pTraceDataPersist[0][i];
         if(pTraceDataPersist[0][i] < minPersist) minPersist = pTraceDataPersist[0][i];
       }
@@ -170,12 +170,20 @@ public:
     {
       double min=4294967295.0, max=0.0, scale;
       
-      for(int i = 0; i < sampleLen; i++)
+      if(!bPersist)
       {
-        if((unsigned int)pTraceData[i] > max)
-          max = (unsigned int)pTraceData[i];
-        if((unsigned int)pTraceData[i] < min)
-          min = (unsigned int)pTraceData[i];
+        for(int i = 0; i < sampleLen; i++)
+        {
+          if((unsigned int)pTraceData[i] > max)
+            max = (unsigned int)pTraceData[i];
+          if((unsigned int)pTraceData[i] < min)
+            min = (unsigned int)pTraceData[i];
+        }
+      }
+      else
+      {
+        max = maxPersist;
+        min = minPersist;
       }
       
       if(max-min != 0)
@@ -188,9 +196,12 @@ public:
         int x,y,w;
         double h;
         w = SCOPE_PIXELS_PER_BIT;
-        h = ((double)pTraceData[i]-min)*scale+1.0;
+        if(!bPersist)
+          h = ((double)pTraceData[i]-min)*scale+1.0;
+        else
+          h = ((double)pTraceDataPersist[0][i]-min)*scale+1.0;
         x = i*SCOPE_PIXELS_PER_BIT;
-				y = GetHeight()-(int)h;
+        y = GetHeight()-(int)h;
         gc->SetForeground(0x008000);
         gVirtualX->FillRectangle(fId, gc->GetGC(),x,y,w,(int)h);
         gc->SetForeground(0x00F000);
@@ -512,7 +523,7 @@ public:
     ScopeConfig.dataRegs.num = 0;
     ScopeConfig.persist = kFALSE;
     ScopeConfig.regWidth = 32;
-	}
+  }
 
   void SetRegWidth(int width)
   {
@@ -685,7 +696,7 @@ public:
   void ScopeTriggerReadout()
   {
     int i, j;
-		char **pBuf = new (nothrow) char *[ScopeConfig.dataRegs.num];
+    char **pBuf = new (nothrow) char *[ScopeConfig.dataRegs.num];
     if(!pBuf)
     {
       printf("Error: ScopeTriggerReadout() memory failed to allocate\n");
@@ -694,7 +705,7 @@ public:
     
     for(i = 0; i < ScopeConfig.dataRegs.num; i++)
     {
-			pBuf[i] = new (nothrow) char [ScopeConfig.sampleLen*ScopeConfig.regWidth/8];
+      pBuf[i] = new (nothrow) char [ScopeConfig.sampleLen*ScopeConfig.regWidth/8];
       if(!pBuf[i])
       {
         printf("Error: ScopeTriggerReadout() memory failed to allocate\n");
@@ -715,36 +726,36 @@ public:
       if(ScopeConfig.regWidth == 32)
       {
         unsigned int addr = ScopeConfig.dataRegs.addr+i*4;
-			  pM->BlkReadReg32((volatile unsigned int *)addr, (unsigned int *)pBuf[i], ScopeConfig.sampleLen, CRATE_MSG_FLAGS_NOADRINC);
+        pM->BlkReadReg32((volatile unsigned int *)addr, (unsigned int *)pBuf[i], ScopeConfig.sampleLen, CRATE_MSG_FLAGS_NOADRINC);
       }
       else
       {
         unsigned int addr = ScopeConfig.dataRegs.addr+i*2;
-			  pM->BlkReadReg16((volatile unsigned short *)addr, (unsigned short *)pBuf[i], ScopeConfig.sampleLen, CRATE_MSG_FLAGS_NOADRINC);
+        pM->BlkReadReg16((volatile unsigned short *)addr, (unsigned short *)pBuf[i], ScopeConfig.sampleLen, CRATE_MSG_FLAGS_NOADRINC);
       }
     }
 
     for(unsigned i = 0; i < ScopeConfig.traceDesc.size(); i++)
     {
-			int bufNum = ScopeConfig.traceDesc[i].bitOffsetData / ScopeConfig.regWidth;
-			int bufShift = ScopeConfig.traceDesc[i].bitOffsetData % ScopeConfig.regWidth;
+      int bufNum = ScopeConfig.traceDesc[i].bitOffsetData / ScopeConfig.regWidth;
+      int bufShift = ScopeConfig.traceDesc[i].bitOffsetData % ScopeConfig.regWidth;
       int bufMask = 0xFFFFFFFF;
 
-			if(ScopeConfig.traceDesc[i].bitCount < ScopeConfig.regWidth)
+      if(ScopeConfig.traceDesc[i].bitCount < ScopeConfig.regWidth)
         bufMask = (1<<ScopeConfig.traceDesc[i].bitCount)-1;
 
       for(j = 0; j < ScopeConfig.sampleLen; j++)
       {
-				int maskval = 0;
+        int maskval = 0;
 
         if( (ScopeConfig.traceDesc[i].mode & TRACE_MODE_MASK0) || (ScopeConfig.traceDesc[i].mode & TRACE_MODE_MASK1) )
-				{
+        {
           if(ScopeConfig.regWidth==32)
             maskval = (((unsigned int **)pBuf)[ScopeConfig.traceDesc[i].maskOffset / ScopeConfig.regWidth][j]>>(ScopeConfig.traceDesc[i].maskOffset % ScopeConfig.regWidth)) & 0x1;
           else if(ScopeConfig.regWidth==16)
             maskval = (((unsigned short **)pBuf)[ScopeConfig.traceDesc[i].maskOffset / ScopeConfig.regWidth][j]>>(ScopeConfig.traceDesc[i].maskOffset % ScopeConfig.regWidth)) & 0x1;
-//					printf("%d", maskval);
-				}
+//          printf("%d", maskval);
+        }
 
         if( (ScopeConfig.traceDesc[i].mode & TRACE_MODE_MASK0) && (maskval == 0) )
           ScopeConfig.traceFrame[i]->pTraceData[j] = 0;
@@ -755,7 +766,7 @@ public:
           if(ScopeConfig.regWidth==32) ScopeConfig.traceFrame[i]->pTraceData[j] = ((unsigned int **)pBuf)[bufNum][j]>>bufShift;
           if(ScopeConfig.regWidth==16) ScopeConfig.traceFrame[i]->pTraceData[j] = ((unsigned short **)pBuf)[bufNum][j]>>bufShift;
 
-					if(bufShift+ScopeConfig.traceDesc[i].bitCount > ScopeConfig.regWidth)
+          if(bufShift+ScopeConfig.traceDesc[i].bitCount > ScopeConfig.regWidth)
           {
             if(ScopeConfig.regWidth==32) ScopeConfig.traceFrame[i]->pTraceData[j] |= ((unsigned int **)pBuf)[bufNum+1][j]<<(ScopeConfig.regWidth-bufShift);
             if(ScopeConfig.regWidth==16) ScopeConfig.traceFrame[i]->pTraceData[j] |= ((unsigned short **)pBuf)[bufNum+1][j]<<(ScopeConfig.regWidth-bufShift);
@@ -784,16 +795,16 @@ public:
         if(ScopeConfig.regWidth==32)
           pM->RMWReg32((volatile unsigned int *)ScopeConfig.traceDesc[i].cfg.addr, ScopeConfig.traceDesc[i].cfg.cfg<<ScopeConfig.traceDesc[i].cfg.bitOffset, mask);
         else if(ScopeConfig.regWidth==16)
-  				pM->RMWReg16((volatile unsigned short *)ScopeConfig.traceDesc[i].cfg.addr, ScopeConfig.traceDesc[i].cfg.cfg<<ScopeConfig.traceDesc[i].cfg.bitOffset, mask);
+          pM->RMWReg16((volatile unsigned short *)ScopeConfig.traceDesc[i].cfg.addr, ScopeConfig.traceDesc[i].cfg.cfg<<ScopeConfig.traceDesc[i].cfg.bitOffset, mask);
 
         mask = 0xFFFFFFFF;
-				if(ScopeConfig.traceDesc[i].bitCount < ScopeConfig.regWidth)
+        if(ScopeConfig.traceDesc[i].bitCount < ScopeConfig.regWidth)
           mask = (1<<ScopeConfig.traceDesc[i].bitCount)-1;
         mask<<= ScopeConfig.traceDesc[i].val.bitOffset;
         if(ScopeConfig.regWidth==32)
           pM->RMWReg32((volatile unsigned int *)ScopeConfig.traceDesc[i].val.addr, ScopeConfig.traceDesc[i].val.val<<ScopeConfig.traceDesc[i].val.bitOffset, mask);
         else if(ScopeConfig.regWidth==16)
- 				  pM->RMWReg16((volatile unsigned short *)ScopeConfig.traceDesc[i].val.addr, ScopeConfig.traceDesc[i].val.val<<ScopeConfig.traceDesc[i].val.bitOffset, mask);
+          pM->RMWReg16((volatile unsigned short *)ScopeConfig.traceDesc[i].val.addr, ScopeConfig.traceDesc[i].val.val<<ScopeConfig.traceDesc[i].val.bitOffset, mask);
       }
       else if(ScopeConfig.traceDesc[i].mode & TRACE_MODE_DIGITAL)
       {
@@ -804,10 +815,10 @@ public:
         if(ScopeConfig.regWidth==32)
           reg = pM->ReadReg32((volatile unsigned int *)ScopeConfig.traceDesc[i].cfg.addr);
         else if(ScopeConfig.regWidth==16)
- 				  reg = pM->ReadReg16((volatile unsigned short *)ScopeConfig.traceDesc[i].cfg.addr);
+          reg = pM->ReadReg16((volatile unsigned short *)ScopeConfig.traceDesc[i].cfg.addr);
         mask = 0xFFFFFFFF;
 
-				if(ScopeConfig.traceDesc[i].bitCount < ScopeConfig.regWidth)
+        if(ScopeConfig.traceDesc[i].bitCount < ScopeConfig.regWidth)
           mask = (1<<ScopeConfig.traceDesc[i].bitCount)-1;
 
         mask<<= ScopeConfig.traceDesc[i].cfg.bitOffset;
@@ -820,10 +831,10 @@ public:
         if(ScopeConfig.regWidth==32)
           reg = pM->ReadReg32((volatile unsigned int *)ScopeConfig.traceDesc[i].val.addr);
         else if(ScopeConfig.regWidth==16)
-				  reg = pM->ReadReg16((volatile unsigned short *)ScopeConfig.traceDesc[i].val.addr);
+          reg = pM->ReadReg16((volatile unsigned short *)ScopeConfig.traceDesc[i].val.addr);
         mask = 0xFFFFFFFF;
 
-				if(ScopeConfig.traceDesc[i].bitCount < ScopeConfig.regWidth)
+        if(ScopeConfig.traceDesc[i].bitCount < ScopeConfig.regWidth)
           mask = (1<<ScopeConfig.traceDesc[i].bitCount)-1;
 
         mask<<= ScopeConfig.traceDesc[i].val.bitOffset;
@@ -835,17 +846,17 @@ public:
     }
     if(ScopeConfig.regWidth==32)
       pM->RMWReg32((volatile unsigned int *)ScopeConfig.enControlReg.addr,
-				(1<<ScopeConfig.enControlReg.bitNum),
-				(1<<ScopeConfig.enControlReg.bitNum));
+        (1<<ScopeConfig.enControlReg.bitNum),
+        (1<<ScopeConfig.enControlReg.bitNum));
     else if(ScopeConfig.regWidth==16)
-  		pM->RMWReg16((volatile unsigned short *)ScopeConfig.enControlReg.addr,
+      pM->RMWReg16((volatile unsigned short *)ScopeConfig.enControlReg.addr,
         (1<<ScopeConfig.enControlReg.bitNum),
         (1<<ScopeConfig.enControlReg.bitNum));
   }
 
   void ScopeTriggerTimeout()
   {
-		unsigned int status;
+    unsigned int status;
 
     if(ScopeConfig.regWidth==32)
       status  = pM->ReadReg32((volatile unsigned int *)ScopeConfig.rdyStatusReg.addr);
@@ -960,3 +971,4 @@ private:
 };
 
 #endif
+
