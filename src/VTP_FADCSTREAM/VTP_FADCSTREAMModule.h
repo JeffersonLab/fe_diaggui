@@ -3,16 +3,20 @@
 
 #include "RootHeader.h"
 #include "ModuleFrame.h"
+#include "VTP_FADCSTREAM_Scope.h"
+#include "VTP_FADCSTREAM_Scope2.h"
 
 class VTP_FADCSTREAMModule : public ModuleFrame
 {
 public:
-  VTP_HPSModule(const TGWindow *p, CrateMsgClient *pClient, unsigned int baseAddr) : ModuleFrame(p, pClient, baseAddr)
+  VTP_FADCSTREAMModule(const TGWindow *p, CrateMsgClient *pClient, unsigned int baseAddr) : ModuleFrame(p, pClient, baseAddr)
   {
     SetupRegisters();
 
     TGCompositeFrame *tFrame;
     AddFrame(pTabs = new TGTab(this), new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX | kLHintsExpandY));
+    tFrame = pTabs->AddTab("Scope");      tFrame->AddFrame(new VTP_FADCSTREAM_Scope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+    tFrame = pTabs->AddTab("Scope2");     tFrame->AddFrame(new VTP_FADCSTREAM_Scope2(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
     strSlotIdentifier.Form("SWA");
   }
@@ -42,7 +46,16 @@ public:
     }
 
     static RegMemDesc regs[] = {
-      {"Z7", 0"},
+      {"MigR", 0},
+        {"MigReset",              REGMEM_DESC_FLAGS_UINT,   {0x0F00, 0, 1,32}},
+        {"FifoReset",             REGMEM_DESC_FLAGS_UINT,   {0x0F00, 1, 1,32}},
+      {NULL, 0},
+      {"MigL", 0},
+        {"MigReset",              REGMEM_DESC_FLAGS_UINT,   {0x0F80, 0, 1,32}},
+        {"FifoReset",             REGMEM_DESC_FLAGS_UINT,   {0x0F80, 1, 1,32}},
+      {NULL, 0},
+/*
+      {"Z7", 0},
         {"Clk", 0},
           {"GclkReset",           REGMEM_DESC_FLAGS_UINT,   {0x0100, 0, 1,32}},
           {"Clk40GbeReset",       REGMEM_DESC_FLAGS_UINT,   {0x0100, 1, 1,32}},
@@ -112,7 +125,7 @@ public:
         {NULL, 0},
       {NULL, 0},
 
-      {"V7", 0"},
+      {"V7", 0},
         {"Clk", 0},
           {"GclkReset",           REGMEM_DESC_FLAGS_UINT,   {0x10100, 0, 1,32}},
           {"GclkLocked",          REGMEM_DESC_FLAGS_UINT,   {0x10104, 0, 1,32}},
@@ -129,6 +142,7 @@ public:
           {NULL, 0},
         {NULL, 0},
       {NULL, 0},
+*/
     };
 
     pRegEditor->AddSet(regs, sizeof(regs)/sizeof(regs[0]));
