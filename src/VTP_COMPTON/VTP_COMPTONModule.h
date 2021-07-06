@@ -133,7 +133,7 @@ public:
 	    {"MPSCnt",              REGMEM_DESC_FLAGS_UINT,   {0x90FC, 0,32,32}},
 	    {"HelicityCnt",         REGMEM_DESC_FLAGS_UINT,   {0x90F8, 0,32,32}},
       	{"T0", 0},
-	        {"FADCThreshold",   REGMEM_DESC_FLAGS_UINT,   {0x9000, 0,13,32}},
+        {"FADCThreshold",       REGMEM_DESC_FLAGS_UINT,   {0x9000, 0,13,32}},
 			{"FADCMask",        REGMEM_DESC_FLAGS_HEX,    {0x9014, 0,16,32}},
 	        {"EPlaneMultMin",   REGMEM_DESC_FLAGS_UINT,   {0x9000,24, 3,32}},
 	        {"EPlaneMask",      REGMEM_DESC_FLAGS_HEX,    {0x9000,28, 4,32}},
