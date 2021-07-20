@@ -33,6 +33,7 @@ CFLAGS			= -O2 -fno-exceptions -fPIC -I/usr/include\
 			-I./src/RICH \
 			-I./src/vetroc \
 			-I./src/VTP_COMPTON \
+			-I./src/VTP_SOLIDECAL \
 			-I./src/VTP_EC \
 			-I./src/VTP_GT \
 			-I./src/VTP_HPS \

@@ -22,6 +22,7 @@
 #include "RICHModule.h"
 #include "vetroc_module.h"
 #include "VTP_COMPTONModule.h"
+#include "VTP_SOLIDECALModule.h"
 #include "VTP_EC_Module.h"
 #include "VTP_GT_Module.h"
 #include "SSP_GT_Module.h"
@@ -323,6 +324,8 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, int count)
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new vetroc_module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_COMPTON", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_COMPTONModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+      else if(!stricmp("MOD_TYPE_VTP_SOLIDECAL", paramB))
+        pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_SOLIDECALModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_EC", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_EC_Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_GT", paramB))
