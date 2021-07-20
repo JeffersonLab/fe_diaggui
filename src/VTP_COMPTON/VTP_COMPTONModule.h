@@ -128,6 +128,8 @@ public:
       {NULL, 0},
 
       {"Compton", 0},
+	{"HelicityCnt", REGMEM_DESC_FLAGS_UINT, {0x90F8,0, 32,32}},
+	{"MPSCnt", REGMEM_DESC_FLAGS_UINT, {0x90FC,0, 32,32}},
 	    {"VetrocWidth",         REGMEM_DESC_FLAGS_UINT,   {0x9000,16, 8,32}},
       	{"T0", 0},
 	        {"FADCThreshold",   REGMEM_DESC_FLAGS_UINT,   {0x9000, 0,13,32}},
