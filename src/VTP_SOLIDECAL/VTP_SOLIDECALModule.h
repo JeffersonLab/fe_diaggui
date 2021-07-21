@@ -3,6 +3,7 @@
 
 #include "RootHeader.h"
 #include "ModuleFrame.h"
+#include "VTP_SOLIDECAL_Scope.h"
 
 class VTP_SOLIDECALModule : public ModuleFrame
 {
@@ -16,7 +17,7 @@ public:
 
 //    tFrame = pTabs->AddTab("TrgHist");   tFrame->AddFrame(new VTP_HPS_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //    tFrame = pTabs->AddTab("PairTrg");   tFrame->AddFrame(new VTP_HPS_PairTrg(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-//    tFrame = pTabs->AddTab("Scope");      tFrame->AddFrame(new VTP_COMPTON_Scope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+    tFrame = pTabs->AddTab("Scope");      tFrame->AddFrame(new VTP_SOLIDECAL_Scope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
     strSlotIdentifier.Form("SWA");
   }
