@@ -23,6 +23,7 @@
 #include "vetroc_module.h"
 #include "VTP_FADCSTREAMModule.h"
 #include "VTP_COMPTONModule.h"
+#include "VTP_SOLIDECALModule.h"
 #include "VTP_FADCCOINModule.h"
 #include "VTP_EC_Module.h"
 #include "VTP_GT_Module.h"
@@ -326,6 +327,8 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, int count)
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new vetroc_module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_COMPTON", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_COMPTONModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+      else if(!stricmp("MOD_TYPE_VTP_SOLIDECAL", paramB))
+        pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_SOLIDECALModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_FADCCOIN", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_FADCCOINModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_FADCSTREAM", paramB))

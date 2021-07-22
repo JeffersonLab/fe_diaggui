@@ -22,6 +22,8 @@ public:
 
     // void AddTrace(const char *name, int height, int mode, int bitCount, int bitOffsetData, int cfgAddr, int cfgBitOffset, int valAddr, int valBitOffset)
     pScope->AddTrace("FADC3_CH0",          128, TRACE_MODE_ANALOG,  13,   0,    0x9028+offset,13,   0x9028+offset, 0);
+    pScope->AddTrace("MPS", 27, TRACE_MODE_DIGITAL, 1, 531, 0x906C+offset, 6, 0x90B0+offset, 6);
+    pScope->AddTrace("Helicity", 27, TRACE_MODE_DIGITAL, 1, 532, 0x906C+offset, 7, 0x90B0+offset, 7);
 
     pScope->AddTrace("VETROC13_A",          68, TRACE_MODE_DIGITAL, 32,  13,    0x902C+offset, 0,   0x9070+offset, 0);
     pScope->AddTrace("VETROC13_B",          68, TRACE_MODE_DIGITAL, 32,  45,    0x9030+offset, 0,   0x9074+offset, 0);
