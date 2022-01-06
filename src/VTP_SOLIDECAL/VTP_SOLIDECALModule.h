@@ -1,14 +1,14 @@
-#ifndef VTP_COMPTONModule_H
-#define VTP_COMPTONModule_H
+#ifndef VTP_SOLIDECALModule_H
+#define VTP_SOLIDECALModule_H
 
 #include "RootHeader.h"
-#include "VTP_COMPTON_Scope.h"
 #include "ModuleFrame.h"
+#include "VTP_SOLIDECAL_Scope.h"
 
-class VTP_COMPTONModule : public ModuleFrame
+class VTP_SOLIDECALModule : public ModuleFrame
 {
 public:
-  VTP_COMPTONModule(const TGWindow *p, CrateMsgClient *pClient, unsigned int baseAddr) : ModuleFrame(p, pClient, baseAddr)
+  VTP_SOLIDECALModule(const TGWindow *p, CrateMsgClient *pClient, unsigned int baseAddr) : ModuleFrame(p, pClient, baseAddr)
   {
     SetupRegisters();
 
@@ -17,7 +17,7 @@ public:
 
 //    tFrame = pTabs->AddTab("TrgHist");   tFrame->AddFrame(new VTP_HPS_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //    tFrame = pTabs->AddTab("PairTrg");   tFrame->AddFrame(new VTP_HPS_PairTrg(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-    tFrame = pTabs->AddTab("Scope");      tFrame->AddFrame(new VTP_COMPTON_Scope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+    tFrame = pTabs->AddTab("Scope");      tFrame->AddFrame(new VTP_SOLIDECAL_Scope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
     strSlotIdentifier.Form("SWA");
   }
@@ -127,51 +127,14 @@ public:
         {"FPA15",         REGMEM_DESC_FLAGS_UINT, {0x02BC,  0, 32, 32}},
       {NULL, 0},
 
-      {"Compton", 0},
-	      {"ScaleEBEnable",       REGMEM_DESC_FLAGS_UINT,   {0x9000,15, 1,32}},
-	      {"VetrocWidth",         REGMEM_DESC_FLAGS_UINT,   {0x9000,16, 8,32}},
-	      {"MPSCnt",              REGMEM_DESC_FLAGS_UINT,   {0x90FC, 0,32,32}},
-	      {"HelicityCnt",         REGMEM_DESC_FLAGS_UINT,   {0x90F8, 0,32,32}},
-      	{"T0", 0},
-        {"FADCThreshold",       REGMEM_DESC_FLAGS_UINT,   {0x9000, 0,13,32}},
-			{"FADCMask",        REGMEM_DESC_FLAGS_HEX,    {0x9014, 0,16,32}},
-	        {"EPlaneMultMin",   REGMEM_DESC_FLAGS_UINT,   {0x9000,24, 3,32}},
-	        {"EPlaneMask",      REGMEM_DESC_FLAGS_HEX,    {0x9000,28, 4,32}},
-            {"Prescale",        REGMEM_DESC_FLAGS_UINT,   {0x5010, 0,16,32}},
-            {"Delay",           REGMEM_DESC_FLAGS_UINT,   {0x5010,16, 8,32}},
-      	{NULL, 0},
-      	{"T1", 0},
-	        {"FADCThreshold",   REGMEM_DESC_FLAGS_UINT,   {0x9004, 0,13,32}},
-			{"FADCMask",        REGMEM_DESC_FLAGS_HEX,    {0x9014,16,16,32}},
-	        {"EPlaneMultMin",   REGMEM_DESC_FLAGS_UINT,   {0x9004,24, 3,32}},
-	        {"EPlaneMask",      REGMEM_DESC_FLAGS_HEX,    {0x9004,28, 4,32}},
-            {"Prescale",        REGMEM_DESC_FLAGS_UINT,   {0x5014, 0,16,32}},
-            {"Delay",           REGMEM_DESC_FLAGS_UINT,   {0x5014,16, 8,32}},
-      	{NULL, 0},
-      	{"T2", 0},
-	        {"FADCThreshold",   REGMEM_DESC_FLAGS_UINT,   {0x9008, 0,13,32}},
-			{"FADCMask",        REGMEM_DESC_FLAGS_HEX,    {0x9018, 0,16,32}},
-	        {"EPlaneMultMin",   REGMEM_DESC_FLAGS_UINT,   {0x9008,24, 3,32}},
-	        {"EPlaneMask",      REGMEM_DESC_FLAGS_HEX,    {0x9008,28, 4,32}},
-            {"Prescale",        REGMEM_DESC_FLAGS_UINT,   {0x5018, 0,16,32}},
-            {"Delay",           REGMEM_DESC_FLAGS_UINT,   {0x5018,16, 8,32}},
-      	{NULL, 0},
-      	{"T3", 0},
-	        {"FADCThreshold",   REGMEM_DESC_FLAGS_UINT,   {0x900C, 0,13,32}},
-			{"FADCMask",        REGMEM_DESC_FLAGS_HEX,    {0x9018,16,16,32}},
-	        {"EPlaneMultMin",   REGMEM_DESC_FLAGS_UINT,   {0x900C,24, 3,32}},
-	        {"EPlaneMask",      REGMEM_DESC_FLAGS_HEX,    {0x900C,28, 4,32}},
-            {"Prescale",        REGMEM_DESC_FLAGS_UINT,   {0x501C, 0,16,32}},
-            {"Delay",           REGMEM_DESC_FLAGS_UINT,   {0x501C,16, 8,32}},
-      	{NULL, 0},
-      	{"T4", 0},
-	        {"FADCThreshold",   REGMEM_DESC_FLAGS_UINT,   {0x9010, 0,13,32}},
-			{"FADCMask",        REGMEM_DESC_FLAGS_HEX,    {0x901C, 0,16,32}},
-	        {"EPlaneMultMin",   REGMEM_DESC_FLAGS_UINT,   {0x9010,24, 3,32}},
-	        {"EPlaneMask",      REGMEM_DESC_FLAGS_HEX,    {0x9010,28, 4,32}},
-            {"Prescale",        REGMEM_DESC_FLAGS_UINT,   {0x5020, 0,16,32}},
-            {"Delay",           REGMEM_DESC_FLAGS_UINT,   {0x5020,16, 8,32}},
-      	{NULL, 0},
+      {"SolidECAL", 0},
+        {"Clustering", 0},
+          {"ClusterThreshold",REGMEM_DESC_FLAGS_UINT,   {0xB000,16,16,32}},
+          {"SeedThreshold",   REGMEM_DESC_FLAGS_UINT,   {0xB000, 0,13,32}},
+          {"Hit_dt",          REGMEM_DESC_FLAGS_UINT,   {0xB000,13, 3,32}},
+          {"Prescale",        REGMEM_DESC_FLAGS_UINT,   {0x5010, 0,16,32}},
+          {"Delay",           REGMEM_DESC_FLAGS_UINT,   {0x5010,16, 8,32}},
+        {NULL, 0},
       {NULL, 0},
 
       {"TriggerBits", 0},
@@ -217,8 +180,8 @@ public:
     pRegEditor->AddSet(regs, sizeof(regs)/sizeof(regs[0]));
   }
 
-  const char *GetModuleName() { return "VTP_COMPTON"; }
-  const char *GetModuleFullName() { return "VXS Trigger Processor-COMPTON"; }
+  const char *GetModuleName() { return "VTP_SOLIDECAL"; }
+  const char *GetModuleFullName() { return "VXS Trigger Processor-SOLIDECAL"; }
   const char *GetSlotIdentifier() { return strSlotIdentifier.Data(); }
 
 private:
