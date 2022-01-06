@@ -1,14 +1,14 @@
-#ifndef VTP_COMPTONModule_H
-#define VTP_COMPTONModule_H
+#ifndef VTP_FADCCOINModule_H
+#define VTP_FADCCOINModule_H
 
 #include "RootHeader.h"
-#include "VTP_COMPTON_Scope.h"
+#include "VTP_FADCCOIN_Scope.h"
 #include "ModuleFrame.h"
 
-class VTP_COMPTONModule : public ModuleFrame
+class VTP_FADCCOINModule : public ModuleFrame
 {
 public:
-  VTP_COMPTONModule(const TGWindow *p, CrateMsgClient *pClient, unsigned int baseAddr) : ModuleFrame(p, pClient, baseAddr)
+  VTP_FADCCOINModule(const TGWindow *p, CrateMsgClient *pClient, unsigned int baseAddr) : ModuleFrame(p, pClient, baseAddr)
   {
     SetupRegisters();
 
@@ -17,7 +17,7 @@ public:
 
 //    tFrame = pTabs->AddTab("TrgHist");   tFrame->AddFrame(new VTP_HPS_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //    tFrame = pTabs->AddTab("PairTrg");   tFrame->AddFrame(new VTP_HPS_PairTrg(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-    tFrame = pTabs->AddTab("Scope");      tFrame->AddFrame(new VTP_COMPTON_Scope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+    tFrame = pTabs->AddTab("Scope");      tFrame->AddFrame(new VTP_FADCCOIN_Scope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
     strSlotIdentifier.Form("SWA");
   }
@@ -127,51 +127,65 @@ public:
         {"FPA15",         REGMEM_DESC_FLAGS_UINT, {0x02BC,  0, 32, 32}},
       {NULL, 0},
 
-      {"Compton", 0},
-	    {"ScaleEBEnable",       REGMEM_DESC_FLAGS_UINT,   {0x9000,15, 1,32}},
-	    {"VetrocWidth",         REGMEM_DESC_FLAGS_UINT,   {0x9000,16, 8,32}},
-	    {"MPSCnt",              REGMEM_DESC_FLAGS_UINT,   {0x90FC, 0,32,32}},
-	    {"HelicityCnt",         REGMEM_DESC_FLAGS_UINT,   {0x90F8, 0,32,32}},
-      	{"T0", 0},
-	        {"FADCThreshold",   REGMEM_DESC_FLAGS_UINT,   {0x9000, 0,13,32}},
-			{"FADCMask",        REGMEM_DESC_FLAGS_HEX,    {0x9014, 0,16,32}},
-	        {"EPlaneMultMin",   REGMEM_DESC_FLAGS_UINT,   {0x9000,24, 3,32}},
-	        {"EPlaneMask",      REGMEM_DESC_FLAGS_HEX,    {0x9000,28, 4,32}},
-            {"Prescale",        REGMEM_DESC_FLAGS_UINT,   {0x5010, 0,16,32}},
-            {"Delay",           REGMEM_DESC_FLAGS_UINT,   {0x5010,16, 8,32}},
-      	{NULL, 0},
-      	{"T1", 0},
-	        {"FADCThreshold",   REGMEM_DESC_FLAGS_UINT,   {0x9004, 0,13,32}},
-			{"FADCMask",        REGMEM_DESC_FLAGS_HEX,    {0x9014,16,16,32}},
-	        {"EPlaneMultMin",   REGMEM_DESC_FLAGS_UINT,   {0x9004,24, 3,32}},
-	        {"EPlaneMask",      REGMEM_DESC_FLAGS_HEX,    {0x9004,28, 4,32}},
-            {"Prescale",        REGMEM_DESC_FLAGS_UINT,   {0x5014, 0,16,32}},
-            {"Delay",           REGMEM_DESC_FLAGS_UINT,   {0x5014,16, 8,32}},
-      	{NULL, 0},
-      	{"T2", 0},
-	        {"FADCThreshold",   REGMEM_DESC_FLAGS_UINT,   {0x9008, 0,13,32}},
-			{"FADCMask",        REGMEM_DESC_FLAGS_HEX,    {0x9018, 0,16,32}},
-	        {"EPlaneMultMin",   REGMEM_DESC_FLAGS_UINT,   {0x9008,24, 3,32}},
-	        {"EPlaneMask",      REGMEM_DESC_FLAGS_HEX,    {0x9008,28, 4,32}},
-            {"Prescale",        REGMEM_DESC_FLAGS_UINT,   {0x5018, 0,16,32}},
-            {"Delay",           REGMEM_DESC_FLAGS_UINT,   {0x5018,16, 8,32}},
-      	{NULL, 0},
-      	{"T3", 0},
-	        {"FADCThreshold",   REGMEM_DESC_FLAGS_UINT,   {0x900C, 0,13,32}},
-			{"FADCMask",        REGMEM_DESC_FLAGS_HEX,    {0x9018,16,16,32}},
-	        {"EPlaneMultMin",   REGMEM_DESC_FLAGS_UINT,   {0x900C,24, 3,32}},
-	        {"EPlaneMask",      REGMEM_DESC_FLAGS_HEX,    {0x900C,28, 4,32}},
-            {"Prescale",        REGMEM_DESC_FLAGS_UINT,   {0x501C, 0,16,32}},
-            {"Delay",           REGMEM_DESC_FLAGS_UINT,   {0x501C,16, 8,32}},
-      	{NULL, 0},
-      	{"T4", 0},
-	        {"FADCThreshold",   REGMEM_DESC_FLAGS_UINT,   {0x9010, 0,13,32}},
-			{"FADCMask",        REGMEM_DESC_FLAGS_HEX,    {0x901C, 0,16,32}},
-	        {"EPlaneMultMin",   REGMEM_DESC_FLAGS_UINT,   {0x9010,24, 3,32}},
-	        {"EPlaneMask",      REGMEM_DESC_FLAGS_HEX,    {0x9010,28, 4,32}},
-            {"Prescale",        REGMEM_DESC_FLAGS_UINT,   {0x5020, 0,16,32}},
-            {"Delay",           REGMEM_DESC_FLAGS_UINT,   {0x5020,16, 8,32}},
-      	{NULL, 0},
+      {"FADCCoin", 0},
+        {"CoincidenceWidth",   REGMEM_DESC_FLAGS_UINT, {0x9100,  0, 8, 32}},
+        {"SUMGroup0", 0},
+          {"Threshold",   REGMEM_DESC_FLAGS_UINT, {0x9104,  0, 29, 32}},
+          {"Slot3Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9110,  0, 16, 32}},  
+          {"Slot4Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9110, 16, 16, 32}},  
+          {"Slot5Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9114,  0, 16, 32}},  
+          {"Slot6Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9114, 16, 16, 32}},  
+          {"Slot7Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9118,  0, 16, 32}},  
+          {"Slot8Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9118, 16, 16, 32}},  
+          {"Slot9Mask",   REGMEM_DESC_FLAGS_HEX,  {0x911C,  0, 16, 32}},  
+          {"Slot10Mask",  REGMEM_DESC_FLAGS_HEX,  {0x911C, 16, 16, 32}},  
+          {"Slot13Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9120,  0, 16, 32}},  
+          {"Slot14Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9120, 16, 16, 32}},  
+          {"Slot15Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9124,  0, 16, 32}},  
+          {"Slot16Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9124, 16, 16, 32}},  
+          {"Slot17Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9128,  0, 16, 32}},  
+          {"Slot18Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9128, 16, 16, 32}},  
+          {"Slot19Mask",  REGMEM_DESC_FLAGS_HEX,  {0x912C,  0, 16, 32}},  
+          {"Slot20Mask",  REGMEM_DESC_FLAGS_HEX,  {0x912C, 16, 16, 32}},  
+        {NULL, 0},
+        {"SUMGroup1", 0}, 
+          {"Threshold",   REGMEM_DESC_FLAGS_UINT, {0x9108,  0, 29, 32}},
+          {"Slot3Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9130,  0, 16, 32}},  
+          {"Slot4Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9130, 16, 16, 32}},  
+          {"Slot5Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9134,  0, 16, 32}},  
+          {"Slot6Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9134, 16, 16, 32}},  
+          {"Slot7Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9138,  0, 16, 32}},  
+          {"Slot8Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9138, 16, 16, 32}},  
+          {"Slot9Mask",   REGMEM_DESC_FLAGS_HEX,  {0x913C,  0, 16, 32}},  
+          {"Slot10Mask",  REGMEM_DESC_FLAGS_HEX,  {0x913C, 16, 16, 32}},  
+          {"Slot13Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9140,  0, 16, 32}},  
+          {"Slot14Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9140, 16, 16, 32}},  
+          {"Slot15Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9144,  0, 16, 32}},  
+          {"Slot16Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9144, 16, 16, 32}},  
+          {"Slot17Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9148,  0, 16, 32}},  
+          {"Slot18Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9148, 16, 16, 32}},  
+          {"Slot19Mask",  REGMEM_DESC_FLAGS_HEX,  {0x914C,  0, 16, 32}},  
+          {"Slot20Mask",  REGMEM_DESC_FLAGS_HEX,  {0x914C, 16, 16, 32}},  
+        {NULL, 0},
+        {"SUMGroup2", 0}, 
+          {"Threshold",   REGMEM_DESC_FLAGS_UINT, {0x910C,  0, 29, 32}},
+          {"Slot3Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9150,  0, 16, 32}},  
+          {"Slot4Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9150, 16, 16, 32}},  
+          {"Slot5Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9154,  0, 16, 32}},  
+          {"Slot6Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9154, 16, 16, 32}},  
+          {"Slot7Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9158,  0, 16, 32}},  
+          {"Slot8Mask",   REGMEM_DESC_FLAGS_HEX,  {0x9158, 16, 16, 32}},  
+          {"Slot9Mask",   REGMEM_DESC_FLAGS_HEX,  {0x915C,  0, 16, 32}},  
+          {"Slot10Mask",  REGMEM_DESC_FLAGS_HEX,  {0x915C, 16, 16, 32}},  
+          {"Slot13Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9160,  0, 16, 32}},  
+          {"Slot14Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9160, 16, 16, 32}},  
+          {"Slot15Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9164,  0, 16, 32}},  
+          {"Slot16Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9164, 16, 16, 32}},  
+          {"Slot17Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9168,  0, 16, 32}},  
+          {"Slot18Mask",  REGMEM_DESC_FLAGS_HEX,  {0x9168, 16, 16, 32}},  
+          {"Slot19Mask",  REGMEM_DESC_FLAGS_HEX,  {0x916C,  0, 16, 32}},  
+          {"Slot20Mask",  REGMEM_DESC_FLAGS_HEX,  {0x916C, 16, 16, 32}},  
+        {NULL, 0},
       {NULL, 0},
 
       {"TriggerBits", 0},
@@ -217,8 +231,8 @@ public:
     pRegEditor->AddSet(regs, sizeof(regs)/sizeof(regs[0]));
   }
 
-  const char *GetModuleName() { return "VTP_COMPTON"; }
-  const char *GetModuleFullName() { return "VXS Trigger Processor-COMPTON"; }
+  const char *GetModuleName() { return "VTP_FADCCOIN"; }
+  const char *GetModuleFullName() { return "VXS Trigger Processor-FADCCOIN"; }
   const char *GetSlotIdentifier() { return strSlotIdentifier.Data(); }
 
 private:

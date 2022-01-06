@@ -140,10 +140,10 @@ public:
             pTraceDataPersist[j][i] = 0;
         }
       }
-
-      if( (mode & TRACE_MODE_ANALOG) && (pTraceData[i] > 0) )
+      if(mode & TRACE_MODE_ANALOG)
       {
-        pTraceDataPersist[0][i]++;
+          if(bTraceDataNew)
+        pTraceDataPersist[0][i]+= pTraceData[i];
         if(pTraceDataPersist[0][i] > maxPersist) maxPersist = pTraceDataPersist[0][i];
         if(pTraceDataPersist[0][i] < minPersist) minPersist = pTraceDataPersist[0][i];
       }
@@ -151,14 +151,15 @@ public:
       {
         for(int j = 0; j < bitCount; j++)
         {
-          if(pTraceData[i] & (1<<j))
+            if(bTraceDataNew && (pTraceData[i] & (1<<j)))
             pTraceDataPersist[j][i]++;
 
           if(pTraceDataPersist[j][i] > maxPersist) maxPersist = pTraceDataPersist[j][i];
 //          if(pTraceDataPersist[j][i] < minPersist) minPersist = pTraceDataPersist[j][i];
         }
+        }
       }
-    }
+    bTraceDataNew = kFALSE;
 
     if(!gc)
     {
@@ -170,12 +171,20 @@ public:
     {
       double min=4294967295.0, max=0.0, scale;
       
+      if(!bPersist)
+      {
       for(int i = 0; i < sampleLen; i++)
       {
         if((unsigned int)pTraceData[i] > max)
           max = (unsigned int)pTraceData[i];
         if((unsigned int)pTraceData[i] < min)
           min = (unsigned int)pTraceData[i];
+      }
+      }
+      else
+      {
+        max = maxPersist;
+        min = minPersist;
       }
       
       if(max-min != 0)
@@ -188,7 +197,10 @@ public:
         int x,y,w;
         double h;
         w = SCOPE_PIXELS_PER_BIT;
+        if(!bPersist)
         h = ((double)pTraceData[i]-min)*scale+1.0;
+        else
+          h = ((double)pTraceDataPersist[0][i]-min)*scale+1.0;
         x = i*SCOPE_PIXELS_PER_BIT;
 				y = GetHeight()-(int)h;
         gc->SetForeground(0x008000);
@@ -196,7 +208,13 @@ public:
         gc->SetForeground(0x00F000);
         gVirtualX->DrawRectangle(fId, gc->GetGC(),x,y,w,(int)h);
       }
-      sprintf(buf, "%u", GetCursorValue());
+      if(bPersist)
+      {
+        sprintf(buf, "%u", pTraceDataPersist[0][GetCursorValue()]);
+//        printf("min/max: %f,%f\n", min, max);
+      }
+      else
+        sprintf(buf, "%u", pTraceData[GetCursorValue()]);
     }
     else if((mode & TRACE_MODE_DIGITAL) && (bitCount > 1))  // digital bus mode
     {
@@ -228,7 +246,7 @@ public:
             gVirtualX->FillRectangle(fId, gc->GetGC(),x,y,w,h);
           }
         }
-      sprintf(buf, "0x%08X", GetCursorValue());
+      sprintf(buf, "0x%08X", pTraceData[GetCursorValue()]);
     }
     else if((mode & TRACE_MODE_DIGITAL) && (bitCount == 1)) // digital trace mode
     {
@@ -254,7 +272,7 @@ public:
         
         gVirtualX->DrawLine(fId, gc->GetGC(),x1,y2,x2,y2);
       }
-      sprintf(buf, "%u", GetCursorValue());
+      sprintf(buf, "%u", pTraceData[GetCursorValue()]);
     }
     else
       sprintf(buf, "trace mode error");
@@ -283,9 +301,9 @@ public:
       idx = sampleLen-1;
 
     if(idx < 0)
-      return idx = 0;
+      idx = 0;
 
-    return pTraceData[idx];
+    return idx;;
   }
 
   void SetCursor(int x)
@@ -308,6 +326,7 @@ public:
   bool      bPersist;
   unsigned int  *pTraceData;
   unsigned int  *pTraceDataPersist[32];
+  bool      bTraceDataNew;
 };
 
 class ScopeCfgTrg : public TGTransientFrame
@@ -732,6 +751,8 @@ public:
 
 			if(ScopeConfig.traceDesc[i].bitCount < ScopeConfig.regWidth)
         bufMask = (1<<ScopeConfig.traceDesc[i].bitCount)-1;
+
+      ScopeConfig.traceFrame[i]->bTraceDataNew = kTRUE;
 
       for(j = 0; j < ScopeConfig.sampleLen; j++)
       {
