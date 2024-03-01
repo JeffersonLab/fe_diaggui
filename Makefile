@@ -12,7 +12,7 @@ CROSS_COMPILE		=
 CC			= $(CROSS_COMPILE)g++
 AR                      = ar
 RANLIB                  = ranlib
-CFLAGS			= -O2 -fno-exceptions -fPIC -I/usr/include\
+CFLAGS			= -O2 -fno-exceptions -Wno-int-to-pointer-cast -fPIC -I/usr/include\
 			-I. \
 			-I./src \
 			-I./src/CTP \
@@ -39,6 +39,7 @@ CFLAGS			= -O2 -fno-exceptions -fPIC -I/usr/include\
 			-I./src/VTP_GT \
 			-I./src/VTP_HPS \
 			-I./src/SSP_GT \
+      -I./src/ALERTFEB \
 			-L. -DJLAB \
 			`root-config --cflags`
 LINKLIBS		= -lrt \

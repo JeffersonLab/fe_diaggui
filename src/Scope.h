@@ -52,6 +52,7 @@ public:
     static TRandom3 r;
 
     bPersist = false;
+    bTraceDataNew = true;
     mode = traceMode;
     bitCount = traceBitCount;
     sampleLen = len;
@@ -324,7 +325,7 @@ public:
   int       sampleLen;
   int       cursorpos;
   int       x1_disp, x2_disp;
-  bool      bPersist;
+  bool      bPersist,bTraceDataNew;
   unsigned int  *pTraceData;
   unsigned int  *pTraceDataPersist[32];
 };

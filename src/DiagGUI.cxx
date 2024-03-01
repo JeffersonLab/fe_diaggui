@@ -27,6 +27,7 @@
 #include "VTP_EC_Module.h"
 #include "VTP_GT_Module.h"
 #include "SSP_GT_Module.h"
+#include "ALERTFEB_Module.h"
 
 #define TIMER_CAPTURE_POLLRATE	100
 
@@ -335,6 +336,8 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, int count)
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_GT_Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_SSP_GT", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new SSP_GT_Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+      else if(!stricmp("MOD_TYPE_ALERTFEB", paramB))
+        pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new ALERTFEB_Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else
 			{
 				printf("Error: Unknown module type: %s\n", paramB);
