@@ -6,9 +6,10 @@
 //#include "DCRB_Status.h"
 //#include "DCRB_Scalers.h"
 //#include "DCRB_TDCPlots.h"
-#include "DCRB_Testing.h"
+//#include "DCRB_Testing.h"
 //#include "DCRB_NoisePlots.h"
 //#include "DCRB_GTP.h"
+#include "DCRB_Scope.h"
 
 class DCRBModule	: public ModuleFrame
 {
@@ -26,7 +27,8 @@ public:
 //		tFrame = pTabs->AddTab("GTP");			tFrame->AddFrame(new DCRB_GTP(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("Scalers");		tFrame->AddFrame(new DCRB_Scalers(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("Status");		tFrame->AddFrame(new DCRB_Status(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-		tFrame = pTabs->AddTab("Testing");		tFrame->AddFrame(new DCRB_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+//		tFrame = pTabs->AddTab("Testing");		tFrame->AddFrame(new DCRB_Testing(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+		tFrame = pTabs->AddTab("Scope");		tFrame->AddFrame(new DCRB_Scope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		
 		strSlotIdentifier.Form("%d", (ReadReg32((volatile unsigned int *)(BaseAddr+0x0004))>>24) & 0x1F);
 	}

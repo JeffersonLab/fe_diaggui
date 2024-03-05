@@ -36,6 +36,7 @@ CFLAGS			= -O2 -fno-exceptions -fPIC -I/usr/include\
 			-I./src/VTP_SOLIDECAL \
 			-I./src/VTP_FADCCOIN \
 			-I./src/VTP_FADCSTREAM \
+			-I./src/VTP_NPS \
 			-I./src/VTP_EC \
 			-I./src/VTP_GT \
 			-I./src/VTP_HPS \
@@ -67,5 +68,7 @@ $(PROGS): $(OBJS) $(SRC) $(HEADERS) Makefile
 	$(LINKLIBS) \
 	$(OBJS)
 
+nps_vtp_scalers: ./src/main/nps_vtp_scalers.cc
+	$(CC) $(CFLAGS) ./src/main/nps_vtp_scalers.cc -o nps_vtp_scalers $(LINKLIBS)
 
 .PHONY: all clean distclean

@@ -303,7 +303,7 @@ public:
     if(idx < 0)
       idx = 0;
 
-    return idx;;
+    return idx;
   }
 
   void SetCursor(int x)
