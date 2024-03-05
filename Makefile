@@ -37,6 +37,7 @@ CFLAGS			= -O2 -fno-exceptions -Wno-int-to-pointer-cast -fPIC -I/usr/include\
 			-I./src/VTP_FADCCOIN \
 			-I./src/VTP_FADCSTREAM \
 			-I./src/VTP_NPS \
+			-I./src/VTP_HCAL \
 			-I./src/VTP_EC \
 			-I./src/VTP_GT \
 			-I./src/VTP_HPS \

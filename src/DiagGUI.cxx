@@ -25,6 +25,7 @@
 #include "VTP_COMPTONModule.h"
 #include "VTP_SOLIDECALModule.h"
 #include "VTP_NPSModule.h"
+#include "VTP_HCALModule.h"
 #include "VTP_FADCCOINModule.h"
 #include "VTP_EC_Module.h"
 #include "VTP_GT_Module.h"
@@ -333,20 +334,23 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, int count)
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_SOLIDECALModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_NPS", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_NPSModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+      else if(!stricmp("MOD_TYPE_VTP_HCAL", paramB))
+        pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_HCALModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_FADCCOIN", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_FADCCOINModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_FADCSTREAM", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_FADCSTREAMModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-      else if(!stricmp("MOD_TYPE_VTP_EC", paramB))
+      else if(!stricmp("MOD_TYPE_VTP_FADCCOIN", paramB))
+        pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_FADCCOINModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));      else if(!stricmp("MOD_TYPE_VTP_EC", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_EC_Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_GT", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_GT_Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_SSP_GT", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new SSP_GT_Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-      else if(!stricmp("MOD_TYPE_ALERTFEB", paramB))
-        pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new ALERTFEB_Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_ROC", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_ROCModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+      else if(!stricmp("MOD_TYPE_ALERTFEB", paramB))
+        pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new ALERTFEB_Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else
 			{
 				printf("Error: Unknown module type: %s\n", paramB);
