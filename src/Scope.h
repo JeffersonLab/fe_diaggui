@@ -52,6 +52,7 @@ public:
     static TRandom3 r;
 
     bPersist = false;
+    bTraceDataNew = true;
     mode = traceMode;
     bitCount = traceBitCount;
     sampleLen = len;
@@ -140,10 +141,11 @@ public:
             pTraceDataPersist[j][i] = 0;
         }
       }
-      if(mode & TRACE_MODE_ANALOG)
+
+      if( (mode & TRACE_MODE_ANALOG) && (pTraceData[i] > 0) )
       {
         if(bTraceDataNew)
-          pTraceDataPersist[0][i]+= pTraceData[i];
+        pTraceDataPersist[0][i]+= pTraceData[i];
         if(pTraceDataPersist[0][i] > maxPersist) maxPersist = pTraceDataPersist[0][i];
         if(pTraceDataPersist[0][i] < minPersist) minPersist = pTraceDataPersist[0][i];
       }
@@ -323,10 +325,9 @@ public:
   int       sampleLen;
   int       cursorpos;
   int       x1_disp, x2_disp;
-  bool      bPersist;
+  bool      bPersist,bTraceDataNew;
   unsigned int  *pTraceData;
   unsigned int  *pTraceDataPersist[32];
-  bool      bTraceDataNew;
 };
 
 class ScopeCfgTrg : public TGTransientFrame
