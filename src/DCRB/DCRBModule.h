@@ -75,9 +75,9 @@ private:
 		};
 */
 #define DCRB_SDIOMUX_NAME_MAP		{\
-											7,\
-											{"0","1","SYNC","TRIG1","TRIG2","PULSER","BUSY"},\
-											{0,1,2,3,4,18,19}\
+											4,\
+											{"0","1","TRIG2","PULSER"},\
+											{0,1,2,3}\
 										}
 
 		static RegMemDesc regs[] = {
