@@ -57,13 +57,13 @@ public:
     pH_Position->GetXaxis()->CenterTitle();
     pH_Position->GetXaxis()->SetNdivisions(12, kFALSE);
     pH_Position->GetXaxis()->SetTickLength(1);
-    //for(int i=1;i<=12;i++) pH_Position->GetXaxis()->SetBinLabel(i,Form("%d",30-i));
+    for(int i=1;i<=12;i++) pH_Position->GetXaxis()->SetBinLabel(i,Form("%d",i));
 
     pH_Position->GetYaxis()->CenterLabels();
     pH_Position->GetYaxis()->CenterTitle();
     pH_Position->GetYaxis()->SetNdivisions(24, kFALSE);
     pH_Position->GetYaxis()->SetTickLength(1);
-    //for(int i=1;i<=24;i++) pH_Position->GetYaxis()->SetBinLabel(i,Form("%d",i-1));
+    for(int i=1;i<=24;i++) pH_Position->GetYaxis()->SetBinLabel(i,Form("%d",i));
     
     pH_Position->GetZaxis()->SetLabelSize(0.03);
     pH_Position->SetBarOffset(0.10);
@@ -168,24 +168,24 @@ public:
     
     // Disable scalers
     val[0] = 0x0;
-    pM->WriteReg32((volatile unsigned int *)0x4810, val[0]);
+    pM->WriteReg32((volatile unsigned int *)(pM->BaseAddr+0x4810), val[0]);
 
     // Read scaler values
     // cluster nhits histogram
-    pM->BlkReadReg32((volatile unsigned int *)0x481C, &vtp_nhits[0], 16, CRATE_MSG_FLAGS_NOADRINC);
+    pM->BlkReadReg32((volatile unsigned int *)(pM->BaseAddr+0x481C), &vtp_nhits[0], 16, CRATE_MSG_FLAGS_NOADRINC);
 
     // cluster energy histogram
-    pM->BlkReadReg32((volatile unsigned int *)0x4818, &vtp_energy[0], 1024, CRATE_MSG_FLAGS_NOADRINC);
+    pM->BlkReadReg32((volatile unsigned int *)(pM->BaseAddr+0x4818), &vtp_energy[0], 1024, CRATE_MSG_FLAGS_NOADRINC);
 
     // cluster position histogram
-    pM->BlkReadReg32((volatile unsigned int *)0x4814, &vtp_pos[0], 512, CRATE_MSG_FLAGS_NOADRINC);
+    pM->BlkReadReg32((volatile unsigned int *)(pM->BaseAddr+0x4814), &vtp_pos[0], 512, CRATE_MSG_FLAGS_NOADRINC);
 
     // reference time scaler
-    pM->BlkReadReg32((volatile unsigned int *)0x4820, &vtp_ref);
+    pM->BlkReadReg32((volatile unsigned int *)(pM->BaseAddr+0x4820), &vtp_ref);
 
     // Reset & enable scalers
     val[0] = 0xF;
-    pM->WriteReg32((volatile unsigned int *)0x4810, val[0]);
+    pM->WriteReg32((volatile unsigned int *)(pM->BaseAddr+0x4810), val[0]);
     return 0;
   }
 
