@@ -3,6 +3,7 @@
 
 #include "RootHeader.h"
 #include "ModuleFrame.h"
+#include "VTP_HCAL_TrgHist.h"
 
 class VTP_HCALModule : public ModuleFrame
 {
@@ -13,6 +14,7 @@ public:
 
     TGCompositeFrame *tFrame;
     AddFrame(pTabs = new TGTab(this), new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX | kLHintsExpandY));
+    tFrame = pTabs->AddTab("TrgHist");   tFrame->AddFrame(new VTP_HCAL_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
     strSlotIdentifier.Form("SWA");
   }
