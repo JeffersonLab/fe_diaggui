@@ -224,7 +224,8 @@ typedef struct
 /* 0x0088-0x008B */ unsigned int NCycles;
 /* 0x008C-0x008F */ unsigned int Start;
 /* 0x0090-0x0093 */ unsigned int Status;
-/* 0x0094-0x00FF */ unsigned int Reserved1[(0x0100-0x0094)/4];
+/* 0x0094-0x0097 */ unsigned int Delay;
+/* 0x0098-0x00FF */ unsigned int Reserved1[(0x0100-0x0098)/4];
 } Pulser_regs;
 
 typedef struct
@@ -235,13 +236,54 @@ typedef struct
 /* 0x0010-0x0013 */ unsigned int CAL_TdcEn;
 /* 0x0014-0x0017 */ unsigned int CAL_Ctrl;
 /* 0x0018-0x001B */ unsigned int CAL_Status;
-/* 0x001C-0x00FF */ unsigned int Reserved0[(0x0100-0x001C)/4];
+/* 0x001C-0x001F */ unsigned int Reserved0[(0x0020-0x001C)/4];
+/* 0x0020-0x00EF */ unsigned int Scalers[52];
+/* 0x00F0-0x00FF */ unsigned int Reserved1[(0x0100-0x00F0)/4];
 } TDC_regs;
 
 typedef struct
 {
+/* 0x0000-0x0003 */ unsigned int    TrigSrc;
+/* 0x0004-0x0007 */ unsigned int    SyncSrc;
+/* 0x0008-0x000B */ unsigned int    BusySrc;
+/* 0x000C-0x000F */ unsigned int    LedGSrc;
+/* 0x0010-0x0013 */ unsigned int    LedYSrc;
+/* 0x0014-0x007F */ unsigned int    Reserved0[(0x0080-0x0014)/4];
+/* 0x0080-0x0083 */ unsigned int    PulserPeriod;
+/* 0x0084-0x0087 */ unsigned int    PulserLowCycles;
+/* 0x0088-0x008B */ unsigned int    PulserNCycles;
+/* 0x008C-0x008F */ unsigned int    PulserStart;
+/* 0x0090-0x0093 */ unsigned int    PulserStatus;
+/* 0x0094-0x009F */ unsigned int    Reserved1[(0x00A0-0x0094)/4];
+/* 0x00A0-0x00A3 */ unsigned int    ScalerLatch;
+/* 0x00A4-0x00A7 */ unsigned int    ScalerSysClk;
+/* 0x00A8-0x00AB */ unsigned int    ScalerGClk;
+/* 0x00AC-0x00AF */ unsigned int    ScalerSync;
+/* 0x00B0-0x00B3 */ unsigned int    ScalerTrig;
+/* 0x00B4-0x00B7 */ unsigned int    ScalerBusy;
+/* 0x00B8-0x00BB */ unsigned int    ScalerNor32Charge0;
+/* 0x00BC-0x00BF */ unsigned int    ScalerNor32Charge1;
+/* 0x00C0-0x00C3 */ unsigned int    ScalerNor32Time0;
+/* 0x00C4-0x00C7 */ unsigned int    ScalerNor32Time1;
+/* 0x00C8-0x00FF */ unsigned int    Reserved2[(0x0100-0x00C8)/4];
+} ALERT_SD_regs;
+
+typedef struct
+{
+/* 0x0000-0x0003 */ unsigned int    Blocksize;
+/* 0x0004-0x0007 */ unsigned int    TrigFifoBusyThr;
+/* 0x0008-0x000B */ unsigned int    Lookback;
+/* 0x000C-0x000F */ unsigned int    WindowWidth;
+/* 0x0010-0x0013 */ unsigned int    DeviceId;
+/* 0x0014-0x00FF */ unsigned int    Reserved0[(0x0100-0x0014)/4];
+} ALERT_EB_regs;
+
+typedef struct
+{
 /* 0x0000-0x00FF */ CLK_regs          Clk;
-/* 0x0100-0x04FF */ unsigned int      Reserved0[(0x0500-0x0100)/4];
+/* 0x0100-0x01FF */ ALERT_SD_regs     Sd;
+/* 0x0200-0x02FF */ ALERT_EB_regs     Eb;
+/* 0x0300-0x04FF */ unsigned int      Reserved0[(0x0500-0x0300)/4];
 /* 0x0500-0x05FF */ PETIROC_CFG_regs  PetirocCfg;
 /* 0x0600-0x07FF */ PETIROC_ADC_regs  PetirocAdc[2];
 /* 0x0800-0x08FF */ Pulser_regs       Pulser;

@@ -2,11 +2,28 @@
 #define ALERTFEB_EB_H
 
 #include <stdlib.h>
+#include <list>
 #include "RootHeader.h"
 #include "ModuleFrame.h"
 #include "ALERTFEB_Regs.h"
 
 #define ALERTFEB_EB_POLL_RATE 20
+
+#define MAX_PLOT_NUM          50
+#define TEST_CH               49
+
+using namespace std;
+
+typedef struct
+{
+  float t;
+  int edge;
+} tdc_hit_t;
+
+bool compare_tdc_hit(const tdc_hit_t &a, const tdc_hit_t &b)
+{
+  return (a.t < b.t);
+}
 
 class ALERTFEB_EB  : public TGCompositeFrame
 {
@@ -30,6 +47,9 @@ public:
       pTF1->AddFrame(pB = new TGTextButton(pTF1, "Reload", BTN_ALERTFEB_RELOAD), new TGLayoutHints(kLHintsCenterX));
         pB->SetWidth(300);
         pB->Associate(this);
+      pTF1->AddFrame(pB = new TGTextButton(pTF1, "Start", BTN_ALERTFEB_START), new TGLayoutHints(kLHintsCenterX));
+        pB->SetWidth(300);
+        pB->Associate(this);
 
       pTF1->AddFrame(pTF2 = new TGHorizontalFrame(this), new TGLayoutHints(kLHintsExpandX | kLHintsTop));
         pTF2->AddFrame(pLabelThreshold = new TGLabel(pTF2, new TGString(Form("DACThreshold (%d):", 325))), new TGLayoutHints(kLHintsCenterY | kLHintsLeft));
@@ -49,7 +69,10 @@ public:
 
     AddFrame(pCanvasHisto = new TRootEmbeddedCanvas("TDC Plots", this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			pCanvasHisto->GetCanvas()->SetBorderMode(0);
-			pCanvasHisto->GetCanvas()->Divide(2, 2);
+//      pCanvasHisto->GetCanvas()->Divide(2, 2);
+      pTH_TDC_Charge_Width = new TH2I("Ch51_QvsW", "Ch51;Charge(pC);Width(ns)", 1000, 0.0, 250.0, 1000, 0.0, 2000.0);
+
+/*
       for(int i=0;i<52;i++)
       {
         pTH_TDC[i] = new TH1I(Form("Ch%d", i), Form("Ch%d;time(ps)", i), 256, -2000.0, 2000.0);
@@ -57,7 +80,7 @@ public:
         pTH_TDC[i]->SetLineColor(kBlack);
         pTH_TDC[i]->SetFillColor(kBlue);
      }
-
+*/
 		DrawPlots();
 		UpdatePlots();
 
@@ -79,14 +102,18 @@ public:
 
 	void DrawPlots()
 	{
-		int offset = pComboDisplayedChannels->GetSelected();
+/*
+    int offset = pComboDisplayedChannels->GetSelected();
 		for(int i = 0; i < 4; i++)
 		{
 			pCanvasHisto->GetCanvas()->cd(i+1);
 			pCanvasHisto->GetCanvas()->GetPad(i+1)->Clear();
       if(offset<13)      pTH_TDC[(offset-0)*4+i]->Draw("bar0");
 		}
-	}
+		*/
+    pCanvasHisto->GetCanvas()->cd();
+    pTH_TDC_Charge_Width->Draw("");
+  }
 
 	void UpdatePlots()
 	{
@@ -94,26 +121,73 @@ public:
 		pCanvasHisto->GetCanvas()->Update();
 	}
 
+	void ProcessEvent()
+  {
+    for(int i=0;i<52;i++)
+      tdcTimes[i].sort(compare_tdc_hit);
+    // process hits
+    printf("Sorted time hits:\n");
+    for(list<tdc_hit_t>::iterator it = tdcTimes[TEST_CH].begin(); it != tdcTimes[TEST_CH].end(); it++)
+      printf("ch%d: hit.edge=%d, hit.t=%f\n", TEST_CH, it->edge, it->t);
+
+    float last_edge1 = -1.0;
+    printf("Sorted time hits with width:\n");
+    for(list<tdc_hit_t>::iterator it = tdcTimes[TEST_CH].begin(); it != tdcTimes[TEST_CH].end(); it++)
+    {
+      if(it->edge == 1)
+        last_edge1 = it->t;
+      else if( (it->edge == 0) && (last_edge1 >= 0) )
+      {
+        float width = (it->t-last_edge1);
+        printf("ch%d: hit.t=%f, hit.width=%f\n", TEST_CH, last_edge1, width);
+        pTH_TDC_Charge_Width->Fill(Charge_pC, width);
+        last_edge1 = -1;
+      }
+    }
+
+    for(int i=0;i<52;i++)
+      tdcTimes[i].clear();
+
+    Charge_pC++;
+    if( (Charge_pC>=250) && (Threshold<1000) )
+    {
+      Charge_pC = 1;
+      Threshold+= 100;
+      if(Threshold>1000)
+        Threshold = 1000;
+
+      petiroc_slow_control();
+      petiroc_slow_control();
+    }
+
+    if(Charge_pC<250)
+    {
+      float dac = Charge_pC * 65536.0 / 250.0;
+      printf("DAC=%d, %f Charge_pC=%f\n", (int)dac, dac, Charge_pC);
+      petiroc_pulser(1<<(TEST_CH-48), 1, 1.0E3, 0.5, (int)dac, 180);
+    }
+  }
+
 	void ReadEb()
   {
-    int ChHit_Edge0[52];
-    int ChHit_Edge1[52];
+//    int ChHit_Edge0[52];
+//    int ChHit_Edge1[52];
     unsigned int buf[1000];
     int len = pSockEb->RecvRaw(buf, sizeof(buf), kDontBlock);
     if(len<=0) return;
-
+/*
     for(int i=0;i<52;i++)
     {
       ChHit_Edge0[i] = -1;
       ChHit_Edge1[i] = -1;
     }
-
+*/
     printf("%s: len=%d\n", __func__, len);
     for(int i=0;i<len/4;i++)
       printf("%08X ", buf[i]);
     printf("\n");
 
-    int tag = 0, idx = 0;
+    static int tag = 0, idx = 0, event = 0;
     for(int i=0;i<len/4;i++)
     {
       int val = buf[i];
@@ -130,18 +204,22 @@ public:
         case 0:
         {
           printf("BLOCK HEADER\n");
+          event = 0;
           break;
         }
 
         case 1:
         {
           printf("BLOCK TRAILER\n");
+          ProcessEvent();
           break;
         }
 
         case 2:
         {
           printf("EVENT HEADER: event#=%d\n", (val>>0) & 0xFFFFF);
+          if(event++)
+            ProcessEvent();
           break;
         }
 
@@ -154,18 +232,20 @@ public:
 
         case 5:
         {
-          int edge = (val>>26)&0x1;
+          tdc_hit_t hit;
           int ch = (val>>20)&0x3f;
-          int t = (val>>0)&0x7ffff;
-          printf("TDC HIT: Edge=%d, Ch=%2d, Timestamp=%d\n", edge, ch, t);
-          if(edge) ChHit_Edge1[ch] = t;
-          else     ChHit_Edge0[ch] = t;
+          hit.edge = (val>>26)&0x1;
+          hit.t = ((val>>0)&0x7ffff)*15.625/1000.0;
+          printf("TDC HIT: Edge=%d, Ch=%2d, Timestamp=%f\n", hit.edge, ch, hit.t);
+
+          if(ch<52)
+            tdcTimes[ch].push_back(hit);
 
           break;
         }
       }
     }
-
+/*
     if(ChHit_Edge1[2]>0)
     {
       if(ChHit_Edge1[4]>0) pTH_TDC[4]->Fill((ChHit_Edge1[4]-ChHit_Edge1[2])*15.625);
@@ -181,6 +261,7 @@ public:
       DrawPlots();
       UpdatePlots();
     }
+*/
   }
 
 	void ConnectEb()
@@ -191,12 +272,16 @@ public:
 
       petiroc_cfg_pwr(1,1,1,1,0,1);
 
-      petiroc_pulser(0xF, 0xFFFFFFFF, 1.0E1, 0.5, 1000);
+//      petiroc_pulser(0xF, 0xFFFFFFFF, 3.0E0, 0.5, 1000, 100);
+      petiroc_pulser(1<<(TEST_CH-48), 1, 1.0E3, 0.5, 0, 180);
 
       petiroc_cfg_rst();
 
       petiroc_slow_control();
       petiroc_slow_control();
+
+      petiroc_trig(0);
+      petiroc_eb_setup(1, 200, 200);
 
       petiroc_soft_reset(1);
       petiroc_soft_reset(0);
@@ -208,6 +293,9 @@ public:
       petiroc_raz_chn(1);
 
       gSystem->Sleep(1000);
+
+      petiroc_sync();
+      //petiroc_trig(0);
 
       pBConnect->SetTitle("Disconnect");
       pSockEb = new TSocket("192.168.0.10", 6103);
@@ -249,6 +337,16 @@ public:
               petiroc_slow_control();
               break;
 
+            case BTN_ALERTFEB_START:
+            {
+              petiroc_trig(12);
+              Charge_pC = 1;
+              Threshold = 300;
+              float dac = Charge_pC * 65536.0 / 250.0;
+              petiroc_pulser(1<<(TEST_CH-48), 1, 1.0E3, 0.5, (int)dac, 180);
+              break;
+            }
+
             default:
               printf("button id %d pressed\n", (int)parm1);
               break;
@@ -285,6 +383,24 @@ public:
     return kTRUE;
   }
 
+  void petiroc_sync()
+  {
+    pM->WriteReg32(&pRegs->Sd.SyncSrc, 1);
+    pM->WriteReg32(&pRegs->Sd.SyncSrc, 0);
+  }
+
+  void petiroc_trig(int src)
+  {
+    pM->WriteReg32(&pRegs->Sd.TrigSrc, src);
+  }
+
+  void petiroc_eb_setup(int blocksize, int lookback, int width)
+  {
+    pM->WriteReg32(&pRegs->Eb.Blocksize, blocksize);
+    pM->WriteReg32(&pRegs->Eb.Lookback, lookback);
+    pM->WriteReg32(&pRegs->Eb.WindowWidth, width);
+  }
+
   void petiroc_soft_reset(int val)
   {
     int v = pM->ReadReg32(&pRegs->Clk.Ctrl);
@@ -319,7 +435,7 @@ public:
     gSystem->Sleep(100);
   }
 
-  void petiroc_pulser(int mask, int ncycles, float freq, float duty, int amp)
+  void petiroc_pulser(int mask, int ncycles, float freq, float duty, int amp, int delay)
   {
     unsigned int period, lowcycles, ctrl = mask & 0xF;
     unsigned int dac_word, i, j;
@@ -329,6 +445,7 @@ public:
 
     pM->WriteReg32(&pRegs->Pulser.Ctrl, ctrl | 0x480); // syncn rstn
     pM->WriteReg32(&pRegs->Pulser.Ctrl, ctrl | 0x080); // syncn
+    pM->WriteReg32(&pRegs->Pulser.Delay, delay);
 
     for(i=0; i<4; i++)
     {
@@ -351,7 +468,7 @@ public:
         dac_word = dac_word<<1;
       }
     }
-
+gSystem->Sleep(0.1);
     pM->WriteReg32(&pRegs->Pulser.Period, 33.333E6 / freq);
     pM->WriteReg32(&pRegs->Pulser.LowCycles, duty * 33.333E6 / freq);
     pM->WriteReg32(&pRegs->Pulser.NCycles, ncycles);
@@ -718,7 +835,7 @@ public:
     regs[chip].SlowControl.EN_10b_DAC = 1;
     regs[chip].SlowControl.PP_10b_DAC = 0;
     regs[chip].SlowControl.vth_discri_charge = PETIROC_THR_Q[chip];
-    regs[chip].SlowControl.vth_time = pSliderThreshold->GetPosition();//PETIROC_THR[chip];
+    regs[chip].SlowControl.vth_time = Threshold;//pSliderThreshold->GetPosition();//PETIROC_THR[chip];
 
     regs[chip].SlowControl.EN_ADC = lp_en ? 0 : 1;
     regs[chip].SlowControl.PP_ADC = 0;
@@ -786,6 +903,7 @@ private:
   {
     BTN_ALERTFEB_CONNECT,
     BTN_ALERTFEB_RELOAD,
+    BTN_ALERTFEB_START,
     SDR_THRESHOLD,
     COM_TDCDISPLAYCHANNELS
   };
@@ -804,11 +922,16 @@ private:
 
   TRootEmbeddedCanvas *pCanvasHisto;
 
-  TH1I                *pTH_TDC[52];
+  TH2I                *pTH_TDC_Charge_Width;
+//  TH1I                *pTH_TDC[52];
 
   TGLabel					    *pLabelThreshold;
 
 	TGSlider					  *pSliderThreshold;
+
+  list<tdc_hit_t>     tdcTimes[52];
+  float               Charge_pC;
+  int                 Threshold;
 };
 
 #endif

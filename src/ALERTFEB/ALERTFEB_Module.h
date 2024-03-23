@@ -5,6 +5,7 @@
 #include "ModuleFrame.h"
 #include "ALERTFEB_TDC.h"
 #include "ALERTFEB_EB.h"
+#include "ALERTFEB_Scalers.h"
 
 class ALERTFEB_Module : public ModuleFrame
 {
@@ -15,18 +16,51 @@ public:
 
     TGCompositeFrame *tFrame;
     AddFrame(pTabs = new TGTab(this), new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX | kLHintsExpandY));
-    tFrame = pTabs->AddTab("TDC");		tFrame->AddFrame(new ALERTFEB_TDC(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-    tFrame = pTabs->AddTab("EB");		tFrame->AddFrame(new ALERTFEB_EB(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+    tFrame = pTabs->AddTab("Scalers");		tFrame->AddFrame(new ALERTFEB_SCALERS(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+    tFrame = pTabs->AddTab("TDC");		    tFrame->AddFrame(new ALERTFEB_TDC(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+    tFrame = pTabs->AddTab("EB");		      tFrame->AddFrame(new ALERTFEB_EB(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
   }
 
   void SetupRegisters()
   {
+#define MONTH_MAP {\
+      12,\
+      {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"},\
+      {1,2,3,4,5,6,7,8,9,10,11,12}\
+    }
+
+#define YEAR_MAP {\
+      64,\
+      {"2000","2001","2002","2003","2004","2005","2006","2007",\
+       "2008","2009","2010","2011","2012","2013","2014","2015",\
+       "2016","2017","2018","2019","2020","2021","2022","2023",\
+       "2024","2025","2026","2027","2028","2029","2030","2031",\
+       "2032","2033","2034","2035","2036","2037","2038","2039",\
+       "2040","2041","2042","2043","2044","2045","2046","2047",\
+       "2048","2049","2050","2051","2052","2053","2054","2055",\
+       "2056","2057","2058","2059","2060","2061","2062","2063"},\
+     {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,\
+      16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,\
+      32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,\
+      48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63}\
+    }
+
     static RegMemDesc regs[] = {
       {"ClkRst", 0},
         {"SoftReset",       REGMEM_DESC_FLAGS_UINT,   {0x0000, 0, 1, 32}},
         {"ClkSel",          REGMEM_DESC_FLAGS_UINT,   {0x0000, 1, 1, 32}},
         {"Rst",             REGMEM_DESC_FLAGS_UINT,   {0x0000, 2, 1, 32}},
         {"BoardID",         REGMEM_DESC_FLAGS_HEX,    {0x0010, 0,32, 32}},
+        {"VersionMaj",          REGMEM_DESC_FLAGS_UINT,   {0x0018,16,16,32}},
+        {"VersionMin",          REGMEM_DESC_FLAGS_UINT,   {0x0018, 0,16,32}},
+        {"CompileInfo", 0},
+          {"Day",               REGMEM_DESC_FLAGS_UINT,   {0x001C,27, 5,32}},
+          {"Month",             REGMEM_DESC_FLAGS_STRING, {0x001C,23, 4,32}, MONTH_MAP},
+          {"Year",              REGMEM_DESC_FLAGS_STRING, {0x001C,17, 6,32}, YEAR_MAP},
+          {"Hour",              REGMEM_DESC_FLAGS_UINT,   {0x001C,12, 5,32}},
+          {"Min",               REGMEM_DESC_FLAGS_UINT,   {0x001C, 6, 6,32}},
+          {"Sec",               REGMEM_DESC_FLAGS_UINT,   {0x001C, 0, 6,32}},
+        {NULL, 0},
       {NULL, 0},
       {"Sd", 0},
         {"Mux", 0},
@@ -58,8 +92,8 @@ public:
       {NULL, 0},
       {"Eb", 0},
         {"Blocksize",       REGMEM_DESC_FLAGS_UINT,   {0x0200, 0, 8, 32}},
-        {"TrigFifoBusyThr", REGMEM_DESC_FLAGS_UINT,   {0x0204, 1, 8, 32}},
-        {"Lookback",        REGMEM_DESC_FLAGS_UINT,   {0x0208, 2,16, 32}},
+        {"TrigFifoBusyThr", REGMEM_DESC_FLAGS_UINT,   {0x0204, 0, 8, 32}},
+        {"Lookback",        REGMEM_DESC_FLAGS_UINT,   {0x0208, 0,16, 32}},
         {"WindowWidth",     REGMEM_DESC_FLAGS_UINT,   {0x020C, 0,16, 32}},
       {NULL, 0},
       {"Tdc", 0},
