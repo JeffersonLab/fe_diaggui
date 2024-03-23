@@ -4,7 +4,6 @@
 #include <vector>
 #include "RootHeader.h"
 #include "ModuleFrame.h"
-#include "gtp.h"
 
 #define SCOPE_PIXELS_PER_BIT        5
 
