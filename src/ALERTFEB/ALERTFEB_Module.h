@@ -5,7 +5,9 @@
 #include "ModuleFrame.h"
 #include "ALERTFEB_TDC.h"
 #include "ALERTFEB_EB.h"
+#include "ALERTFEB_EB_QCAL.h"
 #include "ALERTFEB_Scalers.h"
+#include "ALERTFEB_Cfg.h"
 
 class ALERTFEB_Module : public ModuleFrame
 {
@@ -17,8 +19,10 @@ public:
     TGCompositeFrame *tFrame;
     AddFrame(pTabs = new TGTab(this), new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX | kLHintsExpandY));
     tFrame = pTabs->AddTab("Scalers");		tFrame->AddFrame(new ALERTFEB_SCALERS(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-    tFrame = pTabs->AddTab("TDC");		    tFrame->AddFrame(new ALERTFEB_TDC(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-    tFrame = pTabs->AddTab("EB");		      tFrame->AddFrame(new ALERTFEB_EB(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+    tFrame = pTabs->AddTab("TDC");		    tFrame->AddFrame(new ALERTFEB_TDC    (tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+    tFrame = pTabs->AddTab("EB");		      tFrame->AddFrame(new ALERTFEB_EB     (tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+    tFrame = pTabs->AddTab("EB_QCAL");		tFrame->AddFrame(new ALERTFEB_EB_QCAL(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+    tFrame = pTabs->AddTab("Config");     tFrame->AddFrame(new ALERTFEB_Cfg    (tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
   }
 
   void SetupRegisters()
@@ -104,6 +108,16 @@ public:
         {"CalEnable",       REGMEM_DESC_FLAGS_HEX,    {0x1010, 0, 4, 32}},
         {"CalCtrl",         REGMEM_DESC_FLAGS_HEX,    {0x1014, 0,16, 32}},
         {"CalStatus",       REGMEM_DESC_FLAGS_HEX,    {0x1018, 0,16, 32}},
+      {NULL, 0},
+      {"PetirocCfg", 0},
+        {"Ctrl", 0},
+          {"PWR_ON_D",      REGMEM_DESC_FLAGS_UINT,   {0x0500, 4, 1, 32}},
+          {"PWR_ON_A",      REGMEM_DESC_FLAGS_UINT,   {0x0500, 5, 1, 32}},
+          {"PWR_ON_DAC",    REGMEM_DESC_FLAGS_UINT,   {0x0500, 6, 1, 32}},
+          {"PWR_ON_ADC",    REGMEM_DESC_FLAGS_UINT,   {0x0500, 7, 1, 32}},
+          {"CLK_DISABLE",   REGMEM_DESC_FLAGS_UINT,   {0x0500, 8, 1, 32}},
+          {"GAIN_SEL",      REGMEM_DESC_FLAGS_UINT,   {0x0500, 9, 1, 32}},
+        {NULL, 0},
       {NULL, 0},
       {"Pulser", 0},
         {"DAC", 0},

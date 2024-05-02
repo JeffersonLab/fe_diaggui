@@ -34,6 +34,7 @@ CFLAGS			= -O2 -fno-exceptions -Wno-int-to-pointer-cast -fPIC -I/usr/include\
 			-I./src/vetroc \
 			-I./src/VTP_COMPTON \
 			-I./src/VTP_SOLIDECAL \
+			-I./src/VTP_SBSECAL \
 			-I./src/VTP_FADCCOIN \
 			-I./src/VTP_FADCSTREAM \
 			-I./src/VTP_NPS \
