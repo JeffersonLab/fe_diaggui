@@ -275,7 +275,8 @@ typedef struct
 /* 0x0008-0x000B */ unsigned int    Lookback;
 /* 0x000C-0x000F */ unsigned int    WindowWidth;
 /* 0x0010-0x0013 */ unsigned int    DeviceId;
-/* 0x0014-0x00FF */ unsigned int    Reserved0[(0x0100-0x0014)/4];
+/* 0x0014-0x0017 */ unsigned int    TrigDelay;
+/* 0x0018-0x00FF */ unsigned int    Reserved0[(0x0100-0x0018)/4];
 } ALERT_EB_regs;
 
 typedef struct
@@ -290,5 +291,31 @@ typedef struct
 /* 0x0900-0x0FFF */ unsigned int      Reserved1[(0x1000-0x0900)/4];
 /* 0x1000-0x10FF */ TDC_regs          Tdc;
 } ALERTFEB_Regs;
+
+#define FLASH_CMD_WRPAGE      0x12
+#define FLASH_CMD_RD          0x13
+#define FLASH_CMD_GETSTATUS   0x05
+#define FLASH_CMD_WREN        0x06
+#define FLASH_CMD_GETID       0x9F
+#define FLASH_CMD_ERASE64K    0xDC
+#define FLASH_CMD_4BYTE_EN    0xB7
+#define FLASH_CMD_4BYTE_DIS   0xE9
+
+#define FLASH_BYTE_LENGTH     32*1024*1024
+#define FLASH_MFG_MICRON      0x20
+#define FLASH_DEVID_N25Q256A  0xBB19
+
+#define SPI_MFG_WINBOND       0xEF
+#define SPI_DEVID_W25Q256JVIQ 0x4019
+
+#define SPI_MFG_ATMEL         0x12
+#define SPI_DEVID_AT45DB642D  0x3456
+
+// Generic TDC event hit struct
+typedef struct
+{
+  float t;
+  float width;
+} tdc_hit_t;
 
 #endif

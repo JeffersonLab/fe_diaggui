@@ -1,5 +1,5 @@
-#ifndef ALERTFEB_EB_H
-#define ALERTFEB_EB_H
+#ifndef ALERTFEB_EB_QCAL_H
+#define ALERTFEB_EB_QCAL_H
 
 #include <stdlib.h>
 #include <list>
@@ -7,22 +7,27 @@
 #include "ModuleFrame.h"
 #include "ALERTFEB_Regs.h"
 
-#define ALERTFEB_EB_POLL_RATE    20
-
-#define MAX_PLOT_NUM             50
-#define TEST_CH                  2
-
 using namespace std;
 
-static bool alert_eb_compare_tdc_hit(const tdc_hit_t &a, const tdc_hit_t &b)
+#define ALERTFEB_QCAL_THR_START  400
+#define ALERTFEB_QCAL_THR_STEP   100
+#define ALERTFEB_QCAL_THR_NUM    1
+
+#define ALERTFEB_QCAL_DAC_START  0
+#define ALERTFEB_QCAL_DAC_STEP   500
+#define ALERTFEB_QCAL_DAC_NUM    130
+
+#define ALERTFEB_QCAL_EB_POLL_RATE    20
+
+static bool alert_eb_qcal_compare_tdc_hit(const tdc_hit_t &a, const tdc_hit_t &b)
 {
   return (a.t < b.t);
 }
 
-class ALERTFEB_EB  : public TGCompositeFrame
+class ALERTFEB_EB_QCAL  : public TGCompositeFrame
 {
 public:
-  ALERTFEB_EB(const TGWindow *p, ModuleFrame *pModule) : TGCompositeFrame(p, 400, 400)
+  ALERTFEB_EB_QCAL(const TGWindow *p, ModuleFrame *pModule) : TGCompositeFrame(p, 400, 400)
   {
     SetLayoutManager(new TGVerticalLayout(this));
 
@@ -44,53 +49,34 @@ public:
       pTF1->AddFrame(pB = new TGTextButton(pTF1, "Start", BTN_ALERTFEB_START), new TGLayoutHints(kLHintsCenterX));
         pB->SetWidth(300);
         pB->Associate(this);
-      pTF1->AddFrame(pB = new TGTextButton(pTF1, "ClearHist", BTN_CLEAR_HIST), new TGLayoutHints(kLHintsCenterX));
-        pB->SetWidth(300);
-        pB->Associate(this);
 
       pTF1->AddFrame(pTF2 = new TGHorizontalFrame(this), new TGLayoutHints(kLHintsExpandX | kLHintsTop));
-        pTF2->AddFrame(pLabelThreshold = new TGLabel(pTF2, new TGString(Form("DACThreshold (%d):", 425))), new TGLayoutHints(kLHintsCenterY | kLHintsLeft));
+        pTF2->AddFrame(pLabelThreshold = new TGLabel(pTF2, new TGString(Form("DACThreshold (%d):", 325))), new TGLayoutHints(kLHintsCenterY | kLHintsLeft));
         pTF2->AddFrame(pSliderThreshold = new TGHSlider(pTF2, 100, kSlider1 | kScaleBoth, SDR_THRESHOLD), new TGLayoutHints(kLHintsExpandX | kLHintsCenterY | kLHintsLeft));
           pSliderThreshold->SetRange(0, 1023);
   //				pSliderUpdateTime->SetEnabled(kFALSE);
           pSliderThreshold->SetPosition(325);
           pSliderThreshold->Associate(this);
 
-      pTF1->AddFrame(pComboDisplayedChannels = new TGComboBox(pTF1, COM_TDCDISPLAYCHANNELS));
-				for(int i = 0; i < 13; i++)
-					pComboDisplayedChannels->AddEntry(Form("TDC LE %d-%d", i*4,i*4+3), 0+i);
-				for(int i = 0; i < 13; i++)
-					pComboDisplayedChannels->AddEntry(Form("TDC Width %d-%d", i*4,i*4+3), 13+i);
-				for(int i = 0; i < 13; i++)
-					pComboDisplayedChannels->AddEntry(Form("TDC Ref %d-%d", i*4,i*4+3), 26+i);
-				pComboDisplayedChannels->Select(0);
-				pComboDisplayedChannels->SetWidth(150);
-				pComboDisplayedChannels->SetHeight(20);
-				pComboDisplayedChannels->Associate(this);
-
     AddFrame(pCanvasHisto = new TRootEmbeddedCanvas("TDC Plots", this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			pCanvasHisto->GetCanvas()->SetBorderMode(0);
-      pCanvasHisto->GetCanvas()->Divide(2, 2);
-
-      for(int i=0;i<52;i++)
+      pCanvasHisto->GetCanvas()->Divide(2, 4);
+      for(int i=0;i<4;i++)
+      for(int j=0;j<ALERTFEB_QCAL_THR_NUM;j++)
       {
-        pTH_TDC_LE[i] = new TH1I(Form("LE:Ch%d", i), Form("LE:Ch%d;time(ns)", i), 1000, 0.0, 2000.0);
-        pTH_TDC_LE[i]->SetLineColor(kBlack);
-        pTH_TDC_LE[i]->SetFillColor(kBlue);
+        pTH_TDC_Charge_Width[i][j] = new TH2I(Form("Ch%d_QvsW",48+i), Form("Ch%d;Charge(pC);Width(ns)",48+i), 1000, 0.0, (i<2) ? 250.0 : 25.0, 1000, 0.0, (i<2) ? 1600.0 : 100.0);
+        pTH_TDC_Charge_Width[i][j]->SetMarkerColor(1+j);
+        pTH_TDC_Charge_Width[i][j]->SetStats(kFALSE);
 
-        pTH_TDC_Width[i] = new TH1I(Form("Width:Ch%d", i), Form("Width:Ch%d;time(ns)", i), 1000, 0.0, 100.0);
-        pTH_TDC_Width[i]->SetLineColor(kBlack);
-        pTH_TDC_Width[i]->SetFillColor(kBlue);
-
-        pTH_TDC_Ref[i] = new TH1I(Form("Ref:Ch%d-Ch%d", TEST_CH, i), Form("Ref:Ch%d-Ch%d;time(ps)", TEST_CH, i), 256, -2000.0, 2000.0);
-        pTH_TDC_Ref[i]->SetLineColor(kBlack);
-        pTH_TDC_Ref[i]->SetFillColor(kBlue);
-     }
+        pTH_TDC_Charge_LE[i][j] = new TH2I(Form("Ch%d_QvsLE",48+i), Form("Ch%d;Charge(pC);LeadingEdge(ns)",48+i), 1000, 0.0, (i<2) ? 250.0 : 25.0, 1000, 100.0, 200.0);
+        pTH_TDC_Charge_LE[i][j]->SetMarkerColor(1+j);
+        pTH_TDC_Charge_LE[i][j]->SetStats(kFALSE);
+      }
 
     DrawPlots();
 		UpdatePlots();
 
-    pTimerUpdate = new TTimer(this, ALERTFEB_EB_POLL_RATE, kTRUE);
+    pTimerUpdate = new TTimer(this, ALERTFEB_QCAL_EB_POLL_RATE, kTRUE);
   }
 
 	virtual Bool_t HandleTimer(TTimer *t)
@@ -100,7 +86,7 @@ public:
       if(pSockEb)
       {
         ReadEb();
-        pTimerUpdate->Start(ALERTFEB_EB_POLL_RATE, kTRUE);
+        pTimerUpdate->Start(ALERTFEB_QCAL_EB_POLL_RATE, kTRUE);
       }
     }
     return kTRUE;
@@ -108,14 +94,17 @@ public:
 
 	void DrawPlots()
 	{
-    int offset = pComboDisplayedChannels->GetSelected();
 		for(int i = 0; i < 4; i++)
 		{
 			pCanvasHisto->GetCanvas()->cd(i+1);
 			pCanvasHisto->GetCanvas()->GetPad(i+1)->Clear();
-      if(offset<13)      pTH_TDC_LE   [(offset- 0)*4+i]->Draw("bar0");
-      else if(offset<26) pTH_TDC_Width[(offset-13)*4+i]->Draw("bar0");
-      else if(offset<39) pTH_TDC_Ref  [(offset-26)*4+i]->Draw("bar0");
+      for(int j=0;j<ALERTFEB_QCAL_THR_NUM;j++)
+        pTH_TDC_Charge_Width[i][j]->Draw(j ? "same" : "");
+
+			pCanvasHisto->GetCanvas()->cd(i+5);
+			pCanvasHisto->GetCanvas()->GetPad(i+5)->Clear();
+      for(int j=0;j<ALERTFEB_QCAL_THR_NUM;j++)
+        pTH_TDC_Charge_LE[i][j]->Draw(j ? "same" : "");
 		}
   }
 
@@ -127,29 +116,63 @@ public:
 
 	void ProcessEvent()
   {
-    float ref = -1.0;
+    if(Channel>=52 || Channel<0) return;
 
     for(int i=0;i<52;i++)
-    {
-      for(list<tdc_hit_t>::iterator it = tdcTimes[i].begin(); it != tdcTimes[i].end(); it++)
-      {
-        if((i==TEST_CH) && (ref<0))
-          ref = it->t;
+      tdcTimes[i].sort(alert_eb_qcal_compare_tdc_hit);
+    // process hits
+    printf("Sorted time hits:\n");
+    for(list<tdc_hit_t>::iterator it = tdcTimes[Channel].begin(); it != tdcTimes[Channel].end(); it++)
+      printf("ch%d: hit.t=%f, hit.width=%f\n", Channel, it->t, it->width);
 
-        pTH_TDC_Width[i]->Fill(it->width);
-        pTH_TDC_LE[i]->Fill(it->t);
-      }
+    tdc_hit_t max_width = {-1.0, -1.0};
+    printf("Sorted time hits with width:\n");
+    for(list<tdc_hit_t>::iterator it = tdcTimes[Channel].begin(); it != tdcTimes[Channel].end(); it++)
+    {
+      if(it->width > max_width.width)
+        max_width = *it;
     }
 
-    if(ref>0)
+    if(max_width.width > 0.0)
     {
-      for(int i=0;i<52;i++)
-      for(list<tdc_hit_t>::iterator it = tdcTimes[i].begin(); it != tdcTimes[i].end(); it++)
-          pTH_TDC_Ref[i]->Fill(1000.0*(ref-it->t));
+      pTH_TDC_Charge_Width[Channel-48][ThresholdIndex]->Fill(Charge_pC[Channel-48], max_width.width);
+      pTH_TDC_Charge_LE[Channel-48][ThresholdIndex]->Fill(Charge_pC[Channel-48], max_width.t);
     }
 
     for(int i=0;i<52;i++)
       tdcTimes[i].clear();
+
+    if(++DACIndex>=ALERTFEB_QCAL_DAC_NUM)
+    {
+      DACIndex = 0;
+
+      if(++ThresholdIndex>=ALERTFEB_QCAL_THR_NUM)
+      {
+        DrawPlots();
+        UpdatePlots();
+
+        Threshold = ALERTFEB_QCAL_THR_START;
+        ThresholdIndex = 0;
+
+//        if(Channel<52)
+//          Channel++;
+      }
+      else
+        Threshold+= ALERTFEB_QCAL_THR_STEP;
+
+//      petiroc_slow_control();
+//      petiroc_slow_control();
+    }
+
+    int DAC = DACIndex*ALERTFEB_QCAL_DAC_STEP;
+
+//    if(Channel<52)
+    {
+      Charge_pC[0] = Charge_pC[1] = 250.0 * DAC / 65536.0;
+      Charge_pC[2] = Charge_pC[3] = 25.0 * DAC / 65536.0;
+      printf("DAC=%d Charge_pC=%f,%f,%f,%f\n", DAC, Charge_pC[0], Charge_pC[1], Charge_pC[2], Charge_pC[3]);
+      petiroc_pulser(1<<(Channel-48), 1, 1.0E3, 0.5, DAC, 180);
+    }
   }
 
 	void ReadEb()
@@ -163,7 +186,7 @@ public:
       printf("%08X ", buf[i]);
     printf("\n");
 
-    static int tag = 0, idx = 0, event = 0, ch = 0;
+    static int tag = 0, idx = 0, event = 0, ch;
     static tdc_hit_t hit;
     for(int i=0;i<len/4;i++)
     {
@@ -234,10 +257,11 @@ public:
     {
       petiroc_clk_sel(0);
 
-      petiroc_cfg_pwr(1,1,1,1,0,1);
+      int gain = 0;
+      petiroc_cfg_pwr(1,1,1,1,gain,1);
 
-      petiroc_pulser(0x0, 0xFFFFFFFF, 3.0E0, 0.5, 1000, 100);
-//      petiroc_pulser(1<<(TEST_CH-48), 1, 1.0E3, 0.5, 0, 180);
+//      petiroc_pulser(0xF, 0xFFFFFFFF, 3.0E0, 0.5, 1000, 100);
+      petiroc_pulser(0, 1, 1.0E3, 0.5, 0, 180);
 
       petiroc_cfg_rst();
 
@@ -245,7 +269,7 @@ public:
       petiroc_slow_control();
 
       petiroc_trig(0);
-      petiroc_eb_setup(1, 250, 250, 100);
+      petiroc_eb_setup(1, 200, 200);
 
       petiroc_soft_reset(1);
       petiroc_soft_reset(0);
@@ -260,6 +284,7 @@ public:
       gSystem->Sleep(1000);
       petiroc_tdc_calibrate(0, 1);
 
+
       petiroc_sync();
       //petiroc_trig(0);
 
@@ -267,7 +292,7 @@ public:
       pSockEb = new TSocket("192.168.0.10", 6103);
       pSockEb->SetOption(kNoDelay, 1);
       pSockEb->SetOption(kNoBlock, 1);
-      pTimerUpdate->Start(ALERTFEB_EB_POLL_RATE, kTRUE);
+      pTimerUpdate->Start(ALERTFEB_QCAL_EB_POLL_RATE, kTRUE);
     }
     else
     {
@@ -305,18 +330,28 @@ public:
 
             case BTN_ALERTFEB_START:
             {
-              petiroc_trig(11);
-              break;
-            }
+              petiroc_trig(12);
+              Channel = 48;
+              DACIndex = 0;
+              int DAC = DACIndex*ALERTFEB_QCAL_DAC_STEP;
+              Threshold = ALERTFEB_QCAL_THR_START;
+              ThresholdIndex = 0;
+              petiroc_slow_control();
+              petiroc_slow_control();
+              Charge_pC[0] = Charge_pC[1] = 250.0 * DAC / 65536.0;
+              Charge_pC[2] = Charge_pC[3] = 25.0 * DAC / 65536.0;
+              petiroc_pulser(1<<(Channel-48), 1, 1.0E3, 0.5, DAC, 180);
 
-            case BTN_CLEAR_HIST:
-            {
-              for(int i=0;i<52;i++)
-              {
-                pTH_TDC_LE   [i]->Reset();
-                pTH_TDC_Width[i]->Reset();
-                pTH_TDC_Ref  [i]->Reset();
-              }
+              // Good
+              //petiroc_probe(1,0,0,0); // time amp, ch0
+              //petiroc_probe(1,1,0,0); // vth discri, ch0
+              //petiroc_probe(1,2,0,0); // time amp, ch1
+              //petiroc_probe(1,3,0,0); // vth discri, ch1
+              //petiroc_probe(1,4,0,4); // time amp, ch2
+              //petiroc_probe(1,5,0,0); // vth discri, ch2
+              petiroc_probe(1,12,0,4); // time amp, ch6
+              //petiroc_probe(1,13,0,0); // vth discri, ch6
+
               break;
             }
 
@@ -329,10 +364,6 @@ public:
         case kCM_COMBOBOX:
           switch(parm1)
           {
-            case COM_TDCDISPLAYCHANNELS:
-              DrawPlots();
-              UpdatePlots();
-              break;
             default:
               printf("combo id %d pressed\n", (int)parm1);
               break;
@@ -381,12 +412,11 @@ public:
     pM->WriteReg32(&pRegs->Sd.TrigSrc, src);
   }
 
-  void petiroc_eb_setup(int blocksize, int lookback, int width, int delay)
+  void petiroc_eb_setup(int blocksize, int lookback, int width)
   {
     pM->WriteReg32(&pRegs->Eb.Blocksize, blocksize);
     pM->WriteReg32(&pRegs->Eb.Lookback, lookback);
     pM->WriteReg32(&pRegs->Eb.WindowWidth, width);
-    pM->WriteReg32(&pRegs->Eb.TrigDelay, delay);
   }
 
   void petiroc_soft_reset(int val)
@@ -629,6 +659,31 @@ gSystem->Sleep(0.1);
     }
   }
 
+  void petiroc_probe(int ana, int ana_bit, int dig, int dig_bit)
+  {
+    PETIROC_Regs regs[2], result[2];
+
+    memset(&regs, 0, sizeof(regs));
+
+    for(int i=0; i<2; i++)
+    {
+      if(ana == 0) regs[i].Probes.out_inpDAC_probe  = (1<<ana_bit);
+      if(ana == 1) regs[i].Probes.out_vth_discri    = (1<<ana_bit);
+      if(ana == 2) regs[i].Probes.out_time          = (1<<ana_bit);
+      if(ana == 3) regs[i].Probes.out_time_dummy    = (1<<ana_bit);
+      if(ana == 4) regs[i].Probes.out_ramp_tdc      = (1<<ana_bit);
+
+      if(dig == 0) regs[i].Probes.out_discri_charge = (1<<dig_bit);
+      if(dig == 1) regs[i].Probes.out_charge        = (1<<dig_bit);
+      if(dig == 2) regs[i].Probes.startRampbADC_int = (1<<dig_bit);
+      if(dig == 3) regs[i].Probes.holdb             = (1<<dig_bit);
+    }
+
+    petiroc_cfg_select(0);
+
+    petiroc_shift_regs(regs, result);
+  }
+
   void petiroc_startb_adc(int val)
   {
     for(int chip=0; chip<2; chip++)
@@ -823,7 +878,7 @@ gSystem->Sleep(0.1);
     regs[chip].SlowControl.EN_10b_DAC = 1;
     regs[chip].SlowControl.PP_10b_DAC = 0;
     regs[chip].SlowControl.vth_discri_charge = PETIROC_THR_Q[chip];
-    regs[chip].SlowControl.vth_time = pSliderThreshold->GetPosition();//PETIROC_THR[chip];
+    regs[chip].SlowControl.vth_time = Threshold;//pSliderThreshold->GetPosition();//PETIROC_THR[chip];
 
     regs[chip].SlowControl.EN_ADC = lp_en ? 0 : 1;
     regs[chip].SlowControl.PP_ADC = 0;
@@ -892,7 +947,6 @@ private:
     BTN_ALERTFEB_CONNECT,
     BTN_ALERTFEB_RELOAD,
     BTN_ALERTFEB_START,
-    BTN_CLEAR_HIST,
     SDR_THRESHOLD,
     COM_TDCDISPLAYCHANNELS
   };
@@ -911,15 +965,20 @@ private:
 
   TRootEmbeddedCanvas *pCanvasHisto;
 
-  TH1I                *pTH_TDC_LE[52];
-  TH1I                *pTH_TDC_Width[52];
-  TH1I                *pTH_TDC_Ref[52];
+  TH2I                *pTH_TDC_Charge_Width[4][ALERTFEB_QCAL_THR_NUM];
+  TH2I                *pTH_TDC_Charge_LE[4][ALERTFEB_QCAL_THR_NUM];
 
   TGLabel					    *pLabelThreshold;
 
 	TGSlider					  *pSliderThreshold;
 
   list<tdc_hit_t>     tdcTimes[52];
+
+  float               Charge_pC[4];
+  int                 DACIndex;
+  int                 Threshold;
+  int                 ThresholdIndex;
+  int                 Channel;
 };
 
 #endif
