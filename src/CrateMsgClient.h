@@ -116,11 +116,13 @@ class CrateMsgClient    : public TNamed
 public:
   TString hostname;
   int hostport;
+  bool tcp64bit_mode;
 
-  CrateMsgClient(const char *pHost, int port)
+  CrateMsgClient(const char *pHost, int port, bool tcp64bit)
   {
     hostname = Form("%s",pHost);
     hostport = port;
+    tcp64bit_mode = tcp64bit;
 
 #if DEBUG_NOCONNECTION
     pSocket = NULL;
@@ -137,7 +139,7 @@ public:
       pSocket = NULL;
     }
     else
-      printf("Successfully connected to host: %s\n" , pHost);
+      printf("Successfully connected to host:(64bitmode=%d) %s\n" , tcp64bit_mode ? 1 : 0, pHost);
 
     InitConnection();
   }
@@ -182,8 +184,16 @@ public:
     val = CRATEMSG_HDR_ID;
     SendRaw(&val, 4);
 
+    if(tcp64bit_mode)
+    {
+      val = 0;
+      SendRaw(&val, 4);
+    }
+
     if(RecvRaw(&val, 4) != 4)
       return kFALSE;
+
+    printf("CRATEMSG_HDR_ID=0x%08X\n", val);
 
     if(val == CRATEMSG_HDR_ID)
       swap = 0;
@@ -342,10 +352,16 @@ public:
 
     Msg.len = 12;
     Msg.type = CRATEMSG_TYPE_READ32;
-    Msg.msg.m_Cmd_Read16.cnt = cnt;
-    Msg.msg.m_Cmd_Read16.addr = addr;
-    Msg.msg.m_Cmd_Read16.flags = flags;
+    Msg.msg.m_Cmd_Read32.cnt = cnt;
+    Msg.msg.m_Cmd_Read32.addr = addr;
+    Msg.msg.m_Cmd_Read32.flags = flags;
     SendRaw(&Msg, Msg.len+8);
+
+    if(tcp64bit_mode)
+    {
+      int val = 0;
+      SendRaw(&val, 4);
+    }
 
 #if DEBUG_PRINT
     printf("Read32 @ 0x%08X, Count = %d, Flag = %d, Vals = ", addr, cnt, flags);

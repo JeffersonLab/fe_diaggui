@@ -21,7 +21,7 @@ class DiagGUI : public TGMainFrame
 private:
 	void HandleDisconnect();
 	void DiagLoadConfigFile(const char *configFile);
-	void ProcessParam(char *paramA, char *paramB, char *paramC, int count);
+	void ProcessParam(char *paramA, char *paramB, char *paramC, char *paramD, int count);
 	void PrintScreen();
 	void ChangeFrame(int index);
 	void ProcessEventData(int host, int evtNum, int evtLen, unsigned int *pData);

@@ -37,7 +37,7 @@ class ModuleFrame : public TGCompositeFrame
 {
 private:
 public:
-	ModuleFrame(const TGWindow *p, CrateMsgClient *pClient, unsigned int baseAddr)	: TGCompositeFrame(p, 10, 10), pCrateMsgClient(pClient), BaseAddr(baseAddr)
+	ModuleFrame(const TGWindow *p, CrateMsgClient *pClient, unsigned int baseAddr, bool tcp64bit = false)	: TGCompositeFrame(p, 10, 10), pCrateMsgClient(pClient), BaseAddr(baseAddr)
 	{
 		SetLayoutManager(new TGHorizontalLayout(this));
 

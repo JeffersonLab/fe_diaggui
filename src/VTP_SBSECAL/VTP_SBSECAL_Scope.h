@@ -21,40 +21,40 @@ public:
     pScope->Init(512, 0xB414+offset, 0, 0xB410+offset, 0, 0xB500+offset,12);
 
     // void AddTrace(const char *name, int height, int mode, int bitCount, int bitOffsetData, int cfgAddr, int cfgBitOffset, int valAddr, int valBitOffset)
-    pScope->AddTrace("SMO_0",        4* 2+8, TRACE_MODE_DIGITAL,   2,   0,    0xB418+offset, 0,   0xB41C+offset, 0);
-    pScope->AddTrace("SMO_1",        4* 2+8, TRACE_MODE_DIGITAL,   2,   2,    0xB418+offset, 2,   0xB41C+offset, 2);
-    pScope->AddTrace("SMO_2",        4* 2+8, TRACE_MODE_DIGITAL,   2,   4,    0xB418+offset, 4,   0xB41C+offset, 4);
-    pScope->AddTrace("TRIG",             27, TRACE_MODE_DIGITAL,   1,   5,    0xB418+offset, 5,   0xB41C+offset, 5);
-    pScope->AddTrace("VALID",            27, TRACE_MODE_DIGITAL,   1,   6,    0xB418+offset, 6,   0xB41C+offset, 6);
+    pScope->AddTrace("SMO_0",        4* 2+8, TRACE_MODE_DIGITAL,   2,   0,    0xB418+offset, 0,   0xB41C+offset,  0);
+    pScope->AddTrace("SMO_1",        4* 2+8, TRACE_MODE_DIGITAL,   2,   2,    0xB418+offset, 2,   0xB41C+offset,  2);
+    pScope->AddTrace("SMO_2",        4* 2+8, TRACE_MODE_DIGITAL,   2,   4,    0xB418+offset, 4,   0xB41C+offset,  4);
+    pScope->AddTrace("TRIG",             27, TRACE_MODE_DIGITAL,   1,   6,    0xB418+offset, 6,   0xB41C+offset,  6);
+    pScope->AddTrace("VALID",            27, TRACE_MODE_DIGITAL,   1,   7,    0xB418+offset, 7,   0xB41C+offset,  7);
 
-    pScope->AddTrace("FADC_SL3_CH0",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB424+offset, 0,   0xB494+offset, 0);
-    pScope->AddTrace("FADC_SL3_CH1",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB428+offset, 0,   0xB498+offset, 0);
-    pScope->AddTrace("FADC_SL3_CH2",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB42C+offset, 0,   0xB49C+offset, 0);
-    pScope->AddTrace("FADC_SL3_CH3",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB430+offset, 0,   0xB4A0+offset, 0);
-    pScope->AddTrace("FADC_SL3_CH4",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB434+offset, 0,   0xB4A4+offset, 0);
-    pScope->AddTrace("FADC_SL3_CH5",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB438+offset, 0,   0xB4A8+offset, 0);
-    pScope->AddTrace("FADC_SL3_CH6",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB43C+offset, 0,   0xB4AC+offset, 0);
-    pScope->AddTrace("FADC_SL3_CH7",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB440+offset, 0,   0xB4B0+offset, 0);
-    pScope->AddTrace("FADC_SL3_CH8",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB444+offset, 0,   0xB4B4+offset, 0);
-    pScope->AddTrace("FADC_SL3_CH9",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB448+offset, 0,   0xB4B8+offset, 0);
-    pScope->AddTrace("FADC_SL3_CH10",   128,  TRACE_MODE_ANALOG,  13,   8,    0xB44C+offset, 0,   0xB4BC+offset, 0);
-    pScope->AddTrace("FADC_SL3_CH11",   128,  TRACE_MODE_ANALOG,  13,   8,    0xB450+offset, 0,   0xB4C0+offset, 0);
-    pScope->AddTrace("FADC_SL3_CH12",   128,  TRACE_MODE_ANALOG,  13,   8,    0xB454+offset, 0,   0xB4C4+offset, 0);
-    pScope->AddTrace("FADC_SL3_CH13",   128,  TRACE_MODE_ANALOG,  13,   8,    0xB458+offset, 0,   0xB4C8+offset, 0);
-    pScope->AddTrace("FADC_SL3_CH14",   128,  TRACE_MODE_ANALOG,  13,   8,    0xB45C+offset, 0,   0xB4CC+offset, 0);
-    pScope->AddTrace("FADC_SL3_CH15",   128,  TRACE_MODE_ANALOG,  13,   8,    0xB460+offset, 0,   0xB4D0+offset, 0);
-    
-    pScope->AddTrace("FADC_SL4_CH0",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB464+offset, 0,   0xB4D4+offset, 0);
-    pScope->AddTrace("FADC_SL4_CH1",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB468+offset, 0,   0xB4D8+offset, 0);
-    pScope->AddTrace("FADC_SL4_CH2",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB46C+offset, 0,   0xB4DC+offset, 0);
-    pScope->AddTrace("FADC_SL4_CH3",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB470+offset, 0,   0xB4E0+offset, 0);
-    pScope->AddTrace("FADC_SL4_CH4",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB474+offset, 0,   0xB4E4+offset, 0);
-    pScope->AddTrace("FADC_SL4_CH5",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB478+offset, 0,   0xB4E8+offset, 0);
-    pScope->AddTrace("FADC_SLOT4_CH6",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB47C+offset, 0,   0xB4EC+offset, 0);
-    pScope->AddTrace("FADC_SLOT4_CH7",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB480+offset, 0,   0xB5F0+offset, 0);
-    pScope->AddTrace("FADC_SLOT4_CH8",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB484+offset, 0,   0xB5F4+offset, 0);
-    pScope->AddTrace("FADC_SLOT4_CH9",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB488+offset, 0,   0xB5F8+offset, 0);
-    pScope->AddTrace("FADC_SLOT4_CH10",   128,  TRACE_MODE_ANALOG,  13,   8,    0xB48C+offset, 0,   0xB5FC+offset, 0);
+    pScope->AddTrace("FADC_SL8_CH0",    128,  TRACE_MODE_ANALOG,  13,   8,    0xB424+offset, 0,   0xB494+offset,  0);
+    pScope->AddTrace("FADC_SL8_CH1",    128,  TRACE_MODE_ANALOG,  13,  21,    0xB428+offset, 0,   0xB498+offset,  0);
+    pScope->AddTrace("FADC_SL8_CH2",    128,  TRACE_MODE_ANALOG,  13,  34,    0xB42C+offset, 0,   0xB49C+offset,  0);
+    pScope->AddTrace("FADC_SL8_CH3",    128,  TRACE_MODE_ANALOG,  13,  47,    0xB430+offset, 0,   0xB4A0+offset,  0);
+    pScope->AddTrace("FADC_SL8_CH4",    128,  TRACE_MODE_ANALOG,  13,  60,    0xB434+offset, 0,   0xB4A4+offset,  0);
+    pScope->AddTrace("FADC_SL8_CH5",    128,  TRACE_MODE_ANALOG,  13,  73,    0xB438+offset, 0,   0xB4A8+offset,  0);
+    pScope->AddTrace("FADC_SL8_CH6",    128,  TRACE_MODE_ANALOG,  13,  86,    0xB43C+offset, 0,   0xB4AC+offset,  0);
+    pScope->AddTrace("FADC_SL8_CH7",    128,  TRACE_MODE_ANALOG,  13,  99,    0xB440+offset, 0,   0xB4B0+offset,  0);
+    pScope->AddTrace("FADC_SL8_CH8",    128,  TRACE_MODE_ANALOG,  13, 112,    0xB444+offset, 0,   0xB4B4+offset,  0);
+    pScope->AddTrace("FADC_SL8_CH9",    128,  TRACE_MODE_ANALOG,  13, 125,    0xB448+offset, 0,   0xB4B8+offset,  0);
+    pScope->AddTrace("FADC_SL8_CH10",   128,  TRACE_MODE_ANALOG,  13, 138,    0xB44C+offset, 0,   0xB4BC+offset,  0);
+    pScope->AddTrace("FADC_SL8_CH11",   128,  TRACE_MODE_ANALOG,  13, 151,    0xB450+offset, 0,   0xB4C0+offset,  0);
+    pScope->AddTrace("FADC_SL8_CH12",   128,  TRACE_MODE_ANALOG,  13, 164,    0xB454+offset, 0,   0xB4C4+offset,  0);
+    pScope->AddTrace("FADC_SL8_CH13",   128,  TRACE_MODE_ANALOG,  13, 177,    0xB458+offset, 0,   0xB4C8+offset,  0);
+    pScope->AddTrace("FADC_SL8_CH14",   128,  TRACE_MODE_ANALOG,  13, 190,    0xB45C+offset, 0,   0xB4CC+offset,  0);
+    pScope->AddTrace("FADC_SL8_CH15",   128,  TRACE_MODE_ANALOG,  13, 203,    0xB460+offset, 0,   0xB4D0+offset,  0);
+                                                                        
+    pScope->AddTrace("FADC_SL9_CH0",    128,  TRACE_MODE_ANALOG,  13, 216,    0xB464+offset, 0,   0xB4D4+offset,  0);
+    pScope->AddTrace("FADC_SL9_CH1",    128,  TRACE_MODE_ANALOG,  13, 229,    0xB468+offset, 0,   0xB4D8+offset,  0);
+    pScope->AddTrace("FADC_SL9_CH2",    128,  TRACE_MODE_ANALOG,  13, 242,    0xB46C+offset, 0,   0xB4DC+offset,  0);
+    pScope->AddTrace("FADC_SL9_CH3",    128,  TRACE_MODE_ANALOG,  13, 255,    0xB470+offset, 0,   0xB4E0+offset,  0);
+    pScope->AddTrace("FADC_SL9_CH4",    128,  TRACE_MODE_ANALOG,  13, 268,    0xB474+offset, 0,   0xB4E4+offset,  0);
+    pScope->AddTrace("FADC_SL9_CH5",    128,  TRACE_MODE_ANALOG,  13, 281,    0xB478+offset, 0,   0xB4E8+offset,  0);
+    pScope->AddTrace("FADC_SL9_CH6",    128,  TRACE_MODE_ANALOG,  13, 294,    0xB47C+offset, 0,   0xB4EC+offset,  0);
+    pScope->AddTrace("FADC_SL9_CH7",    128,  TRACE_MODE_ANALOG,  13, 307,    0xB480+offset, 0,   0xB4F0+offset,  0);
+    pScope->AddTrace("FADC_SL9_CH8",    128,  TRACE_MODE_ANALOG,  13, 320,    0xB484+offset, 0,   0xB4F4+offset,  0);
+    pScope->AddTrace("FADC_SL9_CH9",    128,  TRACE_MODE_ANALOG,  13, 333,    0xB488+offset, 0,   0xB4F8+offset,  0);
+    pScope->AddTrace("FADC_SL9_CH10",   128,  TRACE_MODE_ANALOG,  13, 346,    0xB48C+offset, 0,   0xB4FC+offset,  0);
   }
 };
 

@@ -10,7 +10,6 @@
 #define ALERTFEB_EB_POLL_RATE    20
 
 #define MAX_PLOT_NUM             50
-#define TEST_CH                  2
 
 using namespace std;
 
@@ -78,11 +77,11 @@ public:
         pTH_TDC_LE[i]->SetLineColor(kBlack);
         pTH_TDC_LE[i]->SetFillColor(kBlue);
 
-        pTH_TDC_Width[i] = new TH1I(Form("Width:Ch%d", i), Form("Width:Ch%d;time(ns)", i), 1000, 0.0, 100.0);
+        pTH_TDC_Width[i] = new TH1I(Form("Width:Ch%d", i), Form("Width:Ch%d;time(ns)", i), 1000, 0.0, 4096.0);
         pTH_TDC_Width[i]->SetLineColor(kBlack);
         pTH_TDC_Width[i]->SetFillColor(kBlue);
 
-        pTH_TDC_Ref[i] = new TH1I(Form("Ref:Ch%d-Ch%d", TEST_CH, i), Form("Ref:Ch%d-Ch%d;time(ps)", TEST_CH, i), 256, -2000.0, 2000.0);
+        pTH_TDC_Ref[i] = new TH1I(Form("Ref:Ref-Ch%d", i), Form("Ref:Ref-Ch%d;time(ps)", i), 256, -2000.0, 2000.0);
         pTH_TDC_Ref[i]->SetLineColor(kBlack);
         pTH_TDC_Ref[i]->SetFillColor(kBlue);
      }
@@ -127,15 +126,14 @@ public:
 
 	void ProcessEvent()
   {
-    float ref = -1.0;
+    float ref = 1.0E9;
 
     for(int i=0;i<52;i++)
     {
       for(list<tdc_hit_t>::iterator it = tdcTimes[i].begin(); it != tdcTimes[i].end(); it++)
       {
-        if((i==TEST_CH) && (ref<0))
-          ref = it->t;
-
+        // pick earlier hit time as reference
+        ref = (it->t < ref) ? it->t : ref;
         pTH_TDC_Width[i]->Fill(it->width);
         pTH_TDC_LE[i]->Fill(it->t);
       }
@@ -163,7 +161,7 @@ public:
       printf("%08X ", buf[i]);
     printf("\n");
 
-    static int tag = 0, idx = 0, event = 0, ch = 0;
+    static int tag = 0, idx = 0, ch = 0;
     static tdc_hit_t hit;
     for(int i=0;i<len/4;i++)
     {
@@ -181,7 +179,6 @@ public:
         case 0:
         {
           printf("BLOCK HEADER\n");
-          event = 0;
           break;
         }
 
@@ -195,8 +192,6 @@ public:
         case 2:
         {
           printf("EVENT HEADER: event#=%d\n", (val>>0) & 0xFFFFF);
-          if(event++)
-            ProcessEvent();
           break;
         }
 
@@ -216,7 +211,7 @@ public:
           }
           else if(idx == 1)
           {
-            hit.width = ((val>>0)&0xffff)*15.625/1000.0;
+            hit.width = ((val>>0)&0x3ffff)*15.625/1000.0;
             printf("TDC HIT: Ch=%2d, Time=%f, Width=%f\n", ch, hit.t, hit.width);
 
             if(ch<52)
@@ -245,7 +240,7 @@ public:
       petiroc_slow_control();
 
       petiroc_trig(0);
-      petiroc_eb_setup(1, 250, 250, 100);
+      petiroc_eb_setup(1,1300, 500, 1200);
 
       petiroc_soft_reset(1);
       petiroc_soft_reset(0);
@@ -455,6 +450,7 @@ public:
         }
         dac_word = dac_word<<1;
       }
+pM->ReadReg32(&pRegs->Pulser.Ctrl);
     }
 gSystem->Sleep(0.1);
     pM->WriteReg32(&pRegs->Pulser.Period, 33.333E6 / freq);
@@ -555,6 +551,7 @@ gSystem->Sleep(0.1);
   printf("W i=%2d: %08X %08X\n", i, regs[0].Data[i], regs[1].Data[i]);
       pM->WriteReg32(&pRegs->PetirocCfg.SerData0[i], regs[0].Data[i]);
       pM->WriteReg32(&pRegs->PetirocCfg.SerData1[i], regs[1].Data[i]);
+pM->ReadReg32(&pRegs->PetirocCfg.SerData1[i]);
     }
 
     /* do shift register transfer */
