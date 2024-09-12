@@ -91,12 +91,13 @@ public:
 
   unsigned char flash_TransferSpi(unsigned char data, int do_read)
   {
+    static int no_read_cnt = 0;
     int i;
     unsigned int val=0;
 
     pM->WriteReg32(&pRegs->Clk.SpiCtrl, data | 0x400);
 
-    if(do_read)
+    if(do_read || (no_read_cnt>10))
     {
       for(i = 0; i < 1000; i++)
       {
@@ -106,7 +107,12 @@ public:
       }
       if(i == 1000)
         printf("%s: ERROR: Timeout!!!\n", __func__);
+
+      no_read_cnt = 0;
     }
+    else
+      no_read_cnt++;
+
     return val & 0xFF;
   }
 

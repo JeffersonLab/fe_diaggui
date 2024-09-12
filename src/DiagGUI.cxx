@@ -183,7 +183,7 @@ void DiagGUI::DiagLoadConfigFile(const char *configFile)
 		return;
 	}
 
-	char paramA[100], paramB[100], paramC[100], buf[200];
+	char paramA[100], paramB[100], paramC[100], paramD[100], buf[200];
 	int line = 0;
 	while(!feof(f))
 	{
@@ -204,9 +204,10 @@ void DiagGUI::DiagLoadConfigFile(const char *configFile)
 			paramA[0] = 0;
 			paramB[0] = 0;
 			paramC[0] = 0;
-			int count = sscanf(buf, "%100s%100s%100s", paramA, paramB, paramC);
+      paramD[0] = 0;
+			int count = sscanf(buf, "%100s%100s%100s%100s", paramA, paramB, paramC, paramD);
 			if(count && (count != EOF))
-				ProcessParam(paramA, paramB, paramC, count);
+				ProcessParam(paramA, paramB, paramC, paramD, count);
 			else if(count && (count != EOF))
 				printf("Error processing line %d: %s\n", line, buf);
 		}
@@ -226,7 +227,7 @@ Bool_t DiagGUI::GetInt(char *str, int *pInt)
 	return kTRUE;
 }
 
-void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, int count)
+void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, char *paramD, int count)
 {
 	static TGShutterItem *item;
 	static TGCompositeFrame *container;
@@ -242,11 +243,11 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, int count)
 			item = new TGShutterItem(pShutter, new TGHotString(paramB), SHUTTER_MSG_ITEM + iHostCount);
 			container = (TGCompositeFrame *)item->GetContainer();
 
-			int port = CRATEMSG_LISTEN_PORT;
-			if(count == 3)
-				GetInt(paramC, &port);
+			int port = CRATEMSG_LISTEN_PORT, tcp64bit = 0;
+			if(count >= 3) GetInt(paramC, &port);
+      if(count >= 4) GetInt(paramD, &tcp64bit);
 
-			pCrateMsgClient[iHostCount] = new CrateMsgClient(paramB, port);
+			pCrateMsgClient[iHostCount] = new CrateMsgClient(paramB, port, tcp64bit ? true : false);
 			
 			if(!pCrateMsgClient[iHostCount]->IsValid())
 			{
