@@ -16,13 +16,22 @@ public:
     pM = pModule;
     pRegs = (ALERTFEB_Regs *)pM->BaseAddr;
 
-    TGCompositeFrame *pTF1;
+    TGCompositeFrame *pTF1, *pTF2;
     TGTextButton *pB;
 
     AddFrame(pTF1 = new TGHorizontalFrame(this), new TGLayoutHints(kLHintsExpandX));
       pTF1->AddFrame(pB = new TGTextButton(pTF1, "FirmwareUpdate", BTN_ALERTFEB_FIRMWARE_UPDATE), new TGLayoutHints(kLHintsCenterX));
         pB->SetWidth(200);
         pB->Associate(this);
+      pTF1->AddFrame(pB = new TGTextButton(pTF1, "SetIp", BTN_ALERTFEB_SET_IP), new TGLayoutHints(kLHintsCenterX));
+        pB->SetWidth(200);
+        pB->Associate(this);
+      pTF1->AddFrame(new TGLabel(pTF1, "IP Address:"), new TGLayoutHints(kLHintsCenterX, 2, 0, 2));
+      pTF1->AddFrame(pTextEntryIp = new TGTextEntry(pTF1, "192.168.0.10", EDT_IP), new TGLayoutHints(kLHintsCenterX));
+        pTextEntryIp->SetWidth(200);
+      pTF1->AddFrame(new TGLabel(pTF1, "IP Address:"), new TGLayoutHints(kLHintsCenterX, 2, 0, 2));
+      pTF1->AddFrame(pTextEntryMAC = new TGTextEntry(pTF1, "CE:BA:F0:FF:00:01", EDT_MAC), new TGLayoutHints(kLHintsCenterX));
+        pTextEntryMAC->SetWidth(200);
   }
 
   virtual Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t)
@@ -45,6 +54,10 @@ public:
               UpdateFirmware();
               break;
 
+            case BTN_ALERTFEB_SET_IP:
+              SetIp();
+              break;
+
             default:
               printf("button id %d pressed\n", (int)parm1);
               break;
@@ -54,6 +67,90 @@ public:
       break;
     }
     return kTRUE;
+  }
+
+  void SetIp()
+  {
+    unsigned int ip[4] = {192,168,0,10};
+    unsigned int mac[6] = {0xCE,0xBA,0xF0,0xFF,0x00,0x01};
+
+    sprintf((char *)pTextEntryIp->GetText(), "%d.%d.%d.%d", &ip[0],&ip[1],&ip[2],&ip[3]);
+    sprintf((char *)pTextEntryMAC->GetText(),"%02X:%02X:%02X:%02X:%02X:%02X", &mac[0],&mac[1],&mac[2],&mac[3],&mac[4],&mac[5]);
+
+    unsigned char buf[256];
+    memset(buf, 0xff, sizeof(buf));
+    // Signature byte
+    buf[0]  = 0xA5;
+    // IP address
+    buf[1]  = ip[3];
+    buf[2]  = ip[2];
+    buf[3]  = ip[1];
+    buf[4]  = ip[0];
+    // Gateway address
+    buf[5]  = ip[3];
+    buf[6]  = ip[2];
+    buf[7]  = ip[1];
+    buf[8]  = 0;
+    // MAC address
+    buf[9]  = mac[0];
+    buf[10] = mac[1];
+    buf[11] = mac[2];
+    buf[12] = mac[3];
+    buf[13] = mac[4];
+    buf[14] = mac[5];
+
+    if(!flash_IsValid())
+    {
+      printf("Invalid flash chip detected...aborting\n");
+      return;
+    }
+
+    unsigned int addr = 0x1FF0000;
+    flash_Cmd(FLASH_CMD_WREN);
+    flash_Cmd(FLASH_CMD_4BYTE_EN);
+    printf("%s: Erasing sector @ 0x%08X\n", __func__, addr);
+    flash_Cmd(FLASH_CMD_WREN);
+    flash_CmdAddr(FLASH_CMD_ERASE64K, addr);
+
+    int i = 0;
+    while(1)
+    {
+      if(!(flash_GetStatus() & 0x1))
+        break;
+      usleep(16000);
+      if(i == 60+6) /* 1000ms maximum sector erase time */
+      {
+        printf("%s: ERROR: failed to erase flash\n", __func__);
+        flash_Cmd(FLASH_CMD_WREN);
+        flash_Cmd(FLASH_CMD_4BYTE_DIS);
+        return;
+      }
+      i++;
+    }
+
+    // Program 256 byte page
+    flash_Cmd(FLASH_CMD_WREN);
+    flash_CmdAddrData(FLASH_CMD_WRPAGE, addr, buf, 256);
+
+    i = 0;
+    while(1)
+    {
+      if(!(flash_GetStatus() & 0x1)) // slow call over ethernet (>>10us per call)
+        break;
+      if(i == 300) /* 3ms maximum page program time  */
+      {
+        printf("%s: ERROR: failed to erase flash\n", __func__);
+        flash_Cmd(FLASH_CMD_WREN);
+        flash_Cmd(FLASH_CMD_4BYTE_DIS);
+        return;
+      }
+      i++;
+    }
+
+    flash_Cmd(FLASH_CMD_WREN);
+    flash_Cmd(FLASH_CMD_4BYTE_DIS);
+
+    printf("%s: Flash memory successfully updated with IP address", __func__);
   }
 
   void UpdateFirmware()
@@ -404,12 +501,17 @@ public:
 private:
   enum GUI_IDs
   {
-    BTN_ALERTFEB_FIRMWARE_UPDATE
+    BTN_ALERTFEB_FIRMWARE_UPDATE,
+    BTN_ALERTFEB_SET_IP,
+    EDT_IP,
+    EDT_MAC
   };
 
   ALERTFEB_Regs       *pRegs;
 
   ModuleFrame         *pM;
+  TGTextEntry         *pTextEntryIp;
+  TGTextEntry         *pTextEntryMAC;
 };
 
 #endif
