@@ -86,11 +86,16 @@ public:
     buf[2]  = ip[2];
     buf[3]  = ip[1];
     buf[4]  = ip[0];
+    // IP mask
+    buf[1]  = 0;
+    buf[2]  = 255;
+    buf[3]  = 255;
+    buf[4]  = 255;
     // Gateway address
-    buf[5]  = ip[3];
+    buf[5]  = 0;
     buf[6]  = ip[2];
     buf[7]  = ip[1];
-    buf[8]  = 0;
+    buf[8]  = ip[0];
     // MAC address
     buf[9]  = mac[0];
     buf[10] = mac[1];

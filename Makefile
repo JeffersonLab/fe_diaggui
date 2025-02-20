@@ -28,6 +28,7 @@ CFLAGS			= -O2 -fno-exceptions -Wno-int-to-pointer-cast -fPIC -I/usr/include\
 			-I./src/SSP_MPD \
 			-I./src/TID \
 			-I./src/V1495Pulser \
+			-I./src/V1495LAD \
 			-I./src/VSCM \
 			-I./src/FADCScalers_HPS \
 			-I./src/RICH \
