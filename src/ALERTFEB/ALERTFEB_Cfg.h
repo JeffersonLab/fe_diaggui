@@ -67,7 +67,7 @@ public:
             case BTN_ALERTFEB_READ_CFG:
               flash_FirmwareReadConfig();
               break;
-            
+
             case BTN_ALERTFEB_RETRY:
               flash_retry();
               break;
@@ -208,7 +208,7 @@ public:
       }
     }
   }
-  
+
   void flash_retry()
   {
     pM->WriteReg32(&pRegs->Clk.SpiCtrl, 0x800);
@@ -230,7 +230,7 @@ public:
 
     pM->WriteReg32(&pRegs->Clk.SpiCtrl, data | 0x400);
 
-    if(do_read || (no_read_cnt>50))
+    if(do_read || (no_read_cnt>10))
     {
       for(i = 0; i < 1000; i++)
       {

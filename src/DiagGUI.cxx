@@ -18,6 +18,7 @@
 #include "GTP_HPSModule.h"
 #include "VTP_HPSModule.h"
 #include "V1495PulserModule.h"
+#include "V1495LADModule.h"
 #include "FADCScalers_HPSModule.h"
 #include "RICHModule.h"
 #include "vetroc_module.h"
@@ -327,6 +328,8 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, char *param
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_HPSModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_V1495_PULSER", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new V1495PulserModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+			else if(!stricmp("MOD_TYPE_V1495LAD", paramB))
+				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new V1495LADModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_RICH", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new RICHModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_VETROC", paramB))
