@@ -26,10 +26,13 @@ public:
       pTF1->AddFrame(pB = new TGTextButton(pTF1, "SetIp", BTN_ALERTFEB_SET_IP), new TGLayoutHints(kLHintsCenterX));
         pB->SetWidth(200);
         pB->Associate(this);
+      pTF1->AddFrame(pB = new TGTextButton(pTF1, "ReadCfg", BTN_ALERTFEB_READ_CFG), new TGLayoutHints(kLHintsCenterX));
+        pB->SetWidth(200);
+        pB->Associate(this);
       pTF1->AddFrame(new TGLabel(pTF1, "IP Address:"), new TGLayoutHints(kLHintsCenterX, 2, 0, 2));
       pTF1->AddFrame(pTextEntryIp = new TGTextEntry(pTF1, "192.168.0.10", EDT_IP), new TGLayoutHints(kLHintsCenterX));
         pTextEntryIp->SetWidth(200);
-      pTF1->AddFrame(new TGLabel(pTF1, "IP Address:"), new TGLayoutHints(kLHintsCenterX, 2, 0, 2));
+      pTF1->AddFrame(new TGLabel(pTF1, "MAC Address:"), new TGLayoutHints(kLHintsCenterX, 2, 0, 2));
       pTF1->AddFrame(pTextEntryMAC = new TGTextEntry(pTF1, "CE:BA:F0:FF:00:01", EDT_MAC), new TGLayoutHints(kLHintsCenterX));
         pTextEntryMAC->SetWidth(200);
   }
@@ -58,6 +61,10 @@ public:
               SetIp();
               break;
 
+            case BTN_ALERTFEB_READ_CFG:
+              flash_FirmwareReadConfig();
+              break;
+
             default:
               printf("button id %d pressed\n", (int)parm1);
               break;
@@ -73,9 +80,15 @@ public:
   {
     unsigned int ip[4] = {192,168,0,10};
     unsigned int mac[6] = {0xCE,0xBA,0xF0,0xFF,0x00,0x01};
+    char *str;
 
-    sprintf((char *)pTextEntryIp->GetText(), "%d.%d.%d.%d", &ip[0],&ip[1],&ip[2],&ip[3]);
-    sprintf((char *)pTextEntryMAC->GetText(),"%02X:%02X:%02X:%02X:%02X:%02X", &mac[0],&mac[1],&mac[2],&mac[3],&mac[4],&mac[5]);
+    str = strdup(pTextEntryIp->GetText());
+    sscanf(str, "%d.%d.%d.%d", &ip[0],&ip[1],&ip[2],&ip[3]);
+    free(str);
+
+    str = strdup(pTextEntryMAC->GetText());
+    sscanf(str,"%02X:%02X:%02X:%02X:%02X:%02X", &mac[0],&mac[1],&mac[2],&mac[3],&mac[4],&mac[5]);
+    free(str);
 
     unsigned char buf[256];
     memset(buf, 0xff, sizeof(buf));
@@ -97,12 +110,17 @@ public:
     buf[7]  = ip[1];
     buf[8]  = ip[0];
     // MAC address
-    buf[9]  = mac[0];
-    buf[10] = mac[1];
-    buf[11] = mac[2];
-    buf[12] = mac[3];
-    buf[13] = mac[4];
-    buf[14] = mac[5];
+    buf[9]  = mac[5];
+    buf[10] = mac[4];
+    buf[11] = mac[3];
+    buf[12] = mac[2];
+    buf[13] = mac[1];
+    buf[14] = mac[0];
+
+    printf("ip=%d.%d.%d.%d, mac=%02X:%02X:%02X:%02X:%02X:%02X\n",
+        ip[0],ip[1],ip[2],ip[3],
+        mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]
+      );
 
     if(!flash_IsValid())
     {
@@ -307,6 +325,7 @@ public:
     if(result != kTRUE)
     {
       printf("failed.\n");
+      fflush(stdout);
       return result;
     }
     else
@@ -317,10 +336,11 @@ public:
     if(result != kTRUE)
     {
       printf("failed.\n");
+      fflush(stdout);
       return result;
     }
-    else
-      printf("ok.\n");
+    printf("ok.\n");
+    fflush(stdout);
 
     return kTRUE;
   }
@@ -353,6 +373,7 @@ public:
       {
         erase_first = 0;
         printf("%s: Erasing sector @ 0x%08X\n", __func__, addr);
+        fflush(stdout);
 
         flash_Cmd(FLASH_CMD_WREN);
         flash_CmdAddr(FLASH_CMD_ERASE64K, addr);
@@ -398,6 +419,35 @@ public:
       memset(buf, 0xff, 256);
       addr+= 256;
     }
+    flash_Cmd(FLASH_CMD_WREN);
+    flash_Cmd(FLASH_CMD_4BYTE_DIS);
+
+    return kTRUE;
+  }
+  
+  int flash_FirmwareReadConfig()
+  {
+    int i;
+
+    if(flash_IsValid() != kTRUE)
+      return kFALSE;
+
+    flash_Cmd(FLASH_CMD_WREN);
+    flash_Cmd(FLASH_CMD_4BYTE_EN);
+
+    flash_SelectSpi(1);
+    flash_TransferSpi(FLASH_CMD_RD,0);  // continuous array read
+    flash_TransferSpi(0x01,0);
+    flash_TransferSpi(0xFF,0);
+    flash_TransferSpi(0x00,0);
+    flash_TransferSpi(0x00,0);
+
+    printf("\nConfig: ");
+    for(i = 0; i < 32; i++)
+      printf("%02X ", (unsigned int)flash_TransferSpi(0xFF,1));
+    printf("\n");
+
+    flash_SelectSpi(0);
     flash_Cmd(FLASH_CMD_WREN);
     flash_Cmd(FLASH_CMD_4BYTE_DIS);
 
@@ -508,6 +558,7 @@ private:
   {
     BTN_ALERTFEB_FIRMWARE_UPDATE,
     BTN_ALERTFEB_SET_IP,
+    BTN_ALERTFEB_READ_CFG,
     EDT_IP,
     EDT_MAC
   };

@@ -46,6 +46,7 @@ CFLAGS			= -O2 -fno-exceptions -Wno-int-to-pointer-cast -fPIC -I/usr/include\
 			-I./src/VTP_ROC \
 			-I./src/SSP_GT \
       -I./src/ALERTFEB \
+      -I./src/VTP_MOLLERCNT \
 			-L. -DJLAB \
 			`root-config --cflags`
 LINKLIBS		= -lrt \
