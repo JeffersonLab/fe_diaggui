@@ -26,6 +26,7 @@ CFLAGS			= -O2 -fno-exceptions -Wno-int-to-pointer-cast -fPIC -I/usr/include\
 			-I./src/SSP \
 			-I./src/SSP_HPS \
 			-I./src/SSP_MPD \
+			-I./src/SSP_SBSEHCAL \
 			-I./src/TID \
 			-I./src/V1495Pulser \
 			-I./src/V1495LAD \
@@ -45,6 +46,7 @@ CFLAGS			= -O2 -fno-exceptions -Wno-int-to-pointer-cast -fPIC -I/usr/include\
 			-I./src/VTP_HPS \
 			-I./src/VTP_ROC \
 			-I./src/SSP_GT \
+			-I./src/VTP_SBSECAL \
       -I./src/ALERTFEB \
       -I./src/VTP_MOLLERCNT \
 			-L. -DJLAB \
@@ -75,5 +77,8 @@ $(PROGS): $(OBJS) $(SRC) $(HEADERS) Makefile
 
 nps_vtp_scalers: ./src/main/nps_vtp_scalers.cc
 	$(CC) $(CFLAGS) ./src/main/nps_vtp_scalers.cc -o nps_vtp_scalers $(LINKLIBS)
+
+sbsecal_vtp_scalers: ./src/main/sbsecal_vtp_scalers.cc
+	$(CC) $(CFLAGS) ./src/main/sbsecal_vtp_scalers.cc -o sbsecal_vtp_scalers $(LINKLIBS)
 
 .PHONY: all clean distclean

@@ -51,7 +51,7 @@ public:
     // Cluster Position
     pC->GetCanvas()->cd(1);
     pC->GetCanvas()->cd(1)->SetLogz(1);
-    pH_Position = new TH2F("ClusterPosition","ClusterPosition;COL;ROW",12,0.0,12.0,24,0.0,24.0);
+    pH_Position = new TH2F("ClusterPosition","ClusterPosition;COL;ROW",12,1.0,13.0,24,1.0,25.0);
     pH_Position->SetStats(0);
     pH_Position->GetXaxis()->CenterLabels();
     pH_Position->GetXaxis()->CenterTitle();
@@ -179,6 +179,10 @@ public:
 
     // cluster position histogram
     pM->BlkReadReg32((volatile unsigned int *)(pM->BaseAddr+0x4814), &vtp_pos[0], 512, CRATE_MSG_FLAGS_NOADRINC);
+for(int i=0;i<512;i++)
+{
+  printf("vtp_pos[%d]=%u\n", i, vtp_pos[i]);
+}
 
     // reference time scaler
     pM->BlkReadReg32((volatile unsigned int *)(pM->BaseAddr+0x4820), &vtp_ref);
@@ -226,13 +230,13 @@ public:
     pH_Position->Reset("");
     pH_Position->SetMaximum(1000000.0);
     pH_Position->SetMinimum(0.0);
-    for(int ix=0;ix<12;ix++)
-    for(int iy=0;iy<24;iy++)
+//    for(int ix=0;ix<12;ix++)
+//    for(int iy=0;iy<24;iy++)
     for(int i=0;i<512;i++)
     {
       int row=(i>>0)&0x1F;
       int col=(i>>5)&0xF;
-      if((row<24) && (col<12))
+      if((row>=1) && (row<=24) && (col>=1) && (col<=12))
         pH_Position->Fill(col,row,vtp_pos[i]);
     }
 

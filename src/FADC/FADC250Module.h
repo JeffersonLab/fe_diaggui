@@ -25,7 +25,7 @@ public:
 //		tFrame = pTabs->AddTab("Status");		tFrame->AddFrame(pStatus = new FADC250_Status(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("GTX");			tFrame->AddFrame(new FADC250_GTX(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("TrgHist");		tFrame->AddFrame(new FADC250_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-		tFrame = pTabs->AddTab("VXS Scope");	tFrame->AddFrame(new FADC250_SerialScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+//		tFrame = pTabs->AddTab("VXS Scope");	tFrame->AddFrame(new FADC250_SerialScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pTabs->AddTab("Ch Scope");	tFrame->AddFrame(new FADC250_AdcScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
 
@@ -335,12 +335,8 @@ public:
 					{"ptw_last_adr",			REGMEM_DESC_FLAGS_UINT,		{0x014C, 0, 32, 32}},
 					{"ptw_max_buf",			REGMEM_DESC_FLAGS_UINT,		{0x0150, 0, 32, 32}},
 					{"adc_test_data",			REGMEM_DESC_FLAGS_HEX,		{0x0154, 0, 32, 32}},
-					{"gtx_ctrl",				REGMEM_DESC_FLAGS_HEX,		{0x0500, 0, 32, 32}},
-					{"gtx_ctrl_tile",			REGMEM_DESC_FLAGS_HEX,		{0x0504, 0, 32, 32}},
-					{"gtx_status",				REGMEM_DESC_FLAGS_HEX,		{0x0508, 0, 32, 32}},
-					{"gtx_err",					REGMEM_DESC_FLAGS_HEX,		{0x0514, 0, 32, 32}},
-					{"gtx_drp_ctrl",			REGMEM_DESC_FLAGS_HEX,		{0x050C, 0, 32, 32}},
-					{"gtx_drp_status",		REGMEM_DESC_FLAGS_HEX,		{0x0510, 0, 32, 32}},
+					{"mgt_ctrl",				REGMEM_DESC_FLAGS_HEX,		{0x00D4, 0, 32, 32}},
+					{"mgt_status",				REGMEM_DESC_FLAGS_HEX,		{0x00D0, 0, 32, 32}},
 				{NULL, 0}
 		};
 		pRegEditor->AddSet(regs, sizeof(regs)/sizeof(regs[0]));

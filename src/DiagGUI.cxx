@@ -32,9 +32,11 @@
 #include "VTP_FADCCOINModule.h"
 #include "VTP_EC_Module.h"
 #include "VTP_GT_Module.h"
+#include "VTP_SBSECALModule.h"
 #include "VTP_ROCModule.h"
 #include "SSP_GT_Module.h"
 #include "ALERTFEB_Module.h"
+#include "SSP_SBSEHCALModule.h"
 
 #define TIMER_CAPTURE_POLLRATE	100
 
@@ -362,6 +364,8 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, char *param
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_ROCModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_ALERTFEB", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new ALERTFEB_Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+      else if(!stricmp("MOD_TYPE_VTP_SBSECAL", paramB))
+        pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_SBSECALModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else
 			{
 				printf("Error: Unknown module type: %s\n", paramB);

@@ -5,7 +5,7 @@
 #include "ModuleFrame.h"
 
 #define HOST_COUNT_MAX		20
-#define MODULE_COUNT_MAX	100
+#define MODULE_COUNT_MAX	200
 
 #define EVENT_BUFFER_COUNT	25
 

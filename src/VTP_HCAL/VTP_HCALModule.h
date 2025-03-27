@@ -4,6 +4,7 @@
 #include "RootHeader.h"
 #include "ModuleFrame.h"
 #include "VTP_HCAL_TrgHist.h"
+#include "VTP_HCAL_Scope.h"
 
 class VTP_HCALModule : public ModuleFrame
 {
@@ -15,6 +16,7 @@ public:
     TGCompositeFrame *tFrame;
     AddFrame(pTabs = new TGTab(this), new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX | kLHintsExpandY));
     tFrame = pTabs->AddTab("TrgHist");   tFrame->AddFrame(new VTP_HCAL_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+    tFrame = pTabs->AddTab("Scope");     tFrame->AddFrame(new VTP_HCAL_Scope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
     strSlotIdentifier.Form("SWA");
   }
@@ -97,6 +99,10 @@ public:
           {"Sl18,PP12",       REGMEM_DESC_FLAGS_HEX, {0x1B00,  0, 32, 32}},
           {"Sl19,PP14",       REGMEM_DESC_FLAGS_HEX, {0x1D00,  0, 32, 32}},
           {"Sl20,PP16",       REGMEM_DESC_FLAGS_HEX, {0x1F00,  0, 32, 32}},
+          {"Fiber0",          REGMEM_DESC_FLAGS_HEX, {0x2000,  0, 32, 32}},
+          {"Fiber1",          REGMEM_DESC_FLAGS_HEX, {0x2100,  0, 32, 32}},
+          {"Fiber2",          REGMEM_DESC_FLAGS_HEX, {0x2200,  0, 32, 32}},
+          {"Fiber3",          REGMEM_DESC_FLAGS_HEX, {0x2300,  0, 32, 32}},
         {NULL, 0},
 
 	      {"Status", 0},
@@ -116,6 +122,10 @@ public:
           {"Sl18,PP12",       REGMEM_DESC_FLAGS_HEX, {0x1B04,  0, 32, 32}},
           {"Sl19,PP14",       REGMEM_DESC_FLAGS_HEX, {0x1D04,  0, 32, 32}},
           {"Sl20,PP16",       REGMEM_DESC_FLAGS_HEX, {0x1F04,  0, 32, 32}},
+          {"Fiber0",          REGMEM_DESC_FLAGS_HEX, {0x2010,  0, 32, 32}},
+          {"Fiber1",          REGMEM_DESC_FLAGS_HEX, {0x2110,  0, 32, 32}},
+          {"Fiber2",          REGMEM_DESC_FLAGS_HEX, {0x2210,  0, 32, 32}},
+          {"Fiber3",          REGMEM_DESC_FLAGS_HEX, {0x2310,  0, 32, 32}},
         {NULL, 0},
 
 	      {"SerdesCounters", 0},
@@ -262,9 +272,9 @@ public:
       {NULL, 0},
 
       {"Cluster", 0},
-        {"ClusterThreshold",    REGMEM_DESC_FLAGS_UINT,   {0x4800, 0,16,32}},
+//      {"ClusterThreshold",    REGMEM_DESC_FLAGS_UINT,   {0x4800, 0,16,32}},
         {"SeedThreshold",       REGMEM_DESC_FLAGS_UINT,   {0x4800,16,13,32}},
-        {"HitDT",               REGMEM_DESC_FLAGS_UINT,   {0x4800, 3,29,32}},
+        {"HitDT",               REGMEM_DESC_FLAGS_UINT,   {0x4800,29, 3,32}},
       {NULL, 0},
 
       {"TriggerBits", 0},

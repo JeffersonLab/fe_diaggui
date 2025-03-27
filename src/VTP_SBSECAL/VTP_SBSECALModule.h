@@ -4,6 +4,7 @@
 #include "RootHeader.h"
 #include "ModuleFrame.h"
 #include "VTP_SBSECAL_Scope.h"
+#include "VTP_SBSECAL_FiberScope.h"
 
 class VTP_SBSECALModule : public ModuleFrame
 {
@@ -16,6 +17,11 @@ public:
     AddFrame(pTabs = new TGTab(this), new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX | kLHintsExpandY));
 
     tFrame = pTabs->AddTab("Scope");      tFrame->AddFrame(new VTP_SBSECAL_Scope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+    for(int i=0;i<8;i++)
+    {
+      tFrame = pTabs->AddTab(Form("Fiber%dScope",i));
+      tFrame->AddFrame(new VTP_SBSECAL_FiberScope(tFrame, this, i), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+    }
 
     strSlotIdentifier.Form("SWA");
   }
@@ -61,6 +67,26 @@ public:
         {NULL, 0},
       {NULL, 0},
 
+      {"EbioTx0", 0},
+        {"Ctrl",                REGMEM_DESC_FLAGS_HEX, {0x8900, 0,32,32}},
+        {"Status",              REGMEM_DESC_FLAGS_HEX, {0x8904, 0,32,32}},
+      {NULL, 0},
+
+      {"EbioTx1", 0},
+        {"Ctrl",                REGMEM_DESC_FLAGS_HEX, {0x8980, 0,32,32}},
+        {"Status",              REGMEM_DESC_FLAGS_HEX, {0x8984, 0,32,32}},
+      {NULL, 0},
+
+      {"EbioRx0", 0},
+        {"Ctrl",                REGMEM_DESC_FLAGS_HEX, {0x2000-0x10000, 0,32,32}},
+        {"Status",              REGMEM_DESC_FLAGS_HEX, {0x2004-0x10000, 0,32,32}},
+      {NULL, 0},
+
+      {"EbioRx1", 0},
+        {"Ctrl",                REGMEM_DESC_FLAGS_HEX, {0x2100-0x10000, 0,32,32}},
+        {"Status",              REGMEM_DESC_FLAGS_HEX, {0x2104-0x10000, 0,32,32}},
+      {NULL, 0},
+
       {"PayloadDecoder", 0},
         {"RXLatency", 0},
           {"Sl3,PP15",        REGMEM_DESC_FLAGS_UINT, {0x1E34, 16, 12, 32}},
@@ -98,25 +124,33 @@ public:
           {"Sl18,PP12",       REGMEM_DESC_FLAGS_HEX, {0x1B00,  0, 32, 32}},
           {"Sl19,PP14",       REGMEM_DESC_FLAGS_HEX, {0x1D00,  0, 32, 32}},
           {"Sl20,PP16",       REGMEM_DESC_FLAGS_HEX, {0x1F00,  0, 32, 32}},
+          {"Fiber0",          REGMEM_DESC_FLAGS_HEX, {0x2000,  0, 32, 32}},
+          {"Fiber1",          REGMEM_DESC_FLAGS_HEX, {0x2100,  0, 32, 32}},
+          {"Fiber2",          REGMEM_DESC_FLAGS_HEX, {0x2200,  0, 32, 32}},
+          {"Fiber3",          REGMEM_DESC_FLAGS_HEX, {0x2300,  0, 32, 32}},
         {NULL, 0},
 
         {"Status", 0},
-          {"Sl3,PP15",        REGMEM_DESC_FLAGS_HEX, {0x1E04,  0, 32, 32}},
-          {"Sl4,PP13",        REGMEM_DESC_FLAGS_HEX, {0x1C04,  0, 32, 32}},
-          {"Sl5,PP11",        REGMEM_DESC_FLAGS_HEX, {0x1A04,  0, 32, 32}},
-          {"Sl6,PP9",         REGMEM_DESC_FLAGS_HEX, {0x1804,  0, 32, 32}},
-          {"Sl7,PP7",         REGMEM_DESC_FLAGS_HEX, {0x1604,  0, 32, 32}},
-          {"Sl8,PP5",         REGMEM_DESC_FLAGS_HEX, {0x1404,  0, 32, 32}},
-          {"Sl9,PP3",         REGMEM_DESC_FLAGS_HEX, {0x1204,  0, 32, 32}},
-          {"Sl10,PP1",        REGMEM_DESC_FLAGS_HEX, {0x1004,  0, 32, 32}},
-          {"Sl13,PP2",        REGMEM_DESC_FLAGS_HEX, {0x1104,  0, 32, 32}},
-          {"Sl14,PP4",        REGMEM_DESC_FLAGS_HEX, {0x1304,  0, 32, 32}},
-          {"Sl15,PP6",        REGMEM_DESC_FLAGS_HEX, {0x1504,  0, 32, 32}},
-          {"Sl16,PP8",        REGMEM_DESC_FLAGS_HEX, {0x1704,  0, 32, 32}},
-          {"Sl17,PP10",       REGMEM_DESC_FLAGS_HEX, {0x1904,  0, 32, 32}},
-          {"Sl18,PP12",       REGMEM_DESC_FLAGS_HEX, {0x1B04,  0, 32, 32}},
-          {"Sl19,PP14",       REGMEM_DESC_FLAGS_HEX, {0x1D04,  0, 32, 32}},
-          {"Sl20,PP16",       REGMEM_DESC_FLAGS_HEX, {0x1F04,  0, 32, 32}},
+          {"Sl3,PP15",        REGMEM_DESC_FLAGS_HEX, {0x1E10,  0, 32, 32}},
+          {"Sl4,PP13",        REGMEM_DESC_FLAGS_HEX, {0x1C10,  0, 32, 32}},
+          {"Sl5,PP11",        REGMEM_DESC_FLAGS_HEX, {0x1A10,  0, 32, 32}},
+          {"Sl6,PP9",         REGMEM_DESC_FLAGS_HEX, {0x1810,  0, 32, 32}},
+          {"Sl7,PP7",         REGMEM_DESC_FLAGS_HEX, {0x1610,  0, 32, 32}},
+          {"Sl8,PP5",         REGMEM_DESC_FLAGS_HEX, {0x1410,  0, 32, 32}},
+          {"Sl9,PP3",         REGMEM_DESC_FLAGS_HEX, {0x1210,  0, 32, 32}},
+          {"Sl10,PP1",        REGMEM_DESC_FLAGS_HEX, {0x1010,  0, 32, 32}},
+          {"Sl13,PP2",        REGMEM_DESC_FLAGS_HEX, {0x1110,  0, 32, 32}},
+          {"Sl14,PP4",        REGMEM_DESC_FLAGS_HEX, {0x1310,  0, 32, 32}},
+          {"Sl15,PP6",        REGMEM_DESC_FLAGS_HEX, {0x1510,  0, 32, 32}},
+          {"Sl16,PP8",        REGMEM_DESC_FLAGS_HEX, {0x1710,  0, 32, 32}},
+          {"Sl17,PP10",       REGMEM_DESC_FLAGS_HEX, {0x1910,  0, 32, 32}},
+          {"Sl18,PP12",       REGMEM_DESC_FLAGS_HEX, {0x1B10,  0, 32, 32}},
+          {"Sl19,PP14",       REGMEM_DESC_FLAGS_HEX, {0x1D10,  0, 32, 32}},
+          {"Sl20,PP16",       REGMEM_DESC_FLAGS_HEX, {0x1F10,  0, 32, 32}},
+          {"Fiber0",          REGMEM_DESC_FLAGS_HEX, {0x2010,  0, 32, 32}},
+          {"Fiber1",          REGMEM_DESC_FLAGS_HEX, {0x2110,  0, 32, 32}},
+          {"Fiber2",          REGMEM_DESC_FLAGS_HEX, {0x2210,  0, 32, 32}},
+          {"Fiber3",          REGMEM_DESC_FLAGS_HEX, {0x2310,  0, 32, 32}},
         {NULL, 0},
 
         {"SerdesCounters", 0},
@@ -263,12 +297,22 @@ public:
       {NULL, 0},
 
       {"Cosmic", 0},
-        {"HIT_DT",              REGMEM_DESC_FLAGS_UINT, {0xB400, 0, 3, 32}},
+        {"HIT_DT",              REGMEM_DESC_FLAGS_UINT, {0xB400,12, 3, 32}},
+        {"TRG_WIDTH",           REGMEM_DESC_FLAGS_UINT, {0xB400, 0, 8, 32}},
+        {"ROW_THR",             REGMEM_DESC_FLAGS_UINT, {0xB400, 8, 4, 32}},
+/*      {"HIT_DT",              REGMEM_DESC_FLAGS_UINT, {0xB400, 0, 3, 32}},
         {"SMO_DT",              REGMEM_DESC_FLAGS_UINT, {0xB400, 4, 3, 32}},
         {"NSMO_THRESHOLD",      REGMEM_DESC_FLAGS_UINT, {0xB400, 8, 2, 32}},
         {"MLTP_THRESHOLD_1",    REGMEM_DESC_FLAGS_UINT, {0xB400,12, 4, 32}},
         {"MLTP_THRESHOLD_2",    REGMEM_DESC_FLAGS_UINT, {0xB400,16, 4, 32}},
-        {"MLTP_THRESHOLD_3",    REGMEM_DESC_FLAGS_UINT, {0xB400,20, 4, 32}},
+        {"MLTP_THRESHOLD_3",    REGMEM_DESC_FLAGS_UINT, {0xB400,20, 4, 32}},*/
+      {NULL, 0},
+      
+      {"Cluster", 0},
+        {"HIT_DT",              REGMEM_DESC_FLAGS_UINT, {0xB500,16, 3, 32}},
+        {"NHIT_MIN",            REGMEM_DESC_FLAGS_UINT, {0xB500,24, 4, 32}},
+        {"SEED_THR",            REGMEM_DESC_FLAGS_UINT, {0xB500, 0,13, 32}},
+        {"TRG_WIDTH",           REGMEM_DESC_FLAGS_UINT, {0xB504, 0, 8, 32}},
       {NULL, 0},
 
       {"TriggerBits", 0},
