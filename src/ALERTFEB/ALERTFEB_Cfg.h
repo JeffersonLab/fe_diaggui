@@ -29,6 +29,9 @@ public:
       pTF1->AddFrame(pB = new TGTextButton(pTF1, "ReadCfg", BTN_ALERTFEB_READ_CFG), new TGLayoutHints(kLHintsCenterX));
         pB->SetWidth(200);
         pB->Associate(this);
+      pTF1->AddFrame(pB = new TGTextButton(pTF1, "Retry", BTN_ALERTFEB_RETRY), new TGLayoutHints(kLHintsCenterX));
+        pB->SetWidth(200);
+        pB->Associate(this);
       pTF1->AddFrame(new TGLabel(pTF1, "IP Address:"), new TGLayoutHints(kLHintsCenterX, 2, 0, 2));
       pTF1->AddFrame(pTextEntryIp = new TGTextEntry(pTF1, "192.168.0.10", EDT_IP), new TGLayoutHints(kLHintsCenterX));
         pTextEntryIp->SetWidth(200);
@@ -65,6 +68,10 @@ public:
               flash_FirmwareReadConfig();
               break;
 
+            case BTN_ALERTFEB_RETRY:
+              flash_retry();
+              break;
+
             default:
               printf("button id %d pressed\n", (int)parm1);
               break;
@@ -99,7 +106,7 @@ public:
     buf[2]  = ip[2];
     buf[3]  = ip[1];
     buf[4]  = ip[0];
-    // IP mask
+    // IP Mask
     buf[5]  = 0;
     buf[6]  = 255;
     buf[7]  = 255;
@@ -174,6 +181,7 @@ public:
     flash_Cmd(FLASH_CMD_4BYTE_DIS);
 
     printf("%s: Flash memory successfully updated with IP address", __func__);
+    fflush(stdout);
   }
 
   void UpdateFirmware()
@@ -199,6 +207,11 @@ public:
         }
       }
     }
+  }
+
+  void flash_retry()
+  {
+    pM->WriteReg32(&pRegs->Clk.SpiCtrl, 0x800);
   }
 
   void flash_SelectSpi(int sel)
@@ -429,11 +442,12 @@ public:
   {
     int i;
 
-    if(flash_IsValid() != kTRUE)
-      return kFALSE;
+//    if(flash_IsValid() != kTRUE)
+//      return kFALSE;
 
-    flash_Cmd(FLASH_CMD_WREN);
-    flash_Cmd(FLASH_CMD_4BYTE_EN);
+    // IP Config
+//    flash_Cmd(FLASH_CMD_WREN);
+//    flash_Cmd(FLASH_CMD_4BYTE_EN);
 
     flash_SelectSpi(1);
     flash_TransferSpi(FLASH_CMD_RD,0);  // continuous array read
@@ -448,8 +462,31 @@ public:
     printf("\n");
 
     flash_SelectSpi(0);
-    flash_Cmd(FLASH_CMD_WREN);
-    flash_Cmd(FLASH_CMD_4BYTE_DIS);
+//    flash_Cmd(FLASH_CMD_WREN);
+//    flash_Cmd(FLASH_CMD_4BYTE_DIS);
+
+    // Bitstream
+//    flash_Cmd(FLASH_CMD_WREN);
+//    flash_Cmd(FLASH_CMD_4BYTE_EN);
+
+    flash_SelectSpi(1);
+    flash_TransferSpi(FLASH_CMD_RD,0);  // continuous array read
+    flash_TransferSpi(0x00,0);
+    flash_TransferSpi(0x00,0);
+    flash_TransferSpi(0x00,0);
+    flash_TransferSpi(0x00,0);
+
+    printf("\nBitstream:\n");
+    for(i = 0; i < 512; i++)
+    {
+      printf("%02X ", (unsigned int)flash_TransferSpi(0xFF,1));
+      if((i%16)==15) printf("\n");
+    }
+    printf("\n");
+
+    flash_SelectSpi(0);
+//    flash_Cmd(FLASH_CMD_WREN);
+//    flash_Cmd(FLASH_CMD_4BYTE_DIS);
 
     return kTRUE;
   }
@@ -559,6 +596,7 @@ private:
     BTN_ALERTFEB_FIRMWARE_UPDATE,
     BTN_ALERTFEB_SET_IP,
     BTN_ALERTFEB_READ_CFG,
+    BTN_ALERTFEB_RETRY,
     EDT_IP,
     EDT_MAC
   };
