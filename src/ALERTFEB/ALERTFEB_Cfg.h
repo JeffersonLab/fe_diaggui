@@ -100,22 +100,22 @@ public:
     buf[3]  = ip[1];
     buf[4]  = ip[0];
     // IP mask
-    buf[1]  = 0;
-    buf[2]  = 255;
-    buf[3]  = 255;
-    buf[4]  = 255;
-    // Gateway address
     buf[5]  = 0;
-    buf[6]  = ip[2];
-    buf[7]  = ip[1];
-    buf[8]  = ip[0];
+    buf[6]  = 255;
+    buf[7]  = 255;
+    buf[8]  = 255;
+    // Gateway address
+    buf[9]  = 0;
+    buf[10] = ip[2];
+    buf[11] = ip[1];
+    buf[12] = ip[0];
     // MAC address
-    buf[9]  = mac[5];
-    buf[10] = mac[4];
-    buf[11] = mac[3];
-    buf[12] = mac[2];
-    buf[13] = mac[1];
-    buf[14] = mac[0];
+    buf[13] = mac[5];
+    buf[14] = mac[4];
+    buf[15] = mac[3];
+    buf[16] = mac[2];
+    buf[17] = mac[1];
+    buf[18] = mac[0];
 
     printf("ip=%d.%d.%d.%d, mac=%02X:%02X:%02X:%02X:%02X:%02X\n",
         ip[0],ip[1],ip[2],ip[3],
