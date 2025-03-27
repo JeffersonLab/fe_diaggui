@@ -24,10 +24,18 @@ public:
   {
     static RegMemDesc regs[] = {
       {"Info", 0},
-        {"FirmwareType",        REGMEM_DESC_FLAGS_UINT,   {0x1000, 0,32,32}},
+        {"FirmwareType",        REGMEM_DESC_FLAGS_HEX,    {0x1000, 0,32,32}},
         {"VersionMaj",          REGMEM_DESC_FLAGS_UINT,   {0x1004,16,16,32}},
         {"VersionMin",          REGMEM_DESC_FLAGS_UINT,   {0x1004, 0,16,32}},
-        {"BoardID",             REGMEM_DESC_FLAGS_UINT,   {0x1008, 0,32,32}},
+        {"BoardID",             REGMEM_DESC_FLAGS_HEX,    {0x1008, 0,32,32}},
+        {"RrAddr0",             REGMEM_DESC_FLAGS_HEX,    {0x1140, 0, 9,32}},
+        {"WrAddr0",             REGMEM_DESC_FLAGS_HEX,    {0x1140,16, 9,32}},
+        {"RrAddr1",             REGMEM_DESC_FLAGS_HEX,    {0x1144, 0, 9,32}},
+        {"WrAddr1",             REGMEM_DESC_FLAGS_HEX,    {0x1144,16, 9,32}},
+        {"RrAddr2",             REGMEM_DESC_FLAGS_HEX,    {0x1148, 0, 9,32}},
+        {"WrAddr2",             REGMEM_DESC_FLAGS_HEX,    {0x1148,16, 9,32}},
+        {"RrAddr3",             REGMEM_DESC_FLAGS_HEX,    {0x114C, 0, 9,32}},
+        {"WrAddr3",             REGMEM_DESC_FLAGS_HEX,    {0x114C,16, 9,32}},
       {NULL, 0},
 
       {"TriggerBits", 0},
