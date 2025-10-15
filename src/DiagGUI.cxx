@@ -309,6 +309,8 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, char *param
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new TIDModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_FADC250", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new FADC250Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+			else if(!stricmp("MOD_TYPE_FAV3", paramB))
+				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new FAV3Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_DCRB", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new DCRBModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_DCRBSCALERS", paramB))
