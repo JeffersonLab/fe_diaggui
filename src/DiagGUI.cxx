@@ -8,6 +8,7 @@
 #include "DCRBScalersModule.h"
 #include "DSC2Module.h"
 #include "FADC250Module.h"
+#include "FAV3Module.h"
 #include "SDModule.h"
 #include "SSPModule.h"
 #include "SSP_HPSModule.h"
@@ -53,7 +54,7 @@
 	#define stricmp strcasecmp
 #endif
 
-DiagGUI::DiagGUI(const TGWindow *p, unsigned int w, unsigned int h, const char *configFile) 
+DiagGUI::DiagGUI(const TGWindow *p, unsigned int w, unsigned int h, const char *configFile)
   : TGMainFrame(p, w, h)
 {
 	SetCleanup(kDeepCleanup);
@@ -84,9 +85,9 @@ DiagGUI::DiagGUI(const TGWindow *p, unsigned int w, unsigned int h, const char *
 */
 		pFrameRight->AddFrame(pFrameModule = new TGHorizontalFrame(pFrameRight), new TGLayoutHints(kLHintsTop | kLHintsExpandX | kLHintsExpandY));
 			//pFrameModule->SetEditDisabled(kEditDisable | kEditDisableLayout);
-			
-  AddFrame(pFrameLeft = 
-	   new TGVerticalFrame(this, 150, 20, kFixedWidth), 
+
+  AddFrame(pFrameLeft =
+	   new TGVerticalFrame(this, 150, 20, kFixedWidth),
 	   new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandY));
 		pShutter = new TGShutter(pFrameLeft, kSunkenFrame);
 		DiagLoadConfigFile(configFile);
@@ -120,20 +121,20 @@ DiagGUI::PrintScreen()
 
   static TString dir("printouts");
   TGFileInfo fi;
-  const char *myfiletypes[] = 
-    { 
+  const char *myfiletypes[] =
+    {
       "All files","*",
       "PNG files","*.png",
       "GIF files","*.gif",
       "JPG files","*.jpg",
       0,
-      0 
+      0
     };
   fi.fFileTypes = myfiletypes;
   fi.fIniDir    = StrDup(dir.Data());
 
   new TGFileDialog(gClient->GetRoot(), 0, kFDSave, &fi);
-  if(fi.fFilename!=NULL) 
+  if(fi.fFilename!=NULL)
     {
       TIter iWin(gClient->GetListOfWindows());
       while ((win = (TGWindow*)iWin())) {
@@ -149,7 +150,7 @@ DiagGUI::PrintScreen()
     }
 }
 
-void 
+void
 DiagGUI::ChangeFrame(int index)
 {
 	static int prev_index=-1;
@@ -252,7 +253,7 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, char *param
       if(count >= 4) GetInt(paramD, &tcp64bit);
 
 			pCrateMsgClient[iHostCount] = new CrateMsgClient(paramB, port, tcp64bit ? true : false);
-			
+
 			if(!pCrateMsgClient[iHostCount]->IsValid())
 			{
 //	      printf("%s: INVALID!\n",__FUNCTION__);
@@ -308,6 +309,8 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, char *param
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new TIDModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_FADC250", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new FADC250Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+			else if(!stricmp("MOD_TYPE_FAV3", paramB))
+				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new FAV3Module(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_DCRB", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new DCRBModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_DCRBSCALERS", paramB))
@@ -377,7 +380,7 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, char *param
 			pModuleButton[iModuleCount] = new TGTextButton(container, str, SHUTTER_MSG_BUTTON + iModuleCount);
 			container->AddFrame(pModuleButton[iModuleCount], new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 20, 20, 5, 0));
 			pModuleButton[iModuleCount]->SetToolTipText(pModuleFrames[iModuleCount]->GetModuleFullName());
-			pModuleButton[iModuleCount]->Associate(this);				
+			pModuleButton[iModuleCount]->Associate(this);
 
 			pModuleButton[iModuleCount]->SetTextJustify(kTextLeft);
 			pModuleFrames[iModuleCount]->SetActive(kFALSE);
@@ -456,4 +459,3 @@ void DiagGUI::CloseWindow()
 	HandleDisconnect();
 	gApplication->Terminate();
 }
-
