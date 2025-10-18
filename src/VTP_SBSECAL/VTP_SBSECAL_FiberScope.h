@@ -21,15 +21,21 @@ public:
     pScope->Init(512, 0x1044+offset, 0, 0x1040+offset, 0, 0x1070+offset,5);
 
     // void AddTrace(const char *name, int height, int mode, int bitCount, int bitOffsetData, int cfgAddr, int cfgBitOffset, int valAddr, int valBitOffset)
-    pScope->AddTrace("RX_TDATA_H",   4*32+8, TRACE_MODE_DIGITAL,  32,  32,    0x104C+offset, 0,   0x1060+offset,  0);
     pScope->AddTrace("RX_TDATA_L",   4*32+8, TRACE_MODE_DIGITAL,  32,   0,    0x1048+offset, 0,   0x105C+offset,  0);
-    pScope->AddTrace("RX_TKEEP",     4* 8+8, TRACE_MODE_DIGITAL,   8, 138,    0x1058+offset, 8,   0x106C+offset,  8);
+    pScope->AddTrace("RX_TDATA_H",   4*32+8, TRACE_MODE_DIGITAL,  32,  32,    0x104C+offset, 0,   0x1060+offset,  0);
+    pScope->AddTrace("RX_TATA_L",    4*32+8, TRACE_MODE_DIGITAL,  32,  64,    0x1050+offset, 0,   0x1064+offset,  0);
+    pScope->AddTrace("RX_DATA_H",    4*32+8, TRACE_MODE_DIGITAL,  32,  96,    0x1054+offset, 0,   0x1068+offset,  0);
+    pScope->AddTrace("RX_IS_K",      4* 8+8, TRACE_MODE_DIGITAL,   8, 128,    0x1058+offset, 0,   0x106C+offset,  0);
+    pScope->AddTrace("RX_TKEEP",     4* 8+8, TRACE_MODE_DIGITAL,   8, 136,    0x1058+offset, 8,   0x106C+offset,  8);
     pScope->AddTrace("RX_TVALID",        16, TRACE_MODE_DIGITAL,   1, 144,    0x1058+offset,16,   0x106C+offset, 16);
     pScope->AddTrace("RX_TLAST",         16, TRACE_MODE_DIGITAL,   1, 145,    0x1058+offset,17,   0x106C+offset, 17);
-    pScope->AddTrace("RX_DATA_H",    4*32+8, TRACE_MODE_DIGITAL,  32,  96,    0x1054+offset, 0,   0x1068+offset,  0);
-    pScope->AddTrace("RX_TATA_L",    4*32+8, TRACE_MODE_DIGITAL,  32,  64,    0x1050+offset, 0,   0x1064+offset,  0);
-    pScope->AddTrace("RX_IS_K",      4* 8+8, TRACE_MODE_DIGITAL,   8, 128,    0x1058+offset, 0,   0x106C+offset,  0);
     pScope->AddTrace("CHANNEL_UP",       16, TRACE_MODE_DIGITAL,   1, 146,    0x1058+offset,18,   0x106C+offset, 18);
+    pScope->AddTrace("SYNC"      ,       16, TRACE_MODE_DIGITAL,   1, 147,    0x1058+offset,19,   0x106C+offset, 19);
+    pScope->AddTrace("TRG_RX_CNT",       16, TRACE_MODE_DIGITAL,   1, 148,    0x1058+offset,20,   0x106C+offset, 20);
+    pScope->AddTrace("EVT_RX_CNT",       16, TRACE_MODE_DIGITAL,   1, 149,    0x1058+offset,21,   0x106C+offset, 21);
+    pScope->AddTrace("STR_RX_CNT",       16, TRACE_MODE_DIGITAL,   1, 150,    0x1058+offset,22,   0x106C+offset, 22);
+    pScope->AddTrace("UNK_RX_CNT",       16, TRACE_MODE_DIGITAL,   1, 151,    0x1058+offset,23,   0x106C+offset, 23);
+    pScope->AddTrace("IDL_RX_CNT",       16, TRACE_MODE_DIGITAL,   1, 152,    0x1058+offset,24,   0x106C+offset, 24);
   }
 };
 

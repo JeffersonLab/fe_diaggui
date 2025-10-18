@@ -47,7 +47,7 @@ private:
 //	TGTextButton		*pStopCaptureEvent;
 //	TGTextButton		*pNextEvent;
 //	TGTextButton		*pPrevEvent;
-
+  TGTextButton      *pInit;
 //	TGTextButton          *pPrintScreen;
 
 	TGVerticalFrame		*pFrameLeft;

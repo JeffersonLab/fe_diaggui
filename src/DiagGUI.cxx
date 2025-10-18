@@ -45,6 +45,7 @@
 #define BTN_PREVIOUSEVENT		102
 #define BTN_STOPCAPTURE			103
 #define BTN_PRINTSCREEN			104
+#define BTN_INIT            105
 
 #define SHUTTER_MSG_ITEM		0x5000
 #define SHUTTER_MSG_BUTTON		0x6000
@@ -73,8 +74,10 @@ DiagGUI::DiagGUI(const TGWindow *p, unsigned int w, unsigned int h, const char *
 		pCrateMsgClient[i] = NULL;
 
 	AddFrame(pFrameRight = new TGVerticalFrame(this), new TGLayoutHints(kLHintsTop | kLHintsExpandX | kLHintsExpandY | kLHintsRight));
-/*
 		pFrameRight->AddFrame(pFrameButtons = new TGHorizontalFrame(pFrameRight), new TGLayoutHints(kLHintsTop | kLHintsExpandX));
+  			pFrameButtons->AddFrame(pInit = new TGTextButton(pFrameButtons, new TGHotString("Init"), BTN_INIT), new TGLayoutHints(kLHintsCenterX));
+          pInit->Associate(this);
+/*
   			pFrameButtons->AddFrame(pCaptureEvent = new TGTextButton(pFrameButtons, new TGHotString("Capture Event"), BTN_CAPTUREEVENT), new TGLayoutHints(kLHintsCenterX));
 			pFrameButtons->AddFrame(pStopCaptureEvent = new TGTextButton(pFrameButtons, new TGHotString("Stop Capture"), BTN_STOPCAPTURE), new TGLayoutHints(kLHintsCenterX));
 				pStopCaptureEvent->SetEnabled(kFALSE);
@@ -419,6 +422,15 @@ Bool_t DiagGUI::ProcessMessage(Long_t msg, Long_t parm1, Long_t)
 					{
 						switch(parm1)
 						{
+              case BTN_INIT:
+              {
+                for(int i=0;i<iModuleCount;i++)
+                {
+                  //SendMessage(pModuleFrames[i], MK_MSG(kC_USER, kC_USER_INIT), 0, 0); 
+                }
+                break;
+              }
+
 							case BTN_PRINTSCREEN:
 							{
 								PrintScreen();

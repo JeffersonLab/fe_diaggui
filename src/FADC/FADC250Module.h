@@ -2,27 +2,29 @@
 #define FADC250Module_H
 
 #include "RootHeader.h"
-//#include "FADC250_Status.h"
+#include "FADC250_Status.h"
 //#include "FADC250_EventHist.h"
 #include "ModuleFrame.h"
 //#include "FADC250_GTX.h"
 #include "FADC250_TrgHist.h"
 #include "FADC250_SerialScope.h"
 #include "FADC250_AdcScope.h"
+#include "fadc.h"
 
 class FADC250Module	: public ModuleFrame
 {
 public:
 	FADC250Module(const TGWindow *p, CrateMsgClient *pClient, unsigned int baseAddr) : ModuleFrame(p, pClient, baseAddr)
 	{
+    pRegs = (fadc_struct *)BaseAddr;
+
 		SetupRegisters();
 
 		AddFrame(pTabs = new TGTab(this), new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX | kLHintsExpandY));
 
 		TGCompositeFrame *tFrame;
-//		FADC250_Status *pStatus;
 
-//		tFrame = pTabs->AddTab("Status");		tFrame->AddFrame(pStatus = new FADC250_Status(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+		tFrame = pTabs->AddTab("Status");		tFrame->AddFrame(new FADC250_Status(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("GTX");			tFrame->AddFrame(new FADC250_GTX(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("TrgHist");		tFrame->AddFrame(new FADC250_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("VXS Scope");	tFrame->AddFrame(new FADC250_SerialScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
@@ -236,45 +238,6 @@ public:
 					{"scaler14",				REGMEM_DESC_FLAGS_UINT,		{0x0338, 0, 32, 32}},
 					{"scaler15",				REGMEM_DESC_FLAGS_UINT,		{0x033C, 0, 32, 32}},
 				{NULL, 0},
-				{"CTP(SWA:lanes2-3)", 0},
-					{"Drp", 0},
-						{"WrEn",					REGMEM_DESC_FLAGS_UINT,		{0x050C, 24, 1, 32}},
-						{"DenTile0",			REGMEM_DESC_FLAGS_UINT,		{0x050C, 25, 1, 32}},
-						{"Addr",					REGMEM_DESC_FLAGS_HEX,		{0x050C, 16, 7, 32}},
-						{"WrData",				REGMEM_DESC_FLAGS_HEX,		{0x050C, 0, 16, 32}},
-						{"RdData",				REGMEM_DESC_FLAGS_UINT,		{0x0510, 0, 16, 32}},
-						{"RdDataValid",		REGMEM_DESC_FLAGS_UINT,		{0x0510, 16, 1, 32}},
-					{NULL, 0},
-					{"Settings", 0},
-						{"Loopback",			REGMEM_DESC_FLAGS_STRING,	{0x0500, 2, 3, 32},	{5,{"DISABLED","NEARPCS","NEARPMA","FARPMA","FARPCS"},{0,1,2,4,6}}},
-						{"RxEnPrbs",			REGMEM_DESC_FLAGS_STRING,	{0x0500, 5, 2, 32},	{4,{"DISABLED","PRBS7","PRBS23","PRBS31"},{0,1,2,3}}},
-						{"TxEnPrbs",			REGMEM_DESC_FLAGS_STRING,	{0x0500, 7, 2, 32},	{4,{"DISABLED","PRBS7","PRBS23","PRBS31"},{0,1,2,3}}},
-						{"RxEqMix0",			REGMEM_DESC_FLAGS_STRING,	{0x0504, 0, 2, 32},	{4,{"LARGE","SMALL","MEDIUM","BYPASS"},{0,1,2,3}}},
-						{"TxPreEmp0",			REGMEM_DESC_FLAGS_STRING,	{0x0504, 2, 4, 32},	{8,{"0%","8%","17%","25%","33%","42%","50%","58%"},{0,1,2,3,4,5,6,7}}},
-						{"TxBufDiff0",			REGMEM_DESC_FLAGS_UINT,		{0x0504, 6, 3, 32}},
-						{"TxDiffCtrl0",		REGMEM_DESC_FLAGS_STRING,	{0x0504, 9, 3, 32},	{8,{"500mV","700mV","800mV","900mV","1000mV","1100mV","1200mV","1300mV"},{0,1,2,3,4,5,6,7}}},
-						{"RxEqMix1",			REGMEM_DESC_FLAGS_STRING,	{0x0504, 16, 2, 32},	{4,{"LARGE","SMALL","MEDIUM","BYPASS"},{0,1,2,3}}},
-						{"TxPreEmp1",			REGMEM_DESC_FLAGS_STRING,	{0x0504, 18, 4, 32},	{8,{"0%","8%","17%","25%","33%","42%","50%","58%"},{0,1,2,3,4,5,6,7}}},
-						{"TxBufDiff1",			REGMEM_DESC_FLAGS_UINT,		{0x0504, 22, 3, 32}},
-						{"TxDiffCtrl1",		REGMEM_DESC_FLAGS_STRING,	{0x0504, 25, 3, 32},	{8,{"500mV","700mV","800mV","900mV","1000mV","1100mV","1200mV","1300mV"},{0,1,2,3,4,5,6,7}}},
-					{NULL, 0},
-					{"PowerDown",				REGMEM_DESC_FLAGS_UINT,		{0x0500, 0, 1, 32}},
-					{"GTReset",					REGMEM_DESC_FLAGS_UINT,		{0x0500, 1, 1, 32}},
-					{"LinkReset",				REGMEM_DESC_FLAGS_UINT,		{0x0500, 9, 1, 32}},
-					{"BitErrCntRst",			REGMEM_DESC_FLAGS_UINT,		{0x0500, 10, 1, 32}},
-					{"BitErrCntEn",			REGMEM_DESC_FLAGS_UINT,		{0x0500, 11, 1, 32}},
-					{"BitErrCnt0",				REGMEM_DESC_FLAGS_UINT,		{0x0514, 0, 16, 32}},
-					{"BitErrCnt1",				REGMEM_DESC_FLAGS_UINT,		{0x0514, 16, 16, 32}},
-					{"HardErr0",				REGMEM_DESC_FLAGS_UINT,		{0x0508, 0, 1, 32}},
-					{"HardErr1",				REGMEM_DESC_FLAGS_UINT,		{0x0508, 1, 1, 32}},
-					{"LaneUp0",					REGMEM_DESC_FLAGS_UINT,		{0x0508, 4, 1, 32}},
-					{"LaneUp1",					REGMEM_DESC_FLAGS_UINT,		{0x0508, 5, 1, 32}},
-					{"RxPolarity0",			REGMEM_DESC_FLAGS_UINT,		{0x0508, 8, 1, 32}},
-					{"RxPolarity1",			REGMEM_DESC_FLAGS_UINT,		{0x0508, 9, 1, 32}},
-					{"ChannelUp",				REGMEM_DESC_FLAGS_UINT,		{0x0508, 12, 1, 32}},
-					{"TxLock",					REGMEM_DESC_FLAGS_UINT,		{0x0508, 13, 1, 32}},
-					{"RxSrcRdyN",				REGMEM_DESC_FLAGS_UINT,		{0x0508, 14, 1, 32}},
-				{NULL, 0},
 				{"CSR", 0},
 					{"ClearModule",			REGMEM_DESC_FLAGS_HEX,		{0x0004, 21, 1, 32}},
 					{"SyncReset",				REGMEM_DESC_FLAGS_HEX,		{0x0004, 28, 1, 32}},
@@ -341,12 +304,27 @@ public:
 		};
 		pRegEditor->AddSet(regs, sizeof(regs)/sizeof(regs[0]));
 	}
+  
+  void Init()
+  {
+    printf("Init FADC\n");
+    WriteReg32(&pRegs->csr,      0x80000000);
+    WriteReg32(&pRegs->reset,    0x0000FFFF);
+    WriteReg32(&pRegs->ctrl1,    0x00100332);
+    WriteReg32(&pRegs->ctrl2,    0x00000007);
+    WriteReg32(&pRegs->mgt_ctrl, 0x00000001);
+    WriteReg32(&pRegs->mgt_ctrl, 0x00000000);
+    WriteReg32(&pRegs->adc_nsb,  2);
+    WriteReg32(&pRegs->adc_nsa,  19);
+    WriteReg32(&pRegs->csr,      0x40000000);
+  }
 
 	const char *GetModuleName() { return "FADC250"; }
 	const char *GetModuleFullName() { return "Flash ADC 250Msps"; }
 	const char *GetSlotIdentifier() { return strSlotIdentifier.Data(); }
 
 private:
+  fadc_struct *pRegs;
 	TString			strSlotIdentifier;
 	TGTab				*pTabs;
 };

@@ -275,6 +275,7 @@ public:
 //      {"ClusterThreshold",    REGMEM_DESC_FLAGS_UINT,   {0x4800, 0,16,32}},
         {"SeedThreshold",       REGMEM_DESC_FLAGS_UINT,   {0x4800,16,13,32}},
         {"HitDT",               REGMEM_DESC_FLAGS_UINT,   {0x4800,29, 3,32}},
+        {"Width",               REGMEM_DESC_FLAGS_UINT,   {0x4804, 0, 8,32}},
       {NULL, 0},
 
       {"TriggerBits", 0},
