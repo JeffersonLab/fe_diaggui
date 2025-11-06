@@ -19,7 +19,7 @@ class FAV3_AdcScope:public TGCompositeFrame {
 		 pScope->SetRegWidth(16);
 
 		// Init(int sampleLen, int rdyAddr, int rdyBit, int ctrlAddr, int ctrlBit, int dataAddr, int dataNum)
-		 pScope->Init(512, 0x01AA + offset, 0, 0x01AC + offset, 0, 0x0210 + offset, 16);
+		 pScope->Init(512, 0x0290 + offset, 0, 0x01AC + offset, 0, 0x0210 + offset, 16);
 
 		 // AddTrace(const char *name, int height, int mode, int bitCount, int bitOffsetData,
 		//          int cfgAddr, int cfgBitOffset, int valAddr, int valBitOffset)
