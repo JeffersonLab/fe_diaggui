@@ -2,7 +2,7 @@
 #define FADC250Module_H
 
 #include "RootHeader.h"
-#include "FADC250_Status.h"
+//#include "FADC250_Status.h"
 //#include "FADC250_EventHist.h"
 #include "ModuleFrame.h"
 //#include "FADC250_GTX.h"
@@ -24,7 +24,7 @@ public:
 
 		TGCompositeFrame *tFrame;
 
-		tFrame = pTabs->AddTab("Status");		tFrame->AddFrame(new FADC250_Status(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+//		tFrame = pTabs->AddTab("Status");		tFrame->AddFrame(new FADC250_Status(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("GTX");			tFrame->AddFrame(new FADC250_GTX(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("TrgHist");		tFrame->AddFrame(new FADC250_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("VXS Scope");	tFrame->AddFrame(new FADC250_SerialScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
