@@ -15,6 +15,7 @@ RANLIB                  = ranlib
 CFLAGS			= -O2 -fno-exceptions -Wno-int-to-pointer-cast -fPIC -I/usr/include\
 			-I. \
 			-I./src \
+			-I./src/main/include \
 			-I./src/CTP \
 			-I./src/DCRB \
 			-I./src/DCRBScalers \
@@ -82,5 +83,8 @@ nps_vtp_scalers: ./src/main/nps_vtp_scalers.cc
 
 sbsecal_vtp_scalers: ./src/main/sbsecal_vtp_scalers.cc
 	$(CC) $(CFLAGS) ./src/main/sbsecal_vtp_scalers.cc -o sbsecal_vtp_scalers $(LINKLIBS)
+
+prad_vtp_scalers: ./src/main/prad_vtp_scalers.cc
+	$(CC) $(CFLAGS) ./src/main/prad_vtp_scalers.cc -o prad_vtp_scalers $(LINKLIBS)
 
 .PHONY: all clean distclean

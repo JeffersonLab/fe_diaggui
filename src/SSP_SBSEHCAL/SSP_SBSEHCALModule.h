@@ -4,7 +4,7 @@
 #include "RootHeader.h"
 #include "ModuleFrame.h"
 #include "SSP_SBSEHCAL_CosmicScope.h"
-#include "SSP_SBSEHCAL_Coincidence.h"
+//#include "SSP_SBSEHCAL_Coincidence.h"
 
 class SSP_SBSEHCALModule	: public ModuleFrame
 {
@@ -16,7 +16,7 @@ public:
 
     SetupRegisters();
     tFrame = pSSPTabs->AddTab("CosmicScope"); tFrame->AddFrame(new SSP_SBSEHCAL_CosmicScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-    tFrame = pSSPTabs->AddTab("Coincidence"); tFrame->AddFrame(new SSP_SBSEHCAL_Coincidence(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+//    tFrame = pSSPTabs->AddTab("Coincidence"); tFrame->AddFrame(new SSP_SBSEHCAL_Coincidence(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
 //		tFrame = pSSPTabs->AddTab("Config");		tFrame->AddFrame(pSSPConfig = new SSP_Config(tFrame, pVMEClient, BaseAddr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Histograms");	tFrame->AddFrame(pSSPHistograms = new SSP_Histograms(tFrame, pVMEClient, BaseAddr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
