@@ -13,6 +13,8 @@
 
 using namespace std;
 
+#define kC_USER_INIT    1
+
 #define DEBUG_PRINTIO   0
 
 #define MSG_TAB_ACTIVATE		40020

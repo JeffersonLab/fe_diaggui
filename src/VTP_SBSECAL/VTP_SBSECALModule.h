@@ -17,9 +17,9 @@ public:
     AddFrame(pTabs = new TGTab(this), new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX | kLHintsExpandY));
 
     tFrame = pTabs->AddTab("Scope");      tFrame->AddFrame(new VTP_SBSECAL_Scope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-    for(int i=0;i<8;i++)
+    for(int i=0;i<16;i++)
     {
-      tFrame = pTabs->AddTab(Form("Fiber%dScope",i));
+      tFrame = pTabs->AddTab(Form("VXS%dScope",i));
       tFrame->AddFrame(new VTP_SBSECAL_FiberScope(tFrame, this, i), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
     }
 
@@ -65,6 +65,10 @@ public:
           {"Min",               REGMEM_DESC_FLAGS_UINT,   {0x0114, 6, 6,32}},
           {"Sec",               REGMEM_DESC_FLAGS_UINT,   {0x0114, 0, 6,32}},
         {NULL, 0},
+      {NULL, 0},
+
+      {"Sd", 0},
+        {"SyncSel",             REGMEM_DESC_FLAGS_HEX, {0x0220, 0, 2,32}},
       {NULL, 0},
 
       {"EbioTx0", 0},
@@ -267,7 +271,8 @@ public:
           {"Fiber1",          REGMEM_DESC_FLAGS_UINT, {0x0300, 17,  1, 32}},        
           {"Fiber2",          REGMEM_DESC_FLAGS_UINT, {0x0300, 18,  1, 32}},     
           {"Fiber3",          REGMEM_DESC_FLAGS_UINT, {0x0300, 19,  1, 32}},
-          {"DataRdy",         REGMEM_DESC_FLAGS_HEX,  {0x0304,  0, 20, 32}},
+          {"DataRdy",         REGMEM_DESC_FLAGS_HEX,  {0x0308,  0, 20, 32}},
+          {"Sync",            REGMEM_DESC_FLAGS_HEX,  {0x030C,  0, 20, 32}},
           {"Latency",         REGMEM_DESC_FLAGS_UINT, {0x0304, 23,  9, 32}},
         {NULL, 0},
       {NULL, 0},
@@ -361,6 +366,27 @@ public:
   const char *GetModuleName() { return "VTP_SBSECAL"; }
   const char *GetModuleFullName() { return "VXS Trigger Processor-SBSECAL"; }
   const char *GetSlotIdentifier() { return strSlotIdentifier.Data(); }
+
+  virtual Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t)
+  {
+    switch(GET_MSG(msg))
+    {
+      case kC_USER:
+        switch(GET_SUBMSG(msg))
+        {
+          case kC_USER_INIT:
+            Init();
+            break;
+        }
+        break;
+    }
+    return kTRUE; 
+  }
+    
+  void Init()
+  {
+    printf("Init VTP\n");
+  }
 
 private:
   TString     strSlotIdentifier;

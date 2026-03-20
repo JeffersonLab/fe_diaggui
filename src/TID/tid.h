@@ -208,6 +208,8 @@ typedef struct
 #define TID_TRIGLINK_ENABLE    0x55
 #define TID_TRIGLINK_DISABLE   0x77
 #define TID_SYNC_RESET         0xDD
+#define TID_SYNC_RESET0        0xCC
+#define TID_SYNC_RESET1        0x99
 
 
 /* boardID bits and masks */

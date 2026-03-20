@@ -130,7 +130,7 @@ int sbsecal_vtp_scalers_app::read_scalers()
       continue;
     
     val[0] = 0x0;
-    crate_sbsecalvtp[c]->Write32(0x1B500, val);
+    crate_sbsecalvtp[c]->Write32(0x1B510, val);
   }
 
   // Read scaler values
@@ -138,7 +138,6 @@ int sbsecal_vtp_scalers_app::read_scalers()
   {
     if(!crate_sbsecalvtp[c]->IsValid())
       continue;
-
     // cluster nhits histogram
     crate_sbsecalvtp[c]->Read32(0x1B52C, &vtp_nhits[c][0], 16, CRATE_MSG_FLAGS_NOADRINC);
 
@@ -150,7 +149,6 @@ int sbsecal_vtp_scalers_app::read_scalers()
 
     // reference time scaler
     crate_sbsecalvtp[c]->Read32(0x1B520, &vtp_ref[c]);
-//printf("ref[%d]=%d\n", c, vtp_ref[c]);
   }
 
   // Reset & enable scalers
@@ -160,28 +158,25 @@ int sbsecal_vtp_scalers_app::read_scalers()
       continue;
 
     val[0] = 0xF;
-    crate_sbsecalvtp[c]->Write32(0x1B500, val);
+    crate_sbsecalvtp[c]->Write32(0x1B510, val);
   }
   return 0;
 }
 
 void sbsecal_vtp_scalers_app::normalize_scalers()
 {
-  float ref, scaled;
+  float ref = 1.0, scaled;
 
   for(int c=0;c<N_VTPS;c++)
   {
     if(!crate_sbsecalvtp[c]->IsValid())
       continue;
-
+/*
     if(!vtp_ref[c])
-    {
       printf("Error in %s: vtp_ref[%d]=%d not valid\n", __func__, c,vtp_ref[c]);
-      ref = 1;
-    }
     else
       ref = 1000000.0 / (float)vtp_ref[c];
-
+*/
     for(int i=0;i<16;i++)
       vtp_nhits[c][i] = (unsigned int)((float)vtp_nhits[c][i]*ref);
 
@@ -233,12 +228,12 @@ void sbsecal_vtp_scalers_app::draw_scalers()
   pH_Position->Reset("");
   pH_Position->SetMaximum(1000000.0);
   pH_Position->SetMinimum(0.0);
-  int y_offset[N_VTPS] = {0,16,28,40,52,64,76};
+  int y_offset[N_VTPS] = {0,12,21,30,39,48,57};
   for(int c=0;c<N_VTPS;c++)
   for(int i=0;i<512;i++)
   {
     int ix = ((i>>0) & 0x1F);
-    int iy = ((i>>5) & 0x0F)+c*y_offset[c];
+    int iy = ((i>>5) & 0x0F)+y_offset[c];
     pH_Position->Fill(ix, iy, vtp_pos[c][i]);
   }
 
@@ -329,11 +324,11 @@ sbsecal_vtp_scalers_app::sbsecal_vtp_scalers_app(const TGWindow *p, UInt_t w, UI
   pH_Position->GetXaxis()->CenterTitle();
   pH_Position->GetXaxis()->SetNdivisions(28, kFALSE);
   pH_Position->GetXaxis()->SetTickLength(1);
-  for(int i=0;i<=27;i++) pH_Position->GetXaxis()->SetBinLabel(i+1,Form("%d",27-i));
+//  for(int i=0;i<=27;i++) pH_Position->GetXaxis()->SetBinLabel(i+1,Form("%d",27-i));
 
   pH_Position->GetYaxis()->CenterLabels();
   pH_Position->GetYaxis()->CenterTitle();
-  pH_Position->GetYaxis()->SetNdivisions(36, kFALSE);
+  pH_Position->GetYaxis()->SetNdivisions(69, kFALSE);
   pH_Position->GetYaxis()->SetTickLength(1);
 /*
   for(int i=1;i<=36;i++) pH_Position->GetYaxis()->SetBinLabel(i,Form("%d",i-1));
@@ -354,8 +349,8 @@ sbsecal_vtp_scalers_app::sbsecal_vtp_scalers_app(const TGWindow *p, UInt_t w, UI
 
   // Cluster Nhits
   pC->GetCanvas()->cd(2)->cd(2);
-  pH_Nhits = new TH1F("NHits",";NHits;Hz",10,0.0,10.0);
-  pH_Nhits->GetXaxis()->SetNdivisions(10);
+  pH_Nhits = new TH1F("NHits",";NHits;Hz",16,0.0,16.0);
+  pH_Nhits->GetXaxis()->SetNdivisions(16);
   pH_Nhits->GetXaxis()->CenterLabels();
   pH_Nhits->SetStats(0);
   pH_Nhits->SetFillColor(kBlue);

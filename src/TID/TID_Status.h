@@ -27,6 +27,14 @@ class TID_Status	: public TGCompositeFrame
       pFrameButtons->AddFrame(pButtonSWSync = 
 			      new TGTextButton(pFrameButtons, new TGHotString("Sync"), 
 					       BTN_SW_SYNC), new TGLayoutHints(kLHintsCenterX));
+      
+      pFrameButtons->AddFrame(pButtonSWSync0 = 
+			      new TGTextButton(pFrameButtons, new TGHotString("Sync0"), 
+					       BTN_SW_SYNC0), new TGLayoutHints(kLHintsCenterX));
+      
+      pFrameButtons->AddFrame(pButtonSWSync1 = 
+			      new TGTextButton(pFrameButtons, new TGHotString("Sync1"), 
+					       BTN_SW_SYNC1), new TGLayoutHints(kLHintsCenterX));
 
       AddFrame(pFrameText = 
 	       new TGHorizontalFrame(this), 
@@ -50,6 +58,8 @@ class TID_Status	: public TGCompositeFrame
 
       pButtonUpdate->Associate(this);
       pButtonSWSync->Associate(this);
+      pButtonSWSync0->Associate(this);
+      pButtonSWSync1->Associate(this);
 
       UpdateTextView();
     }
@@ -69,7 +79,24 @@ class TID_Status	: public TGCompositeFrame
 		  break;
 		case BTN_SW_SYNC:
 		  {
-		    pM->WriteReg32(&pRegs->vmeSyncLoad, TID_SYNC_RESET);
+		    //pM->WriteReg32((volatile unsigned int*)(pM->BaseAddr+0x0078), 0x99);
+		    //pM->WriteReg32((volatile unsigned int*)(pM->BaseAddr+0x0078), 0xCC);
+		    pM->WriteReg32((volatile unsigned int*)(pM->BaseAddr+0x0024), 0x90);
+		    pM->WriteReg32((volatile unsigned int*)(pM->BaseAddr+0x0078), 0xEE);
+		    break;
+		  }
+		case BTN_SW_SYNC0:
+		  {
+		    pM->WriteReg32((volatile unsigned int*)(pM->BaseAddr+0x0004), 0x1FF);
+		    pM->WriteReg32((volatile unsigned int*)(pM->BaseAddr+0x0024), 0x90);
+		    pM->WriteReg32((volatile unsigned int*)(pM->BaseAddr+0x0078), 0xCC);
+		    break;
+		  }
+		case BTN_SW_SYNC1:
+		  {
+		    pM->WriteReg32((volatile unsigned int*)(pM->BaseAddr+0x0004), 0x1FF);
+		    pM->WriteReg32((volatile unsigned int*)(pM->BaseAddr+0x0024), 0x90);
+		    pM->WriteReg32((volatile unsigned int*)(pM->BaseAddr+0x0078), 0x99);
 		    break;
 		  }
 		default:
@@ -84,6 +111,7 @@ class TID_Status	: public TGCompositeFrame
 
     void UpdateTextView()
     {
+#if 0
       char buf[100];
 
       pTextViewRegs->Clear();
@@ -435,6 +463,7 @@ class TID_Status	: public TGCompositeFrame
 	}
 
       pTextViewStatus->Update();
+#endif
     }
 
  private:
@@ -443,6 +472,8 @@ class TID_Status	: public TGCompositeFrame
 	{
 		BTN_RESET,
 		BTN_SW_SYNC,
+		BTN_SW_SYNC0,
+		BTN_SW_SYNC1,
 		BTN_UPDATE
 	};
 	 
@@ -460,6 +491,8 @@ class TID_Status	: public TGCompositeFrame
 
     TGTextButton		*pButtonUpdate;
     TGTextButton		*pButtonSWSync;
+    TGTextButton		*pButtonSWSync0;
+    TGTextButton		*pButtonSWSync1;
 };
 
 #endif

@@ -4,6 +4,7 @@
 #include "RootHeader.h"
 #include "ModuleFrame.h"
 #include "SSP_SBSEHCAL_CosmicScope.h"
+#include "SSP_SBSEHCAL_Coincidence.h"
 
 class SSP_SBSEHCALModule	: public ModuleFrame
 {
@@ -15,6 +16,7 @@ public:
 
     SetupRegisters();
     tFrame = pSSPTabs->AddTab("CosmicScope"); tFrame->AddFrame(new SSP_SBSEHCAL_CosmicScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+    tFrame = pSSPTabs->AddTab("Coincidence"); tFrame->AddFrame(new SSP_SBSEHCAL_Coincidence(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
 //		tFrame = pSSPTabs->AddTab("Config");		tFrame->AddFrame(pSSPConfig = new SSP_Config(tFrame, pVMEClient, BaseAddr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pSSPTabs->AddTab("Histograms");	tFrame->AddFrame(pSSPHistograms = new SSP_Histograms(tFrame, pVMEClient, BaseAddr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
@@ -149,8 +151,9 @@ public:
           {"TrgLatency",          REGMEM_DESC_FLAGS_UINT, {0x6100, 0,11, 32}},
           {"TrgWidth",            REGMEM_DESC_FLAGS_UINT, {0x6100,11, 8, 32}},
           {"Mult",                REGMEM_DESC_FLAGS_UINT, {0x6100,19, 3, 32}},
-          {"EnMask",              REGMEM_DESC_FLAGS_UINT, {0x6100,22, 7, 32}},
+          {"EnMask",              REGMEM_DESC_FLAGS_UINT, {0x6100,22, 8, 32}},
           {"LatencyStatus",       REGMEM_DESC_FLAGS_UINT, {0x6104, 0,11, 32}},
+	  {"LatencyErr",          REGMEM_DESC_FLAGS_UINT, {0x6104,24, 8, 32}},
         {NULL, 0},
 	{"AuxTrgBit", 0},
           {"TrgLatency",          REGMEM_DESC_FLAGS_UINT, {0x6500, 0,11, 32}},
@@ -158,24 +161,42 @@ public:
           {"Mult",                REGMEM_DESC_FLAGS_UINT, {0x6500,19, 3, 32}},
           {"EnMask",              REGMEM_DESC_FLAGS_UINT, {0x6500,22, 7, 32}},
           {"LatencyStatus",       REGMEM_DESC_FLAGS_UINT, {0x6504, 0,11, 32}},
+	  {"LatencyErr",          REGMEM_DESC_FLAGS_UINT, {0x6504,24, 8, 32}},
         {NULL, 0},
 	{"EHTrgBit", 0},
           {"TrgLatency",          REGMEM_DESC_FLAGS_UINT, {0x6200, 0,11, 32}},
           {"TrgWidth",            REGMEM_DESC_FLAGS_UINT, {0x6200,11, 8, 32}},
           {"LatencyStatus",       REGMEM_DESC_FLAGS_UINT, {0x6204, 0,11, 32}},
-          {"Delay",               REGMEM_DESC_FLAGS_UINT, {0x6210, 0, 8, 32}},
+	  {"LatencyErr",          REGMEM_DESC_FLAGS_UINT, {0x6204,24, 8, 32}},
+          {"DelayHCAL",           REGMEM_DESC_FLAGS_UINT, {0x6210, 0,11, 32}},
+          {"DelayECAL",           REGMEM_DESC_FLAGS_UINT, {0x6210,16,11, 32}},
+	  {"MapNameAddr",         REGMEM_DESC_FLAGS_HEX,  {0x6214, 0, 6, 32}},
+	  {"MapName",             REGMEM_DESC_FLAGS_HEX,  {0x6218, 0, 8, 32}},
+        {NULL, 0},
+	{"EHMapTrgBit", 0},
+          {"TrgLatency",          REGMEM_DESC_FLAGS_UINT, {0x6280, 0,11, 32}},
+          {"TrgWidth",            REGMEM_DESC_FLAGS_UINT, {0x6280,11, 8, 32}},
+          {"MapSel",              REGMEM_DESC_FLAGS_UINT, {0x6280,24, 4, 32}},
+          {"LatencyStatus",       REGMEM_DESC_FLAGS_UINT, {0x6284, 0,11, 32}},
+	  {"LatencyErr",          REGMEM_DESC_FLAGS_UINT, {0x6284,24, 8, 32}},
+          {"DelayHCAL",           REGMEM_DESC_FLAGS_UINT, {0x6290, 0,11, 32}},
+          {"DelayECAL",           REGMEM_DESC_FLAGS_UINT, {0x6290,16,11, 32}},
+	  {"MapNameAddr",         REGMEM_DESC_FLAGS_HEX,  {0x6294, 0, 6, 32}},
+	  {"MapName",             REGMEM_DESC_FLAGS_HEX,  {0x6298, 0, 8, 32}},
         {NULL, 0},
 	{"ETrgBit", 0},
           {"TrgLatency",          REGMEM_DESC_FLAGS_UINT, {0x6300, 0,11, 32}},
           {"TrgWidth",            REGMEM_DESC_FLAGS_UINT, {0x6300,11, 8, 32}},
           {"LatencyStatus",       REGMEM_DESC_FLAGS_UINT, {0x6304, 0,11, 32}},
-          {"Delay",               REGMEM_DESC_FLAGS_UINT, {0x6310, 0, 8, 32}},
+	  {"LatencyErr",          REGMEM_DESC_FLAGS_UINT, {0x6304,24, 8, 32}},
+          {"Delay",               REGMEM_DESC_FLAGS_UINT, {0x6310, 0,11, 32}},
         {NULL, 0},
 	{"HTrgBit", 0},
           {"TrgLatency",          REGMEM_DESC_FLAGS_UINT, {0x6400, 0,11, 32}},
           {"TrgWidth",            REGMEM_DESC_FLAGS_UINT, {0x6400,11, 8, 32}},
           {"LatencyStatus",       REGMEM_DESC_FLAGS_UINT, {0x6404, 0,11, 32}},
-          {"Delay",               REGMEM_DESC_FLAGS_UINT, {0x6410, 0, 8, 32}},
+	  {"LatencyErr",          REGMEM_DESC_FLAGS_UINT, {0x6404,24, 8, 32}},
+          {"Delay",               REGMEM_DESC_FLAGS_UINT, {0x6410, 0,11, 32}},
         {NULL, 0},
         {"SerDes", 0},
           {"F0", 0},
