@@ -37,6 +37,7 @@ CFLAGS			= -O2 -fno-exceptions -Wno-int-to-pointer-cast -fPIC -I/usr/include\
 			-I./src/VTP_COMPTON \
 			-I./src/VTP_SOLIDECAL \
 			-I./src/VTP_SBSECAL \
+			-I./src/VTP_PRAD \
 			-I./src/VTP_FADCCOIN \
 			-I./src/VTP_FADCSTREAM \
 			-I./src/VTP_NPS \
@@ -46,6 +47,7 @@ CFLAGS			= -O2 -fno-exceptions -Wno-int-to-pointer-cast -fPIC -I/usr/include\
 			-I./src/VTP_HPS \
 			-I./src/VTP_ROC \
 			-I./src/SSP_GT \
+			-I./src/SSP_PRAD \
 			-I./src/VTP_SBSECAL \
       -I./src/ALERTFEB \
       -I./src/VTP_MOLLERCNT \

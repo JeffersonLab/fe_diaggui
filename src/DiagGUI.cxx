@@ -13,11 +13,13 @@
 #include "SSPModule.h"
 #include "SSP_HPSModule.h"
 #include "SSP_MPDModule.h"
+#include "SSP_PRADModule.h"
 #include "TIDModule.h"
 #include "VSCMModule.h"
 #include "GTPModule.h"
 #include "GTP_HPSModule.h"
 #include "VTP_HPSModule.h"
+#include "VTP_PRADModule.h"
 #include "V1495PulserModule.h"
 #include "V1495LADModule.h"
 #include "FADCScalers_HPSModule.h"
@@ -34,6 +36,7 @@
 #include "VTP_EC_Module.h"
 #include "VTP_GT_Module.h"
 #include "VTP_SBSECALModule.h"
+#include "VTP_PRADModule.h"
 #include "VTP_ROCModule.h"
 #include "SSP_GT_Module.h"
 #include "ALERTFEB_Module.h"
@@ -308,6 +311,8 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, char *param
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new SSP_HPSModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_SSP_MPD", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new SSP_MPDModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+      else if(!stricmp("MOD_TYPE_SSP_PRAD", paramB))
+        pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new SSP_PRADModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_TID", paramB))
 				pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new TIDModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 			else if(!stricmp("MOD_TYPE_FADC250", paramB))
@@ -350,6 +355,8 @@ void DiagGUI::ProcessParam(char *paramA, char *paramB, char *paramC, char *param
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_SOLIDECALModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_SBSECAL", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_SBSECALModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+      else if(!stricmp("MOD_TYPE_VTP_PRAD", paramB))
+        pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_PRADModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_NPS", paramB))
         pFrameModule->AddFrame(pModuleFrames[iModuleCount] = new VTP_NPSModule(pFrameModule, pCrateMsgClientLast, addr), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
       else if(!stricmp("MOD_TYPE_VTP_HCAL", paramB))

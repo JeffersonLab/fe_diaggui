@@ -9,6 +9,7 @@
 #include "FADC250_TrgHist.h"
 #include "FADC250_SerialScope.h"
 #include "FADC250_AdcScope.h"
+#include "FADC250Stream_AdcScope.h"
 #include "fadc.h"
 
 class FADC250Module	: public ModuleFrame
@@ -29,6 +30,7 @@ public:
 //		tFrame = pTabs->AddTab("TrgHist");		tFrame->AddFrame(new FADC250_TrgHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 //		tFrame = pTabs->AddTab("VXS Scope");	tFrame->AddFrame(new FADC250_SerialScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 		tFrame = pTabs->AddTab("Ch Scope");	tFrame->AddFrame(new FADC250_AdcScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+		tFrame = pTabs->AddTab("StrCh Scope");	tFrame->AddFrame(new FADC250Stream_AdcScope(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
 
 		//		tFrame = pTabs->AddTab("EventHist");	tFrame->AddFrame(new FADC250_EventHist(tFrame, this), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
@@ -39,6 +41,82 @@ public:
 
 	void SetupRegisters()
 	{
+		static RegMemDesc regs[] = {
+				{"Stream", 0},
+					{"adc0",        REGMEM_DESC_FLAGS_HEX,		{0x0864, 0, 13, 32}},
+					{"adc1",        REGMEM_DESC_FLAGS_HEX,		{0x0864,16, 13, 32}},
+					{"cfg_reset",   REGMEM_DESC_FLAGS_HEX,		{0x0A00, 0,  1, 32}},
+					{"csr",    		  REGMEM_DESC_FLAGS_HEX,		{0x0004, 0, 32, 32}},
+					{"ctrl1",  		  REGMEM_DESC_FLAGS_HEX,		{0x0008, 0, 32, 32}},
+					{"version",			REGMEM_DESC_FLAGS_HEX,		{0x0000, 0, 32, 32}},
+					{"adc_status0",	REGMEM_DESC_FLAGS_HEX,		{0x0100, 0, 32, 32}},
+					{"adcmask",			REGMEM_DESC_FLAGS_HEX,		{0x0110, 0, 32, 32}},
+					{"ctrl",  		  REGMEM_DESC_FLAGS_HEX,		{0x0800, 0, 32, 32}},
+					{"framelen",		REGMEM_DESC_FLAGS_HEX,		{0x0804, 0, 32, 32}},
+					{"framenum",		REGMEM_DESC_FLAGS_HEX,		{0x0808, 0, 32, 32}},
+					{"testreg",		  REGMEM_DESC_FLAGS_HEX,		{0x080C, 0, 32, 32}},
+					{"gtxstatus",	  REGMEM_DESC_FLAGS_HEX,		{0x00D0, 0, 32, 32}},
+					{"gtxctrl",		  REGMEM_DESC_FLAGS_HEX,		{0x00D4, 0, 32, 32}},
+					{"chnwords0",	  REGMEM_DESC_FLAGS_HEX,		{0x0820, 0, 32, 32}},
+					{"chnwords1",	  REGMEM_DESC_FLAGS_HEX,		{0x0824, 0, 32, 32}},
+					{"chnwords2",	  REGMEM_DESC_FLAGS_HEX,		{0x0828, 0, 32, 32}},
+					{"chnwords3",	  REGMEM_DESC_FLAGS_HEX,		{0x082C, 0, 32, 32}},
+					{"chnwords4",	  REGMEM_DESC_FLAGS_HEX,		{0x0830, 0, 32, 32}},
+					{"chnwords5",	  REGMEM_DESC_FLAGS_HEX,		{0x0834, 0, 32, 32}},
+					{"chnwords6",	  REGMEM_DESC_FLAGS_HEX,		{0x0838, 0, 32, 32}},
+					{"chnwords7",	  REGMEM_DESC_FLAGS_HEX,		{0x083C, 0, 32, 32}},
+					{"chnwords8",	  REGMEM_DESC_FLAGS_HEX,		{0x0840, 0, 32, 32}},
+					{"chnwords9",	  REGMEM_DESC_FLAGS_HEX,		{0x0844, 0, 32, 32}},
+					{"chnwords10",	REGMEM_DESC_FLAGS_HEX,		{0x0848, 0, 32, 32}},
+					{"chnwords11",	REGMEM_DESC_FLAGS_HEX,		{0x084C, 0, 32, 32}},
+					{"chnwords12",	REGMEM_DESC_FLAGS_HEX,		{0x0850, 0, 32, 32}},
+					{"chnwords13",	REGMEM_DESC_FLAGS_HEX,		{0x0854, 0, 32, 32}},
+					{"chnwords14",	REGMEM_DESC_FLAGS_HEX,		{0x0858, 0, 32, 32}},
+					{"chnwords15",	REGMEM_DESC_FLAGS_HEX,		{0x085C, 0, 32, 32}},
+					{"chnwords16",	REGMEM_DESC_FLAGS_HEX,		{0x0860, 0, 32, 32}},
+			  {NULL, 0},
+				{"AdcParameters", 0},
+					{"AdcThreshold", 0},
+						{"tet0",			REGMEM_DESC_FLAGS_UINT,		{0x012C, 16, 12, 32}},
+						{"tet1",			REGMEM_DESC_FLAGS_UINT,		{0x012C, 0, 12, 32}},
+						{"tet2",			REGMEM_DESC_FLAGS_UINT,		{0x0130, 16, 12, 32}},
+						{"tet3",			REGMEM_DESC_FLAGS_UINT,		{0x0130, 0, 12, 32}},
+						{"tet4",			REGMEM_DESC_FLAGS_UINT,		{0x0134, 16, 12, 32}},
+						{"tet5",			REGMEM_DESC_FLAGS_UINT,		{0x0134, 0, 12, 32}},
+						{"tet6",			REGMEM_DESC_FLAGS_UINT,		{0x0138, 16, 12, 32}},
+						{"tet7",			REGMEM_DESC_FLAGS_UINT,		{0x0138, 0, 12, 32}},
+						{"tet8",			REGMEM_DESC_FLAGS_UINT,		{0x013C, 16, 12, 32}},
+						{"tet9",			REGMEM_DESC_FLAGS_UINT,		{0x013C, 0, 12, 32}},
+						{"tet10",			REGMEM_DESC_FLAGS_UINT,		{0x0140, 16, 12, 32}},
+						{"tet11",			REGMEM_DESC_FLAGS_UINT,		{0x0140, 0, 12, 32}},
+						{"tet12",			REGMEM_DESC_FLAGS_UINT,		{0x0144, 16, 12, 32}},
+						{"tet13",			REGMEM_DESC_FLAGS_UINT,		{0x0144, 0, 12, 32}},
+						{"tet14",			REGMEM_DESC_FLAGS_UINT,		{0x0148, 16, 12, 32}},
+						{"tet15",			REGMEM_DESC_FLAGS_UINT,		{0x0148, 0, 12, 32}},
+					{NULL, 0},
+					{"Dac", 0},
+						{"dac0",			REGMEM_DESC_FLAGS_UINT,		{0x0050, 16, 16, 32}},
+						{"dac1",			REGMEM_DESC_FLAGS_UINT,		{0x0050, 0, 16, 32}},
+						{"dac2",			REGMEM_DESC_FLAGS_UINT,		{0x0054, 16, 16, 32}},
+						{"dac3",		  REGMEM_DESC_FLAGS_UINT,		{0x0054, 0, 16, 32}},
+						{"dac4",			REGMEM_DESC_FLAGS_UINT,		{0x0058, 16, 16, 32}},
+						{"dac5",			REGMEM_DESC_FLAGS_UINT,		{0x0058, 0, 16, 32}},
+						{"dac6",			REGMEM_DESC_FLAGS_UINT,		{0x005C, 16, 16, 32}},
+						{"dac7",			REGMEM_DESC_FLAGS_UINT,		{0x005C, 0, 16, 32}},
+						{"dac8",			REGMEM_DESC_FLAGS_UINT,		{0x0060, 16, 16, 32}},
+						{"dac9",			REGMEM_DESC_FLAGS_UINT,		{0x0060, 0, 16, 32}},
+						{"dac10",			REGMEM_DESC_FLAGS_UINT,		{0x0064, 16, 16, 32}},
+						{"dac11",			REGMEM_DESC_FLAGS_UINT,		{0x0064, 0, 16, 32}},
+						{"dac12",			REGMEM_DESC_FLAGS_UINT,		{0x0068, 16, 16, 32}},
+						{"dac13",			REGMEM_DESC_FLAGS_UINT,		{0x0068, 0, 16, 32}},
+						{"dac14",			REGMEM_DESC_FLAGS_UINT,		{0x006C, 16, 16, 32}},
+						{"dac15",			REGMEM_DESC_FLAGS_UINT,		{0x006C, 0, 16, 32}},
+					{NULL, 0},
+					{"nsb",					REGMEM_DESC_FLAGS_UINT,		{0x0124, 0, 9, 32}},
+					{"nsa",					REGMEM_DESC_FLAGS_UINT,		{0x0128, 0, 9, 32}},
+        {NULL, 0}
+      };
+#if 0
 		static RegMemDesc regs[] = {
 				{"AdcParameters", 0},
           {"ChargeScalers", 0},
@@ -302,6 +380,7 @@ public:
 					{"mgt_status",				REGMEM_DESC_FLAGS_HEX,		{0x00D0, 0, 32, 32}},
 				{NULL, 0}
 		};
+#endif
 		pRegEditor->AddSet(regs, sizeof(regs)/sizeof(regs[0]));
 	}
   

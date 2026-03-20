@@ -66,7 +66,7 @@ public:
           {"Sec",               REGMEM_DESC_FLAGS_UINT,   {0x0114, 0, 6,32}},
         {NULL, 0},
       {NULL, 0},
-
+/*
       {"Sd", 0},
         {"SyncSel",             REGMEM_DESC_FLAGS_HEX, {0x0220, 0, 2,32}},
       {NULL, 0},
@@ -90,7 +90,7 @@ public:
         {"Ctrl",                REGMEM_DESC_FLAGS_HEX, {0x2100-0x10000, 0,32,32}},
         {"Status",              REGMEM_DESC_FLAGS_HEX, {0x2104-0x10000, 0,32,32}},
       {NULL, 0},
-
+*/
       {"PayloadDecoder", 0},
         {"RXLatency", 0},
           {"Sl3,PP15",        REGMEM_DESC_FLAGS_UINT, {0x1E34, 16, 12, 32}},
@@ -276,7 +276,7 @@ public:
           {"Latency",         REGMEM_DESC_FLAGS_UINT, {0x0304, 23,  9, 32}},
         {NULL, 0},
       {NULL, 0},
-
+/*
       {"Scalers", 0},
         {"Disable",       REGMEM_DESC_FLAGS_UINT, {0x0208,  0,  1, 32}},
         {"BusClk",        REGMEM_DESC_FLAGS_UINT, {0x0270,  0, 32, 32}},
@@ -305,12 +305,6 @@ public:
         {"HIT_DT",              REGMEM_DESC_FLAGS_UINT, {0xB400,12, 3, 32}},
         {"TRG_WIDTH",           REGMEM_DESC_FLAGS_UINT, {0xB400, 0, 8, 32}},
         {"ROW_THR",             REGMEM_DESC_FLAGS_UINT, {0xB400, 8, 4, 32}},
-/*      {"HIT_DT",              REGMEM_DESC_FLAGS_UINT, {0xB400, 0, 3, 32}},
-        {"SMO_DT",              REGMEM_DESC_FLAGS_UINT, {0xB400, 4, 3, 32}},
-        {"NSMO_THRESHOLD",      REGMEM_DESC_FLAGS_UINT, {0xB400, 8, 2, 32}},
-        {"MLTP_THRESHOLD_1",    REGMEM_DESC_FLAGS_UINT, {0xB400,12, 4, 32}},
-        {"MLTP_THRESHOLD_2",    REGMEM_DESC_FLAGS_UINT, {0xB400,16, 4, 32}},
-        {"MLTP_THRESHOLD_3",    REGMEM_DESC_FLAGS_UINT, {0xB400,20, 4, 32}},*/
       {NULL, 0},
       
       {"Cluster", 0},
@@ -358,8 +352,8 @@ public:
           {"TrgBit31",          REGMEM_DESC_FLAGS_UINT,   {0x508C, 0,16,32}},
         {NULL, 0},
       {NULL, 0},
+*/
     };
-
     pRegEditor->AddSet(regs, sizeof(regs)/sizeof(regs[0]));
   }
 
