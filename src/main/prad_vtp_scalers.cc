@@ -149,7 +149,12 @@ int prad_vtp_scalers_app::read_scalers()
 
     // cluster position histogram
     crate_pradvtp[c]->Read32(0x1BA24, &vtp_pos[c][0], 256, CRATE_MSG_FLAGS_NOADRINC);
-
+/*
+printf("c=%d: ", c);
+for(int i=0;i<256;i++)
+  printf("%d ", vtp_pos[c][i]);
+printf("\n");
+*/
     // reference time scaler
     crate_pradvtp[c]->Read32(0x1BA20, &vtp_ref[c]);
 //printf("ref[%d]=%d\n", c, vtp_ref[c]);
@@ -191,7 +196,11 @@ void prad_vtp_scalers_app::normalize_scalers()
       vtp_energy[c][i] = (unsigned int)((float)vtp_energy[c][i]*ref);
 
     for(int i=0;i<256;i++)
+    {
       vtp_pos[c][i] = (unsigned int)((float)vtp_pos[c][i]*ref);
+if(vtp_pos[c][i] > 100)
+  printf("vtp_pos[%d][%d]>100\n",c,i);
+    }
   }
 }
 
@@ -234,7 +243,7 @@ void prad_vtp_scalers_app::draw_scalers()
 #endif
   pH_Position->Reset("");
   pH_Position->SetMaximum(1000000.0);
-  pH_Position->SetMinimum(0.0);
+  pH_Position->SetMinimum(0.1);
   int y_offset[N_VTPS] = {0,16,28,40,52,64,76};
   for(int c=0;c<N_VTPS;c++)
   for(int i=0;i<256;i++)
@@ -363,6 +372,7 @@ prad_vtp_scalers_app::prad_vtp_scalers_app(const TGWindow *p, UInt_t w, UInt_t h
   pC->GetCanvas()->cd(1)->SetLogz(1);
   pH_Position = TH2Poly_PRAD();
   pH_Position->SetStats(0);
+  pH_Position->GetZaxis()->SetRangeUser(0.1,1.0E7);
   pH_Position->Draw("COLZ L");
 
 /* 

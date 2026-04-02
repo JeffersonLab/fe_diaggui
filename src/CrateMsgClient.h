@@ -4,7 +4,7 @@
 #include "RootHeader.h"
 
 #define DEBUG_NOCONNECTION        0
-#define DEBUG_PRINT               1
+#define DEBUG_PRINT               0
 
 #define CRATEMSG_LISTEN_PORT      6102
 #define MAX_MSG_SIZE              10000
