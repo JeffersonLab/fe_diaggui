@@ -338,6 +338,8 @@ class FAV3Module:public ModuleFrame {
 			{"adc_status0", REGMEM_DESC_FLAGS_HEX, {0x0100, 0, 16, 16}},
 			{"adc_status1", REGMEM_DESC_FLAGS_HEX, {0x0102, 0, 16, 16}},
 			{"adc_status2", REGMEM_DESC_FLAGS_HEX, {0x0104, 0, 16, 16}},
+			{"adc_status3", REGMEM_DESC_FLAGS_HEX, {0x015E, 0, 16, 16}},
+			{"adc_status4", REGMEM_DESC_FLAGS_HEX, {0x0160, 0, 16, 16}},
 			{"adc_config1", REGMEM_DESC_FLAGS_HEX, {0x0106, 0, 16, 16}},
 			{"adc_config2", REGMEM_DESC_FLAGS_HEX, {0x0108, 0, 16, 16}},
 			{"adc_config4", REGMEM_DESC_FLAGS_HEX, {0x010A, 0, 16, 16}},
